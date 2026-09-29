@@ -1,0 +1,283 @@
+{
+ "run_at": "2026-09-29T06:33:52+02:00",
+ "checks": [
+  {
+   "label": "ecrecover positive control (own key: sign -> recover)",
+   "pass": true,
+   "extra": "0x1be31a94361a391bbafb2a4ccd704f57dc04d4bb == 0x1be31a94361a391bbafb2a4ccd704f57dc04d4bb"
+  },
+  {
+   "label": "p1 live /v1/genesis artifact == vector payload (deep equal)",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 live canonical bytes == vector canonical bytes",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 keccak256(canonical(live artifact)) == expected_digest",
+   "pass": true,
+   "extra": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4"
+  },
+  {
+   "label": "p1 live artifactDigest field == expected_digest",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 live countersignature == provenance.countersignature",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 live ledgerSigner == provenance.ledger_signer",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 live seq==1 and prevDigest null",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p4 expected_link == chain_link(genesis, null, 1) recomputed",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p1 countersignature recovers to ledgerSigner (personal_sign over the chain-link digest)",
+   "pass": true,
+   "extra": "variant=['raw32'] recovered={'raw32': '0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6', 'hex0x': '0xa57457bfc56f489491425d883700cc71b3acfe0c', 'hex': '0xc7183ff56ff5b6d4ee96b34f3a7df031adcee99d'}"
+  },
+  {
+   "label": "p1 /verify: found, chainOk, seq 1, anchor confirmed",
+   "pass": true,
+   "extra": "genesis artifact anchor block=958163"
+  },
+  {
+   "label": "p5 subject_digest listed in live /v1/anchors",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p5 live anchoredDigest == vector anchored_digest",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p5 live bitcoinBlockHeight == 958163 (provenance)",
+   "pass": true,
+   "extra": "958163"
+  },
+  {
+   "label": "p5 live status confirmed",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p5 anchored == sha256(subject) recomputed",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "n5 anchored_digest == p5's anchored digest (derived as declared)",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "n5 subject is p6's seq-1 artifact (synthetic subject, as declared 'does not bind')",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 walk length == 13 and ends at null prevDigest",
+   "pass": true,
+   "extra": "13"
+  },
+  {
+   "label": "p27 all 13 (seq, artifact_digest, prev_digest) == live walk",
+   "pass": true,
+   "extra": "mismatches=[]"
+  },
+  {
+   "label": "p27 accumulator folded over the LIVE walk == live commitment.acc",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 vector head.acc == live commitment.acc",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 13/13 countersignatures recover to ledgerSigner 0x9d38\u2026",
+   "pass": true,
+   "extra": "variants={1: ['raw32'], 2: ['raw32'], 3: ['raw32'], 4: ['raw32'], 5: ['raw32'], 6: ['raw32'], 7: ['raw32'], 8: ['raw32'], 9: ['raw32'], 10: ['raw32'], 11: ['raw32'], 12: ['raw32'], 13: ['raw32']}"
+  },
+  {
+   "label": "p27 live anchor subjectArtifact == vector provenance.commitment",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 keccak256(JCS(subjectArtifact)) == live subjectDigest == vector commitment_digest",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 sha256(subjectDigest) == live anchoredDigest == vector anchored_digest",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 live bitcoinBlockHeight == 964428 (manifest/provenance)",
+   "pass": true,
+   "extra": "964428"
+  },
+  {
+   "label": "p27 live anchor status confirmed, prefixCommitting, coversSeqThrough 13",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "p27 merklePath replays anchoredDigest to batchRoot (sha256 nodes; keccak = negative control)",
+   "pass": true,
+   "extra": "{'sha256': '0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083', 'keccak256': '0x571e3136b42db10545609ead52bbb3b5a7d516630a77ca46a5e0901db9a26d0b', 'batchRoot': '0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083'}"
+  },
+  {
+   "label": "p27 anchor ledgerSignature recovers to ledgerSigner 0x9d38\u2026 (verifyHint encoding)",
+   "pass": true,
+   "extra": "0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6"
+  },
+  {
+   "label": "n1 == p1 with issuedAt + 1 only",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "n3 == p4 with prev_digest := artifact (self-referential) only",
+   "pass": true,
+   "extra": ""
+  },
+  {
+   "label": "block 958163: mempool.space and blockstream.info agree on id, merkle_root, timestamp",
+   "pass": true,
+   "extra": "merkle_root=d23b2da439b558a56915abbcbf62ccc6d3066795785fcfce59b3f60bf85df18c time=2026-07-15T14:38:07+00:00"
+  },
+  {
+   "label": "block 964428: mempool.space and blockstream.info agree on id, merkle_root, timestamp",
+   "pass": true,
+   "extra": "merkle_root=06cbc88761aeb0263b5ac3df3650165cb3fdbdec8cc3cbb166989d6be70dfc91 time=2026-08-28T11:40:11+00:00"
+  }
+ ],
+ "p1_recover": {
+  "raw32": "0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6",
+  "hex0x": "0xa57457bfc56f489491425d883700cc71b3acfe0c",
+  "hex": "0xc7183ff56ff5b6d4ee96b34f3a7df031adcee99d"
+ },
+ "p5_anchor_row": {
+  "schema": "tersign-anchor-v1",
+  "id": "ledger:0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9",
+  "scope": "ledger",
+  "subjectDigest": "0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9",
+  "anchoredDigest": "0xcf48bed1712f5b7df2a309fb52cb2b3d51ab1a04730e3b115cd3db79c96c9b1a",
+  "subjectSchema": "tersign-ledger-head-v1",
+  "prefixCommitting": false,
+  "coversSeqThrough": null,
+  "ledgerSignature": "0xf38e404edd5ce5733a44581ba5d02eafa5b5a79ecdf35c83a451dcbdcafdd7a14ffc01922fb315afc710689d59ff8278fc48320854da4dc07bf844c178047fd61c",
+  "batchRoot": null,
+  "venue": "bitcoin",
+  "method": "opentimestamps",
+  "status": "confirmed",
+  "bitcoinBlockHeight": 958163,
+  "anchoredAt": 1784122303,
+  "confirmedAt": 1784140987,
+  "proofUrl": "https://tersign.ai/v1/anchors/ledger:0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9/proof.ots",
+  "verifyHint": "ots info proof.ots (offline; prints the attested Bitcoin block \u2014 cross-check its merkle root in any explorer) or, with a local Bitcoin node, ots verify -d cf48bed1712f5b7df2a309fb52cb2b3d51ab1a04730e3b115cd3db79c96c9b1a proof.ots  # anchoredDigest = sha256(subjectDigest bytes); ledgerSignature = personal_sign(\"tersign-anchor-v1:\" + subjectDigest)"
+ },
+ "p5_anchor_meta": [
+  "tersign-ledger-head-v1",
+  false,
+  null,
+  "ledger:0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9",
+  "ledger"
+ ],
+ "p27_anchor": {
+  "schema": "tersign-anchor-v1",
+  "id": "seller:0xcbbef04598368ed02ae67fc0c8ffade6753628d0b8faf4e9211c9dd49a2dbe7b",
+  "scope": "seller",
+  "subjectDigest": "0xcbbef04598368ed02ae67fc0c8ffade6753628d0b8faf4e9211c9dd49a2dbe7b",
+  "anchoredDigest": "0x7c00ab806c6a9cc3fd654c0cbb107224ccff80642ea289f3c8f226b592647675",
+  "subjectSchema": "tersign-chain-commitment-v1",
+  "prefixCommitting": true,
+  "coversSeqThrough": 13,
+  "subjectArtifact": {
+   "acc": "0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5511",
+   "head": "0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961",
+   "schema": "tersign-chain-commitment-v1",
+   "seq": 13
+  },
+  "ledgerSignature": "0x6f9f414c13af9571a0f476c52e6d5bc9508dac357be85ebde2e9134d7eeedbf106766bb70a154b72a853638be4df7d6f43862513a5e2d18e74af29f8ecd8b3051c",
+  "batchRoot": "0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083",
+  "venue": "bitcoin",
+  "method": "opentimestamps",
+  "status": "confirmed",
+  "bitcoinBlockHeight": 964428,
+  "anchoredAt": 1787915834,
+  "confirmedAt": 1787921035,
+  "proofUrl": "https://tersign.ai/v1/anchors/seller:0xcbbef04598368ed02ae67fc0c8ffade6753628d0b8faf4e9211c9dd49a2dbe7b/proof.ots",
+  "verifyHint": "ots info proof.ots (offline; prints the attested Bitcoin block \u2014 cross-check its merkle root in any explorer) or, with a local Bitcoin node, ots verify -d 7c00ab806c6a9cc3fd654c0cbb107224ccff80642ea289f3c8f226b592647675 proof.ots  # anchoredDigest = sha256(subjectDigest bytes); ledgerSignature = personal_sign(\"tersign-anchor-v1:\" + batchRoot); the proof replays subjectDigest through its merkle path to batchRoot; subjectDigest = keccak256(utf8(JCS(subjectArtifact))); subjectArtifact.acc = fold keccak256(acc || link_k) for k = 1..seq from acc_0 = keccak256(\"tersign-chain-commitment-v1\"), link_k = keccak256(artifactDigest_k || prevDigest_k-or-32-zero-bytes || uint64be(k)) \u2014 every record with seq <= subjectArtifact.seq is committed under this subject (an O(seq) walk of /v1/receipts/{head}/verify backwards)",
+  "merklePath": [
+   {
+    "side": "L",
+    "hash": "0xf017852cb82b7e94a57065a75761bfec14017def8d39289fd02b984fd3f44896"
+   },
+   {
+    "side": "R",
+    "hash": "0x783b517e6c5b53212907d81bb970b8192ca92f9dea0e32778b78ab276b54df91"
+   },
+   {
+    "side": "R",
+    "hash": "0xf8803519c251ea6699275809d50d663e7cf9629bdd2e7a43527f3364fba2a527"
+   }
+  ]
+ },
+ "p27_merkle": {
+  "sha256": "0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083",
+  "keccak256": "0x571e3136b42db10545609ead52bbb3b5a7d516630a77ca46a5e0901db9a26d0b",
+  "batchRoot": "0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083"
+ },
+ "block_958163": {
+  "id": "000000000000000000000b448a230fbfe54a053e08048df6ec33116f0ef11632",
+  "height": 958163,
+  "version": 656302080,
+  "timestamp": 1784126287,
+  "tx_count": 3021,
+  "size": 1673294,
+  "weight": 3993917,
+  "merkle_root": "d23b2da439b558a56915abbcbf62ccc6d3066795785fcfce59b3f60bf85df18c",
+  "previousblockhash": "00000000000000000000a249ecf453b0c94d8e5e561410893d3e6bc40a643711",
+  "mediantime": 1784122498,
+  "nonce": 2404507967,
+  "bits": 386021021,
+  "difficulty": 127170500429035.19
+ },
+ "block_964428": {
+  "id": "00000000000000000000c59a40677dd1b45c2ba881a1bfc15ad6876158dff4d7",
+  "height": 964428,
+  "version": 1073676288,
+  "timestamp": 1787917211,
+  "tx_count": 5687,
+  "size": 1631451,
+  "weight": 3992754,
+  "merkle_root": "06cbc88761aeb0263b5ac3df3650165cb3fdbdec8cc3cbb166989d6be70dfc91",
+  "previousblockhash": "00000000000000000000a80da59d4c93fc677db2b53245a2d248d3b62006f9e1",
+  "mediantime": 1787915538,
+  "nonce": 1473779594,
+  "bits": 386022593,
+  "difficulty": 125807076547197.55
+ },
+ "all_pass": true
+}

@@ -1,0 +1,752 @@
+{
+  "suite": "evidence-record-conformance",
+  "version": "0.5.3",
+  "layer": "evidence-record",
+  "profile": "structural (stdlib): digests, canonical bytes, chain arithmetic, sequence closure, declared-claim evaluation. Counter-signature recovery over the links (secp256k1 personal_sign) is the crypto profile, outside the stdlib core \u2014 a structurally complete set recomputed wholesale by one forging party passes the structural predicate; the counter-signatures are what prevent that in production.",
+  "canonicalization": "RFC 8785 (JCS); vector domain is I-JSON with integer numerics (|n| <= 2^53-1); non-integer JSON number TOKENS rejected (number_domain_reject) \u2014 the boundary is the token class, so a fraction or exponent form rejects even when integer-valued (2.0, 1e2; p25/n35); duplicate object names rejected",
+  "content_address": "keccak256(utf8(canonical(payload)))",
+  "chain_link": "keccak256(artifact_digest || prev_digest || seq_uint64_be) \u2014 wire form of a genesis predecessor is null; 32 zero bytes is the hashing-time substitution for null",
+  "chain_set": "records chain raw artifact digests via prev pointers (genesis prev = null); head.digest equals the final record's artifact digest; completeness = every seq 1..head.seq present exactly once (a second record at an occupied seq rejects: n39); where a record presents a link, it must recompute as keccak256(artifact || prev || seq_be8)",
+  "chain_commitment": "acc_0 = keccak256(utf8('tersign-chain-commitment-v1')); acc_n = keccak256(acc_{n-1} || link_n) over the recomputed links of a chain_set-valid set; head.acc must equal acc_{head.seq}. Production stamps keccak256(utf8(canonical({acc, head, schema:'tersign-chain-commitment-v1', seq}))); a prefix that passes the structural chain_set predicate but was not the one the commitment was built over rejects here",
+  "anchor_relation": "anchored_digest = sha256(subject_digest_bytes)",
+  "offer_binding": "receipt.offerDigest = keccak256(utf8(canonical(offer))); a receipt that commits to no offer digest cannot bind terms and fails closed",
+  "decision_evidence_binding": "within this suite, record.decisionEvidenceDigest = keccak256(utf8(canonical(decision_evidence))); a record presented as authority-decision evidence must bind the exact object. This instantiates the general match/missing/mismatch binding property and does not prescribe a digest, canonicalization, or field location for AUEC, MCP, or another protocol; producer truth and decision semantics remain out of scope",
+  "identifier_normalization": "two identity syntaxes, both evaluated by every criterion that compares identity (pinned by one accepting vector each under the per-kind two-sided gate): 0x-addresses compare after strip + lowercase; scheme-qualified identifiers (lowercase alnum scheme, one colon, printable non-space ASCII path) compare after strip, case-significant; digests compare after strip + lowercase; identifiers that do not parse after normalization fail closed",
+  "witnessed_inclusion": "witness material (a cosigned checkpoint, inclusion proofs) presented beside a chain set is permitted and NOT load-bearing for completeness: it evidences existence and the log's consistency, never no-omission; a set with a gap rejects on the gap regardless of how many parties cosigned the log (p24/n34). Completeness requires a non-party attestation over the sequence itself, made at issuance",
+  "duplicate_sequence": "a sequence attested only by its issuer evidences ordering, not that no other record carries the same `seq` and `correctionSeq`. Two records at one seq in a presented set reject on the duplicate, whatever the issuer attests (p28/n39; the issuer's `attestations` are permitted and not read). A record the issuer did not present is not in the bytes: the other record presented alone passes the structural chain_set predicate under the same head, and only a commitment over every link rejects it (p29/n40)",
+  "commitment_derivation": "an independence claim reaches exactly as far as the record's DERIVED commitments, never a declared list (n22-n24): `settlement` when settlement_result.success is true and transaction is a non-empty string; `network` when settlement_result.network is a non-empty string; `delivery` when keccak256(utf8(deliverable_bytes)) == deliverable_digest. A record presenting none of these fields has no evaluable commitments (a scoped claim rejects as unevaluable); a record presenting them and committing to none has an EMPTY commitment set (a scoped claim rejects as overreach). Who delivered is not read by the derivation \u2014 position is the independence axis, decided before scope is",
+  "field_naming": "harness-level input keys are snake_case (settlement_result, deliverable_bytes, decision_evidence, boundary_event); a key that quotes a protocol's own field keeps that protocol's wire spelling wherever it sits (payTo, resourceUrl, offerDigest, decisionEvidenceDigest). Contributed vectors follow the same two rules; the suite does not rename a protocol's fields to match its own, and does not camelCase its own",
+  "vector_provenance": "every entry names `author`, the GitHub account that authored the commit adding the vector (git log --diff-filter=A -- vectors/<file>), and `origin` = {class, source}. origin.class is closed: synthetic (inputs constructed in tools/gen_vectors.py); live-ledger (a record from the live ledger, unaltered, with a provenance block in the vector); live-ledger-derived (a live-ledger value reused or altered); contributed (an outside contributor's PR, commit, fixture or published reproduction, named in origin.source, including vectors written here on such material). Generation fails if a vector has no entry, if its live-ledger class (or its lack of one) disagrees with the live-ledger values and provenance block in its own bytes, or if it carries a contributed fixture without crediting the contributor; authorship is not decided at generation: it is checkable against git history with the command above. Credit for reporting a failure class is recorded in CONTRIBUTORS.md. Metadata only: neither engine reads it",
+  "vectors": [
+    {
+      "file": "p1-live-genesis-receipt.json",
+      "kind": "digest_recompute",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger",
+        "source": "the ledger's genesis receipt and its counter-signature, unaltered; the vector's provenance block names the public endpoints"
+      }
+    },
+    {
+      "file": "p2-canonical-key-order.json",
+      "kind": "canonical_bytes",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p3-integer-key-utf16-order.json",
+      "kind": "digest_recompute",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p4-chain-link-genesis.json",
+      "kind": "chain_link",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger-derived",
+        "source": "the genesis receipt digest (p1) as a genesis link's artifact; the link is computed here"
+      }
+    },
+    {
+      "file": "p5-live-bitcoin-anchor.json",
+      "kind": "anchor_relation",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger",
+        "source": "a counter-signed chain head and its Bitcoin anchor (block 958163), unaltered; the vector's provenance block names the public endpoints"
+      }
+    },
+    {
+      "file": "p6-chain-set-complete.json",
+      "kind": "chain_set",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p7-phase-consistent.json",
+      "kind": "phase_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p8-non-party-attestation.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p9-no-independence-claim.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n1-value-drift.json",
+      "kind": "digest_recompute",
+      "expect": "reject",
+      "reason": "recompute_mismatch",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger-derived",
+        "source": "p1's genesis receipt with one field altered (issuedAt + 1)"
+      }
+    },
+    {
+      "file": "n2-hoisted-integer-keys.json",
+      "kind": "canonical_bytes",
+      "expect": "reject",
+      "reason": "canonicalization_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n3-chain-link-wrong-prev.json",
+      "kind": "chain_link",
+      "expect": "reject",
+      "reason": "continuity_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger-derived",
+        "source": "the genesis receipt digest (p1) as both the artifact and the claimed predecessor of a link"
+      }
+    },
+    {
+      "file": "n4-omitted-record.json",
+      "kind": "chain_set",
+      "expect": "reject",
+      "reason": "completeness_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n5-truncated-anchor.json",
+      "kind": "anchor_relation",
+      "expect": "reject",
+      "reason": "existence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger-derived",
+        "source": "p5's anchored digest paired with a synthetic subject it does not bind"
+      }
+    },
+    {
+      "file": "n6-phase-confusion.json",
+      "kind": "phase_claim",
+      "expect": "reject",
+      "reason": "phase_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n7-issuer-only-independence.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p10-claim-set-independent.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p11-claim-set-silence-only.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "@Rul1an",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #2, commit d672d5c (cherry-picked from 0dee263)"
+      }
+    },
+    {
+      "file": "n8-unrecognized-independence-claim.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p12-ijson-integer-boundary.json",
+      "kind": "digest_recompute",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p13-decimal-string-beside-integer.json",
+      "kind": "digest_recompute",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n10-float-in-digest-domain.json",
+      "kind": "canonical_bytes",
+      "expect": "reject",
+      "reason": "number_domain_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n11-integer-beyond-ijson-range.json",
+      "kind": "digest_recompute",
+      "expect": "reject",
+      "reason": "number_domain_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p14-supplementary-plane-key-order.json",
+      "kind": "digest_recompute",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n12-codepoint-key-order.json",
+      "kind": "canonical_bytes",
+      "expect": "reject",
+      "reason": "canonicalization_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n13-party-alias-whitespace.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n14-unparseable-attestor.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n15-claim-without-attestations.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n16-attestation-not-an-object.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n17-renumbered-omission.json",
+      "kind": "chain_set",
+      "expect": "reject",
+      "reason": "continuity_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n18-unrecognized-phase.json",
+      "kind": "phase_claim",
+      "expect": "reject",
+      "reason": "phase_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p16-independence-scope-committed.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n20-independence-scope-uncommitted.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p17-independence-scope-derived-settlement.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n21-independence-scope-empty-settlement.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n22-independence-scope-declared-override.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "contributed",
+        "source": "@Rul1an's reproduction in issue #4 (2026-08-08), written here: n21's input plus a declared record_commits, issuecomment-5225737040; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n23-independence-scope-null-declared.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "contributed",
+        "source": "@Rul1an's reproduction in issue #4 (2026-08-08), written here: his z1-null-commits input, issuecomment-5225737040; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n24-independence-scope-declared-no-scope.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "contributed",
+        "source": "@Rul1an's reproduction in issue #4 (2026-08-08), written here: n22's input with covers removed (settlement_result also dropped here), issuecomment-5228448679; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p22-delivery-commitment-recomputed.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "@0rkz",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #7, commit adb6bab (issue #3): PayPerByte fixture, values from a live receipt in 0rkz/foreseal-x402-conformance (Apache-2.0)"
+      }
+    },
+    {
+      "file": "n32-delivery-self-attested.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "@0rkz",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #7, commit adb6bab (issue #3): PayPerByte fixture, values from a live receipt in 0rkz/foreseal-x402-conformance (Apache-2.0); description later edited here, commit a2b906d"
+      }
+    },
+    {
+      "file": "p23-delivery-independence-within-commitment.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "contributed",
+        "source": "built on @0rkz's PayPerByte fixture (PR #7, issue #3); written here, commit a2b906d; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "n33-delivery-substitution-scope-overreach.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "contributed",
+        "source": "p23 with the fixture's delivered verdict substituted (ALLOW to DENY); built on @0rkz's PayPerByte fixture (PR #7, issue #3); written here, commit a2b906d; the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p24-witnessed-complete-set.json",
+      "kind": "chain_set",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n34-witnessed-inclusion-not-completeness.json",
+      "kind": "chain_set",
+      "expect": "reject",
+      "reason": "completeness_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p18-boundary-binds-prefix-and-position.json",
+      "kind": "boundary_binding",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n25-boundary-prefix-only-no-position.json",
+      "kind": "boundary_binding",
+      "expect": "reject",
+      "reason": "boundary_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n26-coverage-claimed-over-empty-attestation.json",
+      "kind": "boundary_binding",
+      "expect": "reject",
+      "reason": "boundary_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p19-authority-reduction-bound.json",
+      "kind": "decision_evidence_binding",
+      "expect": "valid",
+      "author": "@mohammedmessaoudene-cmd",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #5, commit c23a985"
+      }
+    },
+    {
+      "file": "n27-authority-reduction-unbound.json",
+      "kind": "decision_evidence_binding",
+      "expect": "reject",
+      "reason": "binding_reject",
+      "author": "@mohammedmessaoudene-cmd",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #5, commits c23a985 and 2f6bef0"
+      }
+    },
+    {
+      "file": "n28-authority-reduction-substitution.json",
+      "kind": "decision_evidence_binding",
+      "expect": "reject",
+      "reason": "binding_reject",
+      "author": "@mohammedmessaoudene-cmd",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #5, commit c23a985"
+      }
+    },
+    {
+      "file": "p20-suite-transition-preserves-prefix.json",
+      "kind": "boundary_binding",
+      "expect": "valid",
+      "author": "@navigatorbuilds",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #6, commit 2f4e967; first delivered inline on the IETF web-bot-auth list, 2026-08-09"
+      }
+    },
+    {
+      "file": "n29-suite-transition-redigests-prefix.json",
+      "kind": "boundary_binding",
+      "expect": "reject",
+      "reason": "boundary_reject",
+      "author": "@navigatorbuilds",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #6, commit 2f4e967; first delivered inline on the IETF web-bot-auth list, 2026-08-09"
+      }
+    },
+    {
+      "file": "p21-independence-urn-identities.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n30-independence-urn-self-attested.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n31-independence-urn-alias-trailing-slash.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p15-offer-binding.json",
+      "kind": "offer_binding",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n19-offer-substitution.json",
+      "kind": "offer_binding",
+      "expect": "reject",
+      "reason": "binding_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n9-unrecognized-member-in-claim-set.json",
+      "kind": "independence_claim",
+      "expect": "reject",
+      "reason": "independence_reject",
+      "author": "@Rul1an",
+      "origin": {
+        "class": "contributed",
+        "source": "PR #2, commit d672d5c (cherry-picked from 0dee263); the live ledger's signer address appears as sample data"
+      }
+    },
+    {
+      "file": "p25-integer-token-in-text.json",
+      "kind": "canonical_bytes",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n35-integer-valued-float-token.json",
+      "kind": "canonical_bytes",
+      "expect": "reject",
+      "reason": "number_domain_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p26-chain-commitment-complete.json",
+      "kind": "chain_commitment",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p27-live-chain-commitment-genesis-chain.json",
+      "kind": "chain_commitment",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "live-ledger",
+        "source": "the ledger's genesis chain (13 counter-signed records) and its commitment anchored in Bitcoin block 964428, unaltered; the vector's provenance block names the public endpoints"
+      }
+    },
+    {
+      "file": "n36-chain-commitment-prefix-substituted.json",
+      "kind": "chain_commitment",
+      "expect": "reject",
+      "reason": "continuity_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n37-chain-commitment-last-link-only.json",
+      "kind": "chain_commitment",
+      "expect": "reject",
+      "reason": "continuity_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n38-chain-set-float-seq-token.json",
+      "kind": "chain_set",
+      "expect": "reject",
+      "reason": "completeness_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p28-issuer-sequence-distinct-seq.json",
+      "kind": "chain_set",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n39-issuer-sequence-duplicate-seq.json",
+      "kind": "chain_set",
+      "expect": "reject",
+      "reason": "completeness_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "p29-committed-prefix-one-record-per-position.json",
+      "kind": "chain_commitment",
+      "expect": "valid",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    },
+    {
+      "file": "n40-equivocating-record-at-committed-position.json",
+      "kind": "chain_commitment",
+      "expect": "reject",
+      "reason": "continuity_reject",
+      "author": "Tersign (@wowlegend)",
+      "origin": {
+        "class": "synthetic",
+        "source": "inputs constructed in tools/gen_vectors.py"
+      }
+    }
+  ]
+}

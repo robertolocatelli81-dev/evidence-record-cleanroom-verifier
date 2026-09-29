@@ -1,0 +1,10 @@
+=== run_logged header ===
+cmd      : python3 verify_tersign.py spec --mutate --quiet --json results/mutations_py311.json
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:34:13+02:00
+ended    : 2026-09-29T06:34:13+02:00
+exit     : 0
+=== stdout ===
+mutations flipped valid->reject: 66/66
+=== stderr ===

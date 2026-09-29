@@ -1,0 +1,85 @@
+{
+ "suite": "evidence-record-conformance-heldout-cleanroom",
+ "version": "0.1.0",
+ "verifier": "0.1.0",
+ "python": "3.11.2",
+ "sys_version": "3.11.2 (main, Apr  8 2026, 01:58:00) [GCC 12.2.0]",
+ "cwd": ".",
+ "argv": [
+  "verify_tersign.py",
+  "heldout",
+  "--json",
+  "results/heldout_py311.json"
+ ],
+ "run_at": "2026-09-29T06:34:08+02:00",
+ "spec_dir": "heldout",
+ "ablations": [],
+ "flip_expect": false,
+ "n": 5,
+ "verdict_concordant": 5,
+ "reason_named": 2,
+ "reason_concordant": 2,
+ "concordant": 5,
+ "rows": [
+  {
+   "file": "h1-claimed-absent-is-silence.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "verdict": "valid",
+   "reason": null,
+   "detail": "no `claimed` field: nothing is claimed about independence (silence, p9)",
+   "verdict_ok": true,
+   "reason_ok": null,
+   "concordant": true
+  },
+  {
+   "file": "h2-claimed-absent-covers-present.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "verdict": "valid",
+   "reason": null,
+   "detail": "no `claimed` field: nothing is claimed about independence (silence, p9)",
+   "verdict_ok": true,
+   "reason_ok": null,
+   "concordant": true
+  },
+  {
+   "file": "h3-float-payload-without-claimed-canonical.json",
+   "kind": "canonical_bytes",
+   "expect": "reject",
+   "expect_reason": "number_domain_reject",
+   "verdict": "reject",
+   "reason": "number_domain_reject",
+   "detail": "non-integer number token '1.1' in the digest domain",
+   "verdict_ok": true,
+   "reason_ok": true,
+   "concordant": true
+  },
+  {
+   "file": "h4-boundary-no-coverage-claimed-full-attestation.json",
+   "kind": "boundary_binding",
+   "expect": "valid",
+   "expect_reason": null,
+   "verdict": "valid",
+   "reason": null,
+   "detail": "prefixDigest binds 3 events under keccak256-jcs; position 3; no coverage claimed; attested 3",
+   "verdict_ok": true,
+   "reason_ok": null,
+   "concordant": true
+  },
+  {
+   "file": "h5-boundary-empty-attestation-no-coverage.json",
+   "kind": "boundary_binding",
+   "expect": "reject",
+   "expect_reason": "boundary_reject",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "detail": "unattested prefix (attestedPrefixLength = 0) is its own outcome, not a pass (n26)",
+   "verdict_ok": true,
+   "reason_ok": true,
+   "concordant": true
+  }
+ ]
+}

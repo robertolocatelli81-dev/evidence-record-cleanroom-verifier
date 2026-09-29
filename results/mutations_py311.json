@@ -1,0 +1,600 @@
+{
+ "n": 66,
+ "flipped": 66,
+ "rows": [
+  {
+   "file": "p1-live-genesis-receipt.json",
+   "mutation": "flip:expected_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4 != expected 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc0"
+  },
+  {
+   "file": "p1-live-genesis-receipt.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x998f411be32efc034f8f133bf2c51a5044fdb0cb656bd716c1bb5b2de0e89cc7 != expected 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4"
+  },
+  {
+   "file": "p2-canonical-key-order.json",
+   "mutation": "flip:claimed_canonical",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "canonicalization_reject",
+   "flipped": true,
+   "detail": "canonical bytes '{\"a\":1,\"b\":\"x\"}' != claimed '{\"a\":1,\"b\":\"x\"0'"
+  },
+  {
+   "file": "p2-canonical-key-order.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "canonicalization_reject",
+   "flipped": true,
+   "detail": "canonical bytes '{\"a\":1,\"b\":\"x\",\"zz_mutant\":1}' != claimed '{\"a\":1,\"b\":\"x\"}'"
+  },
+  {
+   "file": "p3-integer-key-utf16-order.json",
+   "mutation": "flip:expected_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x426b770f81b8ad5e307bcfb767deb02f8d32cd340d81a946be88bb184857e81b != expected 0x426b770f81b8ad5e307bcfb767deb02f8d32cd340d81a946be88bb184857e810"
+  },
+  {
+   "file": "p3-integer-key-utf16-order.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0xcaced81ec1b0e05a378423e9c3f9afcac3641222205debfedea7b70dd0070042 != expected 0x426b770f81b8ad5e307bcfb767deb02f8d32cd340d81a946be88bb184857e81b"
+  },
+  {
+   "file": "p4-chain-link-genesis.json",
+   "mutation": "flip:expected_link",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "link recomputes to 0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5, claimed 0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a0 (prev/seq do not bind)"
+  },
+  {
+   "file": "p5-live-bitcoin-anchor.json",
+   "mutation": "flip:anchored_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "existence_reject",
+   "flipped": true,
+   "detail": "sha256(subject) = 0xcf48bed1712f5b7df2a309fb52cb2b3d51ab1a04730e3b115cd3db79c96c9b1a does not equal the anchored digest"
+  },
+  {
+   "file": "p5-live-bitcoin-anchor.json",
+   "mutation": "flip:subject_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "existence_reject",
+   "flipped": true,
+   "detail": "sha256(subject) = 0xdcdbecab609a4aacca3e6e7c77fd9ca86eb8e34fe229613b56db8fd61f8e8bf5 does not equal the anchored digest"
+  },
+  {
+   "file": "p6-chain-set-complete.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p6-chain-set-complete.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p6-chain-set-complete.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p6-chain-set-complete.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 3 is not the previous record's artifact digest"
+  },
+  {
+   "file": "p7-phase-consistent.json",
+   "mutation": "phase:record-funding",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "phase_reject",
+   "flipped": true,
+   "detail": "a funding-phase record presented as delivery evidence"
+  },
+  {
+   "file": "p8-non-party-attestation.json",
+   "mutation": "independence:attestors-become-parties",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "attested only by parties to the transaction: structure, not independence"
+  },
+  {
+   "file": "p8-non-party-attestation.json",
+   "mutation": "independence:declare-record_commits",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope"
+  },
+  {
+   "file": "p12-ijson-integer-boundary.json",
+   "mutation": "flip:expected_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x1bbcd0a5a14e5f06f15a65af355156e744a40fdf8897bcb1081812ab1470a0e7 != expected 0x1bbcd0a5a14e5f06f15a65af355156e744a40fdf8897bcb1081812ab1470a0e0"
+  },
+  {
+   "file": "p12-ijson-integer-boundary.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0xf27d208b70db03ab616250b8780e87b526dc8589b06096c9530321df862aee81 != expected 0x1bbcd0a5a14e5f06f15a65af355156e744a40fdf8897bcb1081812ab1470a0e7"
+  },
+  {
+   "file": "p13-decimal-string-beside-integer.json",
+   "mutation": "flip:expected_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x81086b5801b1bfd992e4d1e929f54907e0d3be0e8ede94f1da1a954b4e78b250 != expected 0x81086b5801b1bfd992e4d1e929f54907e0d3be0e8ede94f1da1a954b4e78b251"
+  },
+  {
+   "file": "p13-decimal-string-beside-integer.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x12063da456f66c458b7bbef1d348b77dd6615567461b6efee30361833028d94d != expected 0x81086b5801b1bfd992e4d1e929f54907e0d3be0e8ede94f1da1a954b4e78b250"
+  },
+  {
+   "file": "p14-supplementary-plane-key-order.json",
+   "mutation": "flip:expected_digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0xecb8402c2b3a26aebd5f69e0a91c8f6c16d0a2cc679bc689b51f0d5bc4b36929 != expected 0xecb8402c2b3a26aebd5f69e0a91c8f6c16d0a2cc679bc689b51f0d5bc4b36920"
+  },
+  {
+   "file": "p14-supplementary-plane-key-order.json",
+   "mutation": "payload:add-key",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "recompute_mismatch",
+   "flipped": true,
+   "detail": "recomputed 0x7609b29354ec4e3f44aaf05bcdc1563153c170fde80b114beaeafbd2d3f676d5 != expected 0xecb8402c2b3a26aebd5f69e0a91c8f6c16d0a2cc679bc689b51f0d5bc4b36929"
+  },
+  {
+   "file": "p16-independence-scope-committed.json",
+   "mutation": "independence:attestors-become-parties",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "attested only by parties to the transaction: structure, not independence"
+  },
+  {
+   "file": "p16-independence-scope-committed.json",
+   "mutation": "independence:declare-record_commits",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope"
+  },
+  {
+   "file": "p16-independence-scope-committed.json",
+   "mutation": "independence:cover-uncommitted-fact",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "claim covers ['refund'] — fact(s) the record does not commit to (derived commitments: ['network', 'settlement'])"
+  },
+  {
+   "file": "p17-independence-scope-derived-settlement.json",
+   "mutation": "independence:attestors-become-parties",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "attested only by parties to the transaction: structure, not independence"
+  },
+  {
+   "file": "p17-independence-scope-derived-settlement.json",
+   "mutation": "independence:declare-record_commits",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope"
+  },
+  {
+   "file": "p17-independence-scope-derived-settlement.json",
+   "mutation": "independence:cover-uncommitted-fact",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "claim covers ['refund'] — fact(s) the record does not commit to (derived commitments: ['network', 'settlement'])"
+  },
+  {
+   "file": "p23-delivery-independence-within-commitment.json",
+   "mutation": "independence:attestors-become-parties",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "attested only by parties to the transaction: structure, not independence"
+  },
+  {
+   "file": "p23-delivery-independence-within-commitment.json",
+   "mutation": "independence:declare-record_commits",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope"
+  },
+  {
+   "file": "p23-delivery-independence-within-commitment.json",
+   "mutation": "independence:cover-uncommitted-fact",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "claim covers ['refund'] — fact(s) the record does not commit to (derived commitments: ['delivery'])"
+  },
+  {
+   "file": "p23-delivery-independence-within-commitment.json",
+   "mutation": "independence:tamper-deliverable",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "claim covers ['delivery'] — fact(s) the record does not commit to (derived commitments: [])"
+  },
+  {
+   "file": "p24-witnessed-complete-set.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p24-witnessed-complete-set.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p24-witnessed-complete-set.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p24-witnessed-complete-set.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 3 is not the previous record's artifact digest"
+  },
+  {
+   "file": "p18-boundary-binds-prefix-and-position.json",
+   "mutation": "boundary:flip-prefixDigest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "prefixDigest does not bind the prefix under keccak256-jcs (recomputed 0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086) — re-digested or forged history"
+  },
+  {
+   "file": "p18-boundary-binds-prefix-and-position.json",
+   "mutation": "boundary:drop-position",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "boundary event binds no position in the prefix's continuation (n25)"
+  },
+  {
+   "file": "p18-boundary-binds-prefix-and-position.json",
+   "mutation": "boundary:coverage-beyond-attested",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "coverage claimed through 4 while the attestation reaches only 3 (downgrade)"
+  },
+  {
+   "file": "p19-authority-reduction-bound.json",
+   "mutation": "evidence:change-policy",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "binding_reject",
+   "flipped": true,
+   "detail": "keccak256(canonical(decision_evidence)) = 0x353c533dc373f51b768f8a2efba6426cdd83d5eb4b876d43235a9ddde40938b1 != committed digest (substitution)"
+  },
+  {
+   "file": "p20-suite-transition-preserves-prefix.json",
+   "mutation": "boundary:flip-prefixDigest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "prefixDigest does not bind the prefix under keccak256-jcs (recomputed 0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086) — re-digested or forged history"
+  },
+  {
+   "file": "p20-suite-transition-preserves-prefix.json",
+   "mutation": "boundary:drop-position",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "boundary event binds no position in the prefix's continuation (n25)"
+  },
+  {
+   "file": "p20-suite-transition-preserves-prefix.json",
+   "mutation": "boundary:coverage-beyond-attested",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "boundary_reject",
+   "flipped": true,
+   "detail": "coverage claimed through 4 while the attestation reaches only 3 (downgrade)"
+  },
+  {
+   "file": "p21-independence-urn-identities.json",
+   "mutation": "independence:attestors-become-parties",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "attested only by parties to the transaction: structure, not independence"
+  },
+  {
+   "file": "p21-independence-urn-identities.json",
+   "mutation": "independence:declare-record_commits",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "independence_reject",
+   "flipped": true,
+   "detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope"
+  },
+  {
+   "file": "p15-offer-binding.json",
+   "mutation": "offer:change-amount",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "binding_reject",
+   "flipped": true,
+   "detail": "keccak256(canonical(offer)) = 0x4814ac59eb21e35d7bd6114d007e4d2a76e8c2c78e517eb7db1c98a01447d11d != receipt.offerDigest (terms substituted)"
+  },
+  {
+   "file": "p25-integer-token-in-text.json",
+   "mutation": "flip:claimed_canonical",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "canonicalization_reject",
+   "flipped": true,
+   "detail": "canonical bytes '{\"amount\":2}' != claimed '{\"amount\":20'"
+  },
+  {
+   "file": "p26-chain-commitment-complete.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p26-chain-commitment-complete.json",
+   "mutation": "head:flip-acc",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "accumulator mismatch: fold over 3 links = 0xae28e0e8b22b15cd27de2390efbe4e3c206decbfe5cede4751b85410f6648f4f, head.acc = 0xae28e0e8b22b15cd27de2390efbe4e3c206decbfe5cede4751b85410f6648f40"
+  },
+  {
+   "file": "p26-chain-commitment-complete.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p26-chain-commitment-complete.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p26-chain-commitment-complete.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 3 is not the previous record's artifact digest"
+  },
+  {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "mutation": "head:flip-acc",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "accumulator mismatch: fold over 13 links = 0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5511, head.acc = 0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5510"
+  },
+  {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 13 is not the previous record's artifact digest"
+  },
+  {
+   "file": "p28-issuer-sequence-distinct-seq.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p28-issuer-sequence-distinct-seq.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p28-issuer-sequence-distinct-seq.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p28-issuer-sequence-distinct-seq.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 4 is not the previous record's artifact digest"
+  },
+  {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "mutation": "head:flip-digest",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "head.digest does not equal the final record's artifact digest"
+  },
+  {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "mutation": "head:flip-acc",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "accumulator mismatch: fold over 3 links = 0x2a1fe13ab3b6da8e6cc2486e58c4303aa7ecac2ae568bc3fdc21eb42a8a47cd8, head.acc = 0x2a1fe13ab3b6da8e6cc2486e58c4303aa7ecac2ae568bc3fdc21eb42a8a47cd0"
+  },
+  {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "mutation": "records:omit-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "missing seq [2] under committed head"
+  },
+  {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "mutation": "records:dup-seq2",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "completeness_reject",
+   "flipped": true,
+   "detail": "duplicate seq [2] under committed head"
+  },
+  {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "mutation": "records:flip-prev-last",
+   "base": "valid",
+   "verdict": "reject",
+   "reason": "continuity_reject",
+   "flipped": true,
+   "detail": "prev_digest at seq 3 is not the previous record's artifact digest"
+  }
+ ]
+}

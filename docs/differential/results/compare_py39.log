@@ -1,0 +1,31 @@
+=== run_logged header ===
+cmd      : python3.9 docs/differential/compare_recorded.py differential/gen spec docs/differential/results/compare_py39.json
+cwd      : . (repository root)
+interp   : Python 3.9.25  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:33:56+02:00
+ended    : 2026-09-29T06:33:56+02:00
+exit     : 0
+=== stdout ===
+run_at 2026-09-29T06:33:56+02:00  python 3.9.25
+  sha256 variants_MANIFEST.json: b738f040a7ecf3dd199011c33611c7b81aa2c56c96054e39f552e0681dff51ea
+  sha256 recorded_output: {'file': 'upstream_stdout_0eda3038.txt', 'sha256': '323713bbfacd8682254f5f914b402ed1f6d2d0a71cec46645b35ee43de31656b'}
+  sha256 verify_tersign.py: 7f56bd043f008ff4b070ef707a583d1615a04d3e6adb5f42eaa9366aaa7157db
+  sha256 spec_MANIFEST.json: b7a1c699b34ed0bb1e8979dbcfd981577d4cf6838d65482d1e66690a42477560
+recorded lines parsed 524 (unparsed 1: ["NON-CONFORMANT: 411 vector(s) produced the wrong verdict: ['"])
+[all] n=524  accept/non-accept agree 512/524  verdict+reason agree 488/492 (non-malformed)  classes {'agree': 488, 'agree_nonaccept_upstream_malformed': 22, 'B_upstream_malformed_ours_valid': 10, 'agree_verdict_reason_differs': 2, 'A_upstream_valid_ours_reject': 2}  upstream {'valid': 113, 'reject': 379, 'malformed': 32}  ours {'valid': 121, 'reject': 403}
+[touching_input] n=430  accept/non-accept agree 428/430  verdict+reason agree 416/420 (non-malformed)  classes {'agree': 416, 'agree_nonaccept_upstream_malformed': 10, 'agree_verdict_reason_differs': 2, 'A_upstream_valid_ours_reject': 2}  upstream {'valid': 82, 'reject': 338, 'malformed': 10}  ours {'valid': 80, 'reject': 350}
+[not_touching_input] n=94  accept/non-accept agree 84/94  verdict+reason agree 72/72 (non-malformed)  classes {'agree': 72, 'B_upstream_malformed_ours_valid': 10, 'agree_nonaccept_upstream_malformed': 12}  upstream {'valid': 31, 'reject': 41, 'malformed': 22}  ours {'valid': 41, 'reject': 53}
+disagreements (12):
+  B_upstream_malformed_ours_valid    mut0029-p5-live-bitcoin-anchor.json                  touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says anchor_relation, ve)  ours=valid/None (anchored digest binds the subject (existence of the anchor i)
+  B_upstream_malformed_ours_valid    mut0058-p9-no-independence-claim.json                touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says independence_claim,)  ours=valid/None (no independence claimed (silence): nothing to disqualify)
+  B_upstream_malformed_ours_valid    mut0116-p10-claim-set-independent.json               touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says independence_claim,)  ours=valid/None (1 non-party attestor(s); no scope asserted)
+  B_upstream_malformed_ours_valid    mut0286-p22-delivery-commitment-recomputed.json      touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says independence_claim,)  ours=valid/None (no independence claimed (silence): nothing to disqualify)
+  B_upstream_malformed_ours_valid    mut0322-p24-witnessed-complete-set.json              touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says chain_set, vector s)  ours=valid/None (seq 1..3 present exactly once, prevs continuous, 3 links rec)
+  A_upstream_valid_ours_reject       mut0359-n26-coverage-claimed-over-empty-attestation.json touches_input=True  upstream=valid/None (boundary event binds prefix 0x359d141c2c… at position 3)  ours=reject/boundary_reject (unattested prefix (attestedPrefixLength = 0) is its own outc)
+  A_upstream_valid_ours_reject       mut0375-p20-suite-transition-preserves-prefix.json   touches_input=True  upstream=valid/None (boundary event binds prefix 0x359d141c2c… at position 3)  ours=reject/boundary_reject (attestedPrefixLength 4 absent or outside 0..3)
+  B_upstream_malformed_ours_valid    mut0378-p20-suite-transition-preserves-prefix.json   touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says boundary_binding, v)  ours=valid/None (prefixDigest binds 3 events under keccak256-jcs; position 3;)
+  B_upstream_malformed_ours_valid    mut0440-p26-chain-commitment-complete.json           touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says chain_commitment, v)  ours=valid/None (head.acc equals the fold over all 3 recomputed links)
+  B_upstream_malformed_ours_valid    mut0449-p27-live-chain-commitment-genesis-chain.json touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says chain_commitment, v)  ours=valid/None (head.acc equals the fold over all 13 recomputed links)
+  B_upstream_malformed_ours_valid    mut0490-p28-issuer-sequence-distinct-seq.json        touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says chain_set, vector s)  ours=valid/None (seq 1..4 present exactly once, prevs continuous, 4 links rec)
+  B_upstream_malformed_ours_valid    mut0510-p29-committed-prefix-one-record-per-position.json touches_input=False  upstream=malformed/None (ValueError: kind mismatch: manifest says chain_commitment, v)  ours=valid/None (head.acc equals the fold over all 3 recomputed links)
+=== stderr ===

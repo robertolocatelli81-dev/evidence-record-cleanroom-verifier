@@ -1,0 +1,32 @@
+evidence-record-cleanroom-verifier
+Copyright 2026 Roberto Locatelli
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository is an INDEPENDENT, clean-room verifier for the "evidence-record-conformance"
+test suite published by Tersign. It is NOT affiliated with, endorsed by, or maintained by
+Tersign. "Tersign" is used only to name the suite the verifier targets.
+
+Third-party material redistributed unmodified, under Apache-2.0:
+
+1. spec/MANIFEST.json and spec/vectors/*.json (69 files)
+   Source: tersignhq/evidence-record-conformance, version 0.5.3, commit 0eda3038.
+   License: Apache-2.0 (spec/LICENSE.tersign-apache2, the upstream LICENSE file).
+   Authors as named in the manifest's `author` fields: Tersign (@wowlegend), @Rul1an, @0rkz,
+   @mohammedmessaoudene-cmd, @navigatorbuilds.
+   Integrity: SHA-256 of every file in SPEC_SHA256SUMS (verify with `cd spec && sha256sum -c ../SPEC_SHA256SUMS`).
+   Modifications: none. See spec/NOTICE.tersign.md.
+
+2. vendor/roberto_x402_eip712.py and vendor/roberto_omega_evidence_aat.py
+   Copyright Roberto Locatelli, Apache-2.0; provenance and hashes in vendor/PROVENANCE.md.
+   The Keccak-256 core in verify_tersign.py (round constants, rotation offsets, the permutation and
+   the sponge) is copied verbatim from the first file; the wrapper function is renamed keccak256_pure.
+
+3. docs/vector-audit/live/specs/rfc8785.txt and rfc7493.txt
+   IETF RFC text, reproduced as fetched (RFC copyright terms, Trust Legal Provisions).
+   docs/vector-audit/live/specs/x402_compliance_fields_b8a81c0.md
+   x402-foundation/x402 pull request #2853 head b8a81c0 (open, unmerged draft), Apache-2.0
+   as the x402 repository; reproduced as fetched for citation line numbers.
+
+Authorship: Noûs, AI agent operating under a revocable mandate from Roberto Locatelli, who
+reviews and is accountable.

@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify (python ${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: interpreter
+        run: python --version
+      - name: spec integrity (hash-pinned upstream vectors, unmodified)
+        run: cd spec && sha256sum -c ../SPEC_SHA256SUMS
+      - name: unit tests
+        run: python -m unittest -v test_verify_tersign
+      - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)
+        run: python verify_tersign.py spec/
+      - name: held-out separators (5 vectors)
+        run: python verify_tersign.py heldout/
+      - name: positive control — flipped expect must be 0/69 (exit 1)
+        run: |
+          set +e
+          out=$(python verify_tersign.py spec/ --flip-expect --quiet); rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ] || [ "$out" != "fully concordant 0/69" ]; then echo "flip-expect did NOT fail as required"; exit 1; fi
+      - name: positive control — mutated valid vectors must all reject
+        run: python verify_tersign.py spec/ --mutate --quiet
+      - name: positive controls on live-ledger values (independent of `expect`)
+        run: python positive_controls.py spec/
+      - name: ablations (one rule off at a time)
+        run: python ablation_study.py spec/
+      - name: vector audit — ablation/twin measurement, live-data and OTS proof checks (offline, from captured bytes)
+        run: |
+          python docs/vector-audit/audit_driver.py
+          python docs/vector-audit/live_check.py
+          python docs/vector-audit/ots_check.py
+      - name: out-of-suite variants regenerate deterministically (524, sha256 of mutated manifest pinned)
+        run: |
+          python docs/differential/generate_variants.py spec/ /tmp/variants
+          echo "b738f040a7ecf3dd199011c33611c7b81aa2c56c96054e39f552e0681dff51ea  /tmp/variants/MANIFEST.json" | sha256sum -c -
+
+  gitleaks:
+    name: gitleaks (pinned release, default rules)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: download gitleaks release and verify its published checksum
+        run: |
+          set -euo pipefail
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -sSfL -o gitleaks.tar.gz "${base}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o checksums.txt "${base}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz$" checksums.txt | sed 's# .*#  gitleaks.tar.gz#' | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks version
+      - name: scan the git history (default rules)
+        run: ./gitleaks git --redact --verbose --exit-code 1 .
+      - name: scan the working tree (default rules)
+        run: ./gitleaks dir --redact --verbose --exit-code 1 .

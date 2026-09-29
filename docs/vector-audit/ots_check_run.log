@@ -1,0 +1,23 @@
+=== run_logged header ===
+cmd      : python3 docs/vector-audit/ots_check.py
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:33:53+02:00
+ended    : 2026-09-29T06:33:53+02:00
+exit     : 0
+=== stdout ===
+[PASS] OTS parser positive control (hand-built proof replays to the expected message and height) 
+[PASS] p5 proof parses (4581 B, 4 attestation(s), trailing 0 B) 
+[PASS] p5 proof file digest == anchoredDigest (sha256) cf48bed1712f5b7df2a309fb52cb2b3d51ab1a04730e3b115cd3db79c96c9b1a
+[PASS] p5 proof carries a Bitcoin attestation at the declared height 958163 heights=[958163, 958166, 958170, 958176] pending=[]
+[PASS] p5 replayed message == merkle_root of block 958163 (mempool.space) replayed=d23b2da439b558a56915abbcbf62ccc6d3066795785fcfce59b3f60bf85df18c explorer=d23b2da439b558a56915abbcbf62ccc6d3066795785fcfce59b3f60bf85df18c
+[PASS] p5 same merkle_root at blockstream.info 
+[PASS] p5 block 958163 hash agrees across explorers 000000000000000000000b448a230fbfe54a053e08048df6ec33116f0ef11632
+[PASS] p27 proof parses (2538 B, 4 attestation(s), trailing 0 B) 
+[PASS] p27 proof file digest == anchoredDigest (sha256) 7c00ab806c6a9cc3fd654c0cbb107224ccff80642ea289f3c8f226b592647675
+[PASS] p27 proof carries a Bitcoin attestation at the declared height 964428 heights=[964428, 964429] pending=['https://finney.calendar.eternitywall.com', 'https://btc.calendar.catallaxy.com']
+[PASS] p27 replayed message == merkle_root of block 964428 (mempool.space) replayed=06cbc88761aeb0263b5ac3df3650165cb3fdbdec8cc3cbb166989d6be70dfc91 explorer=06cbc88761aeb0263b5ac3df3650165cb3fdbdec8cc3cbb166989d6be70dfc91
+[PASS] p27 same merkle_root at blockstream.info 
+[PASS] p27 block 964428 hash agrees across explorers 00000000000000000000c59a40677dd1b45c2ba881a1bfc15ad6876158dff4d7
+ALL PASS
+=== stderr ===

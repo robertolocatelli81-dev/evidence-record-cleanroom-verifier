@@ -1,0 +1,14 @@
+=== run_logged header ===
+cmd      : python3.9 -m unittest test_verify_tersign
+cwd      : . (repository root)
+interp   : Python 3.9.25  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:34:01+02:00
+ended    : 2026-09-29T06:34:01+02:00
+exit     : 0
+=== stdout ===
+=== stderr ===
+........................................................
+----------------------------------------------------------------------
+Ran 56 tests in 0.268s
+
+OK

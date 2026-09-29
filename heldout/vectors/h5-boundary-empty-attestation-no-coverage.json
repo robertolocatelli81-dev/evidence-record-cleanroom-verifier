@@ -1,0 +1,30 @@
+{
+  "id": "h5-boundary-empty-attestation-no-coverage",
+  "kind": "boundary_binding",
+  "expect": "reject",
+  "reason": "boundary_reject",
+  "description": "Held-out (clean-room, Noûs for Roberto Locatelli, 2026-09-29). Everything binds, no coverage is claimed, but the attestation reaches an EMPTY prefix (attestedPrefixLength 0). n26: «unattested must be its own outcome rather than a pass» — an offline snapshot is otherwise indistinguishable from a verified stream, whether or not a coverage figure is claimed. This is the clean-room reading; Tersign's recorded output on this shape (out-of-suite differential, variant mut0359) is valid, so this vector is where the two readings separate. Declared, not pinned by the 69-vector suite.",
+  "input": {
+    "prefix": [
+      {
+        "event": "record",
+        "seq": 1
+      },
+      {
+        "event": "record",
+        "seq": 2
+      },
+      {
+        "event": "record",
+        "seq": 3
+      }
+    ],
+    "boundary_event": {
+      "event": "witness_ref_introduced",
+      "ruleVersion": "witness-ref-v1",
+      "prefixDigest": "0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086",
+      "position": 3,
+      "attestedPrefixLength": 0
+    }
+  }
+}

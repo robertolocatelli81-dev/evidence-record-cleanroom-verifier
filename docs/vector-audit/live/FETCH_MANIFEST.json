@@ -1,0 +1,490 @@
+{
+ "fetched_at_utc": "2026-09-29T03:11:44+00:00",
+ "python": "3.11.2",
+ "items": [
+  {
+   "name": "p1_genesis.json",
+   "url": "https://tersign.ai/v1/genesis",
+   "status": 200,
+   "bytes": 1122,
+   "sha256": "e756780f8451a67fbaa82b8f839a376b7a849042b2d7bdf4b4a9b07b323d1756",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:45 GMT"
+  },
+  {
+   "name": "p1_verify.json",
+   "url": "https://tersign.ai/v1/receipts/0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4/verify",
+   "status": 200,
+   "bytes": 2243,
+   "sha256": "44e6cda5a76e9a8bc5765d7993f0017f01383754c11d69a206668c907dede378",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:46 GMT"
+  },
+  {
+   "name": "p5_anchors.json",
+   "url": "https://tersign.ai/v1/anchors",
+   "status": 200,
+   "bytes": 27689,
+   "sha256": "f6d68e7fffbba3395f0b19eb331ea12306d461a7b03d9dc5d77a6af9214c3081",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:47 GMT"
+  },
+  {
+   "name": "p5_proof.ots",
+   "url": "https://tersign.ai/v1/anchors/ledger:0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9/proof.ots",
+   "status": 200,
+   "bytes": 4581,
+   "sha256": "09c038a952fe50cb8e1555d80530837c870789bce9c26a06f65373ad7d2a1aa4",
+   "content_type": "application/vnd.opentimestamps.v1",
+   "date": "Tue, 29 Sep 2026 03:11:47 GMT"
+  },
+  {
+   "name": "p27_head_verify.json",
+   "url": "https://tersign.ai/v1/receipts/0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961/verify",
+   "status": 200,
+   "bytes": 2556,
+   "sha256": "17dd5de746d648d403b8ccfefa86549eef4a021e7ecd33a1cc5e56e57567e769",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:48 GMT"
+  },
+  {
+   "name": "p27_anchor.json",
+   "url": "https://tersign.ai/v1/anchors/seller:0xcbbef04598368ed02ae67fc0c8ffade6753628d0b8faf4e9211c9dd49a2dbe7b",
+   "status": 200,
+   "bytes": 2232,
+   "sha256": "84dcb2eeca1a5c0828394f910b59fc8c367ddfb4c9bcdab45b5309c7fceef4a6",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:49 GMT"
+  },
+  {
+   "name": "p27_proof.ots",
+   "url": "https://tersign.ai/v1/anchors/seller:0xcbbef04598368ed02ae67fc0c8ffade6753628d0b8faf4e9211c9dd49a2dbe7b/proof.ots",
+   "status": 200,
+   "bytes": 2538,
+   "sha256": "aeefc1d724f51b23ec68e6d74895d6a0736cd3902c8b4d0b4855cabd4cd98d6e",
+   "content_type": "application/vnd.opentimestamps.v1",
+   "date": "Tue, 29 Sep 2026 03:11:49 GMT"
+  },
+  {
+   "name": "btc_mempool_height_958163.txt",
+   "url": "https://mempool.space/api/block-height/958163",
+   "status": 200,
+   "bytes": 64,
+   "sha256": "c7c0f70d57fb7899726b5d62a915b3c2982749aeba1abe8b30f515cfc754ac58",
+   "content_type": "text/plain",
+   "date": "Tue, 29 Sep 2026 03:11:50 GMT"
+  },
+  {
+   "name": "btc_mempool_height_964428.txt",
+   "url": "https://mempool.space/api/block-height/964428",
+   "status": 200,
+   "bytes": 64,
+   "sha256": "46f5c6b7b5ac689d77788c49baf1c97e509d3ccfe932d92f68570ba39d01d482",
+   "content_type": "text/plain",
+   "date": "Tue, 29 Sep 2026 03:11:50 GMT"
+  },
+  {
+   "name": "btc_blockstream_height_958163.txt",
+   "url": "https://blockstream.info/api/block-height/958163",
+   "status": 200,
+   "bytes": 64,
+   "sha256": "c7c0f70d57fb7899726b5d62a915b3c2982749aeba1abe8b30f515cfc754ac58",
+   "content_type": "text/plain",
+   "date": "Tue, 29 Sep 2026 03:11:50 GMT"
+  },
+  {
+   "name": "btc_blockstream_height_964428.txt",
+   "url": "https://blockstream.info/api/block-height/964428",
+   "status": 200,
+   "bytes": 64,
+   "sha256": "46f5c6b7b5ac689d77788c49baf1c97e509d3ccfe932d92f68570ba39d01d482",
+   "content_type": "text/plain",
+   "date": "Tue, 29 Sep 2026 03:11:51 GMT"
+  },
+  {
+   "name": "gh_0rkz_repo.json",
+   "url": "https://api.github.com/repos/0rkz/foreseal-x402-conformance",
+   "status": 200,
+   "bytes": 5792,
+   "sha256": "84177452426780e24d1fe8f20b91f003a9384271af8930d65b6ecbc69cc6b320",
+   "content_type": "application/json; charset=utf-8",
+   "date": "Tue, 29 Sep 2026 03:11:52 GMT"
+  },
+  {
+   "name": "btc_mempool_block_958163.json",
+   "url": "https://mempool.space/api/block/000000000000000000000b448a230fbfe54a053e08048df6ec33116f0ef11632",
+   "status": 200,
+   "bytes": 440,
+   "sha256": "e22391730f7d3f30b8a99b0e0d5f323e332170b47714680b6decce56b1a76947",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:52 GMT"
+  },
+  {
+   "name": "btc_blockstream_block_958163.json",
+   "url": "https://blockstream.info/api/block/000000000000000000000b448a230fbfe54a053e08048df6ec33116f0ef11632",
+   "status": 200,
+   "bytes": 440,
+   "sha256": "e22391730f7d3f30b8a99b0e0d5f323e332170b47714680b6decce56b1a76947",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:53 GMT"
+  },
+  {
+   "name": "btc_mempool_block_964428.json",
+   "url": "https://mempool.space/api/block/00000000000000000000c59a40677dd1b45c2ba881a1bfc15ad6876158dff4d7",
+   "status": 200,
+   "bytes": 441,
+   "sha256": "5bbfba919225443765792430c07431a812a2667a2d384550caba19fcd5512c88",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:53 GMT"
+  },
+  {
+   "name": "btc_blockstream_block_964428.json",
+   "url": "https://blockstream.info/api/block/00000000000000000000c59a40677dd1b45c2ba881a1bfc15ad6876158dff4d7",
+   "status": 200,
+   "bytes": 441,
+   "sha256": "5bbfba919225443765792430c07431a812a2667a2d384550caba19fcd5512c88",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:54 GMT"
+  },
+  {
+   "name": "p27_walk_01_0x45c5a3f2.json",
+   "url": "https://tersign.ai/v1/receipts/0x45c5a3f282896f2899b6d2ae85b9c37d098c8deb6e6e2f49d531be270d757f2a/verify",
+   "status": 200,
+   "bytes": 2556,
+   "sha256": "18f488805bb888c8cfe12f5ff4c615ddfa2c2e0ac748cf848765a72a58aba644",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:55 GMT"
+  },
+  {
+   "name": "p27_walk_02_0x7f1570bf.json",
+   "url": "https://tersign.ai/v1/receipts/0x7f1570bfb6949fc8fe4d87357e859ba7b901df501b88078a7dca0f4ddb4909b0/verify",
+   "status": 200,
+   "bytes": 2556,
+   "sha256": "08a7f5ce071948ef982de136415d20e4949bcbf4623b443a8a843542dcc23809",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:56 GMT"
+  },
+  {
+   "name": "p27_walk_03_0xe1cfd0af.json",
+   "url": "https://tersign.ai/v1/receipts/0xe1cfd0af616a04a041bba95901c4b673cb61d8663e447943c2be1497393dc4fa/verify",
+   "status": 200,
+   "bytes": 2556,
+   "sha256": "43dd4ecdd9308c5eed651c90e9c6ecd0c36256727676368371fd283dfd2da254",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:57 GMT"
+  },
+  {
+   "name": "p27_walk_04_0x2c35d95f.json",
+   "url": "https://tersign.ai/v1/receipts/0x2c35d95f7c7f87678dd76d902e4c4809219f0952589ea5116af94997524fecf8/verify",
+   "status": 200,
+   "bytes": 2555,
+   "sha256": "acd213b90e1c6717451dbb878e78bf2ce3a5b825ff56291328ca9e176e5bde03",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:58 GMT"
+  },
+  {
+   "name": "p27_walk_05_0xb94bbc4f.json",
+   "url": "https://tersign.ai/v1/receipts/0xb94bbc4fb7d7097039b2afaf244e30f56820cfe89dd7a2201a9a2a63a8ec4e38/verify",
+   "status": 200,
+   "bytes": 2555,
+   "sha256": "d1fb82da0b1a32f2966b317e605f660375cd2695f6b5d48c659619da6dc0c8eb",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:11:59 GMT"
+  },
+  {
+   "name": "p27_walk_06_0x23677975.json",
+   "url": "https://tersign.ai/v1/receipts/0x236779752d6a336da2dbc965b00031408b2927975a8fe209710afa40ae696ae5/verify",
+   "status": 200,
+   "bytes": 2554,
+   "sha256": "f62abf388130c58c37d89f16017d0ea89075aea72864d4002431dcab43378547",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:00 GMT"
+  },
+  {
+   "name": "p27_walk_07_0x2f1e9eae.json",
+   "url": "https://tersign.ai/v1/receipts/0x2f1e9eaea561a71d386145886a2b432997d7d91aee95a0d83e3a1cdae1d2da0a/verify",
+   "status": 200,
+   "bytes": 2554,
+   "sha256": "e57d7f5c41b88d364986e0c18f0c753ff231c668f11695e0cac3cf97580eeb01",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:00 GMT"
+  },
+  {
+   "name": "p27_walk_08_0x3cf272fb.json",
+   "url": "https://tersign.ai/v1/receipts/0x3cf272fb879bbe676992167cf2c7d46804f835972204e4b183b96281ebeed632/verify",
+   "status": 200,
+   "bytes": 2554,
+   "sha256": "84563ad1633e810561faffc6a9be4dce6994be6ec1910e83f090a570e27653a2",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:01 GMT"
+  },
+  {
+   "name": "p27_walk_09_0xddc12b81.json",
+   "url": "https://tersign.ai/v1/receipts/0xddc12b814c54daa839b1e9e66820d7d28c5bbf254eec0004de2f9d8ba98331ae/verify",
+   "status": 200,
+   "bytes": 2371,
+   "sha256": "3209b8ba28ea93b7f5748458e63f03ad4297f0663f4f22ef97bc87a414c9d73e",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:03 GMT"
+  },
+  {
+   "name": "p27_walk_10_0xdee12c6d.json",
+   "url": "https://tersign.ai/v1/receipts/0xdee12c6dd1f0a263811d26123224b493ddc3ee089a82aec2d149b87a09e10189/verify",
+   "status": 200,
+   "bytes": 2371,
+   "sha256": "9ffb96ea02420c961a340a9bf27abb8cd3a9e249f1f673ca810eed6afeab2889",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:03 GMT"
+  },
+  {
+   "name": "p27_walk_11_0x89dbfc8c.json",
+   "url": "https://tersign.ai/v1/receipts/0x89dbfc8c52bd5fa4ed5e879915518f9729cfbd74d9ab020e569eeffd881a4f1c/verify",
+   "status": 200,
+   "bytes": 2371,
+   "sha256": "1a97ee0e04d3015790a7d41fc2133835d2d67ac0f1cd8302e1ea3782649c6413",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:05 GMT"
+  },
+  {
+   "name": "p27_walk_12_0xe5874f1f.json",
+   "url": "https://tersign.ai/v1/receipts/0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4/verify",
+   "status": 200,
+   "bytes": 2243,
+   "sha256": "44e6cda5a76e9a8bc5765d7993f0017f01383754c11d69a206668c907dede378",
+   "content_type": "application/json",
+   "date": "Tue, 29 Sep 2026 03:12:05 GMT"
+  }
+ ],
+ "p27_walk": [
+  {
+   "step": 0,
+   "digest": "0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x45c5a3f282896f2899b6d2ae85b9c37d098c8deb6e6e2f49d531be270d757f2a"
+  },
+  {
+   "step": 1,
+   "digest": "0x45c5a3f282896f2899b6d2ae85b9c37d098c8deb6e6e2f49d531be270d757f2a",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x7f1570bfb6949fc8fe4d87357e859ba7b901df501b88078a7dca0f4ddb4909b0"
+  },
+  {
+   "step": 2,
+   "digest": "0x7f1570bfb6949fc8fe4d87357e859ba7b901df501b88078a7dca0f4ddb4909b0",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0xe1cfd0af616a04a041bba95901c4b673cb61d8663e447943c2be1497393dc4fa"
+  },
+  {
+   "step": 3,
+   "digest": "0xe1cfd0af616a04a041bba95901c4b673cb61d8663e447943c2be1497393dc4fa",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x2c35d95f7c7f87678dd76d902e4c4809219f0952589ea5116af94997524fecf8"
+  },
+  {
+   "step": 4,
+   "digest": "0x2c35d95f7c7f87678dd76d902e4c4809219f0952589ea5116af94997524fecf8",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0xb94bbc4fb7d7097039b2afaf244e30f56820cfe89dd7a2201a9a2a63a8ec4e38"
+  },
+  {
+   "step": 5,
+   "digest": "0xb94bbc4fb7d7097039b2afaf244e30f56820cfe89dd7a2201a9a2a63a8ec4e38",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x236779752d6a336da2dbc965b00031408b2927975a8fe209710afa40ae696ae5"
+  },
+  {
+   "step": 6,
+   "digest": "0x236779752d6a336da2dbc965b00031408b2927975a8fe209710afa40ae696ae5",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x2f1e9eaea561a71d386145886a2b432997d7d91aee95a0d83e3a1cdae1d2da0a"
+  },
+  {
+   "step": 7,
+   "digest": "0x2f1e9eaea561a71d386145886a2b432997d7d91aee95a0d83e3a1cdae1d2da0a",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x3cf272fb879bbe676992167cf2c7d46804f835972204e4b183b96281ebeed632"
+  },
+  {
+   "step": 8,
+   "digest": "0x3cf272fb879bbe676992167cf2c7d46804f835972204e4b183b96281ebeed632",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "coAnchors",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0xddc12b814c54daa839b1e9e66820d7d28c5bbf254eec0004de2f9d8ba98331ae"
+  },
+  {
+   "step": 9,
+   "digest": "0xddc12b814c54daa839b1e9e66820d7d28c5bbf254eec0004de2f9d8ba98331ae",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0xdee12c6dd1f0a263811d26123224b493ddc3ee089a82aec2d149b87a09e10189"
+  },
+  {
+   "step": 10,
+   "digest": "0xdee12c6dd1f0a263811d26123224b493ddc3ee089a82aec2d149b87a09e10189",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0x89dbfc8c52bd5fa4ed5e879915518f9729cfbd74d9ab020e569eeffd881a4f1c"
+  },
+  {
+   "step": 11,
+   "digest": "0x89dbfc8c52bd5fa4ed5e879915518f9729cfbd74d9ab020e569eeffd881a4f1c",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4"
+  },
+  {
+   "step": 12,
+   "digest": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+   "top_keys": [
+    "anchor",
+    "chainOk",
+    "commitment",
+    "countersignature",
+    "found",
+    "ledgerSigner",
+    "prevDigest",
+    "sellerId",
+    "seq"
+   ],
+   "prev_key": "/prevDigest",
+   "prev": null
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+# bytecode / tooling
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# internal working files of the isolated session (kept locally, never published)
+REPORT_*.md
+REVIEW_*.md
+PUBLISH_PLAN.md
+CODE_REVIEW*.md
+/review_*_raw/
+/differential/
+tmp_*/
+*.log.tmp

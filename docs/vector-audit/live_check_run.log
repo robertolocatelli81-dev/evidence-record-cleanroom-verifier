@@ -1,0 +1,45 @@
+=== run_logged header ===
+cmd      : python3 docs/vector-audit/live_check.py
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:33:52+02:00
+ended    : 2026-09-29T06:33:53+02:00
+exit     : 0
+=== stdout ===
+[PASS] ecrecover positive control (own key: sign -> recover) 0x1be31a94361a391bbafb2a4ccd704f57dc04d4bb == 0x1be31a94361a391bbafb2a4ccd704f57dc04d4bb
+[PASS] p1 live /v1/genesis artifact == vector payload (deep equal) 
+[PASS] p1 live canonical bytes == vector canonical bytes 
+[PASS] p1 keccak256(canonical(live artifact)) == expected_digest 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4
+[PASS] p1 live artifactDigest field == expected_digest 
+[PASS] p1 live countersignature == provenance.countersignature 
+[PASS] p1 live ledgerSigner == provenance.ledger_signer 
+[PASS] p1 live seq==1 and prevDigest null 
+[PASS] p4 expected_link == chain_link(genesis, null, 1) recomputed 
+[PASS] p1 countersignature recovers to ledgerSigner (personal_sign over the chain-link digest) variant=['raw32'] recovered={'raw32': '0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6', 'hex0x': '0xa57457bfc56f489491425d883700cc71b3acfe0c', 'hex': '0xc7183ff56ff5b6d4ee96b34f3a7df031adcee99d'}
+[PASS] p1 /verify: found, chainOk, seq 1, anchor confirmed genesis artifact anchor block=958163
+[PASS] p5 subject_digest listed in live /v1/anchors 
+[PASS] p5 live anchoredDigest == vector anchored_digest 
+[PASS] p5 live bitcoinBlockHeight == 958163 (provenance) 958163
+[PASS] p5 live status confirmed 
+[PASS] p5 anchored == sha256(subject) recomputed 
+      p5 anchor meta: ('tersign-ledger-head-v1', False, None, 'ledger:0xb2c5d2bd28ff65e13c1549a718a4c447916d5277ce046b2061ed63749ff287d9', 'ledger')
+[PASS] n5 anchored_digest == p5's anchored digest (derived as declared) 
+[PASS] n5 subject is p6's seq-1 artifact (synthetic subject, as declared 'does not bind') 
+[PASS] p27 walk length == 13 and ends at null prevDigest 13
+[PASS] p27 all 13 (seq, artifact_digest, prev_digest) == live walk mismatches=[]
+[PASS] p27 accumulator folded over the LIVE walk == live commitment.acc 
+[PASS] p27 vector head.acc == live commitment.acc 
+[PASS] p27 13/13 countersignatures recover to ledgerSigner 0x9d38… variants={1: ['raw32'], 2: ['raw32'], 3: ['raw32'], 4: ['raw32'], 5: ['raw32'], 6: ['raw32'], 7: ['raw32'], 8: ['raw32'], 9: ['raw32'], 10: ['raw32'], 11: ['raw32'], 12: ['raw32'], 13: ['raw32']}
+[PASS] p27 live anchor subjectArtifact == vector provenance.commitment 
+[PASS] p27 keccak256(JCS(subjectArtifact)) == live subjectDigest == vector commitment_digest 
+[PASS] p27 sha256(subjectDigest) == live anchoredDigest == vector anchored_digest 
+[PASS] p27 live bitcoinBlockHeight == 964428 (manifest/provenance) 964428
+[PASS] p27 live anchor status confirmed, prefixCommitting, coversSeqThrough 13 
+[PASS] p27 merklePath replays anchoredDigest to batchRoot (sha256 nodes; keccak = negative control) {'sha256': '0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083', 'keccak256': '0x571e3136b42db10545609ead52bbb3b5a7d516630a77ca46a5e0901db9a26d0b', 'batchRoot': '0x5acfdc03edbf6fec386dd0ad3bb6f53397198d52259ff5059f3181f7a82f3083'}
+[PASS] p27 anchor ledgerSignature recovers to ledgerSigner 0x9d38… (verifyHint encoding) 0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6
+[PASS] n1 == p1 with issuedAt + 1 only 
+[PASS] n3 == p4 with prev_digest := artifact (self-referential) only 
+[PASS] block 958163: mempool.space and blockstream.info agree on id, merkle_root, timestamp merkle_root=d23b2da439b558a56915abbcbf62ccc6d3066795785fcfce59b3f60bf85df18c time=2026-07-15T14:38:07+00:00
+[PASS] block 964428: mempool.space and blockstream.info agree on id, merkle_root, timestamp merkle_root=06cbc88761aeb0263b5ac3df3650165cb3fdbdec8cc3cbb166989d6be70dfc91 time=2026-08-28T11:40:11+00:00
+ALL PASS
+=== stderr ===

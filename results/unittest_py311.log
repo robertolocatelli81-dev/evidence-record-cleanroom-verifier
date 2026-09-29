@@ -1,0 +1,70 @@
+=== run_logged header ===
+cmd      : python3 -m unittest -v test_verify_tersign
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:33:59+02:00
+ended    : 2026-09-29T06:33:59+02:00
+exit     : 0
+=== stdout ===
+=== stderr ===
+test_decision_evidence (test_verify_tersign.TestBindings.test_decision_evidence) ... ok
+test_digest_recompute_and_canonical (test_verify_tersign.TestBindings.test_digest_recompute_and_canonical) ... ok
+test_k2_number_domain_before_claimed_canonical (test_verify_tersign.TestBindings.test_k2_number_domain_before_claimed_canonical) ... ok
+test_offer (test_verify_tersign.TestBindings.test_offer) ... ok
+test_anchor (test_verify_tersign.TestChain.test_anchor) ... ok
+test_commitment (test_verify_tersign.TestChain.test_commitment) ... ok
+test_complete_set_valid (test_verify_tersign.TestChain.test_complete_set_valid) ... ok
+test_duplicate_seq_rejects_on_duplicate_not_continuity (test_verify_tersign.TestChain.test_duplicate_seq_rejects_on_duplicate_not_continuity) ... ok
+test_genesis_prev_must_be_null (test_verify_tersign.TestChain.test_genesis_prev_must_be_null) ... ok
+test_head_digest_mismatch (test_verify_tersign.TestChain.test_head_digest_mismatch) ... ok
+test_link_genesis_uses_32_zero_bytes (test_verify_tersign.TestChain.test_link_genesis_uses_32_zero_bytes) ... ok
+test_missing_seq (test_verify_tersign.TestChain.test_missing_seq) ... ok
+test_prev_mismatch_and_stale_link (test_verify_tersign.TestChain.test_prev_mismatch_and_stale_link) ... ok
+test_seq_token_class (test_verify_tersign.TestChain.test_seq_token_class) ... ok
+test_witness_and_attestations_not_read (test_verify_tersign.TestChain.test_witness_and_attestations_not_read) ... ok
+test_ablation_changes_verdicts (test_verify_tersign.TestHarness.test_ablation_changes_verdicts) ... ok
+test_suite_concordant_and_flip_discordant (test_verify_tersign.TestHarness.test_suite_concordant_and_flip_discordant) ... ok
+test_unknown_kind_and_crash_are_rejects (test_verify_tersign.TestHarness.test_unknown_kind_and_crash_are_rejects) ... ok
+test_address_fold (test_verify_tersign.TestIdentity.test_address_fold) ... ok
+test_scheme_fold (test_verify_tersign.TestIdentity.test_scheme_fold) ... ok
+test_commitment_scope (test_verify_tersign.TestIndependence.test_commitment_scope) ... ok
+test_delivery_derivation (test_verify_tersign.TestIndependence.test_delivery_derivation) ... ok
+test_k1_claimed_absent_is_silence (test_verify_tersign.TestIndependence.test_k1_claimed_absent_is_silence) ... ok
+test_outside_attestor (test_verify_tersign.TestIndependence.test_outside_attestor) ... ok
+test_silence (test_verify_tersign.TestIndependence.test_silence) ... ok
+test_unknown_claim_fails_closed (test_verify_tersign.TestIndependence.test_unknown_claim_fails_closed) ... ok
+test_bool_is_not_int (test_verify_tersign.TestJCS.test_bool_is_not_int) ... ok
+test_control_chars (test_verify_tersign.TestJCS.test_control_chars) ... ok
+test_duplicate_names_rejected (test_verify_tersign.TestJCS.test_duplicate_names_rejected) ... ok
+test_ijson_integer_bounds (test_verify_tersign.TestJCS.test_ijson_integer_bounds) ... ok
+test_integer_like_keys_are_strings (test_verify_tersign.TestJCS.test_integer_like_keys_are_strings) ... ok
+test_lone_surrogate_rejected (test_verify_tersign.TestJCS.test_lone_surrogate_rejected) ... ok
+test_nan_infinity_rejected (test_verify_tersign.TestJCS.test_nan_infinity_rejected) ... ok
+test_no_whitespace_nested (test_verify_tersign.TestJCS.test_no_whitespace_nested) ... ok
+test_number_token_class (test_verify_tersign.TestJCS.test_number_token_class) ... ok
+test_rfc8785_key_order_alphabetical (test_verify_tersign.TestJCS.test_rfc8785_key_order_alphabetical) ... ok
+test_rfc8785_string_escaping_example (test_verify_tersign.TestJCS.test_rfc8785_string_escaping_example) ... ok
+test_utf16_order_beats_codepoint (test_verify_tersign.TestJCS.test_utf16_order_beats_codepoint) ... ok
+test_multiblock (test_verify_tersign.TestKeccak.test_multiblock) ... ok
+test_not_sha3 (test_verify_tersign.TestKeccak.test_not_sha3) ... ok
+test_public_vectors (test_verify_tersign.TestKeccak.test_public_vectors) ... ok
+test_boundary (test_verify_tersign.TestPhaseBoundary.test_boundary) ... ok
+test_k3_no_coverage_claimed (test_verify_tersign.TestPhaseBoundary.test_k3_no_coverage_claimed) ... ok
+test_phase (test_verify_tersign.TestPhaseBoundary.test_phase) ... ok
+test_address_exact_length (test_verify_tersign.TestReviewAdditions.test_address_exact_length) ... ok
+test_boundary_attested_length_within_prefix (test_verify_tersign.TestReviewAdditions.test_boundary_attested_length_within_prefix) ... ok
+test_chain_link_seq_bounds_reason (test_verify_tersign.TestReviewAdditions.test_chain_link_seq_bounds_reason) ... ok
+test_crash_paths_are_rejects (test_verify_tersign.TestReviewAdditions.test_crash_paths_are_rejects) ... ok
+test_digest_strip_whitespace (test_verify_tersign.TestReviewAdditions.test_digest_strip_whitespace) ... ok
+test_harness_reason_counts_and_can_fail (test_verify_tersign.TestReviewAdditions.test_harness_reason_counts_and_can_fail) ... ok
+test_huge_head_seq_rejects_fast (test_verify_tersign.TestReviewAdditions.test_huge_head_seq_rejects_fast) ... ok
+test_phase_vocabulary_refund_reversal (test_verify_tersign.TestReviewAdditions.test_phase_vocabulary_refund_reversal) ... ok
+test_records_beyond_head_rejected (test_verify_tersign.TestReviewAdditions.test_records_beyond_head_rejected) ... ok
+test_rfc8785_key_order_example_utf16_units (test_verify_tersign.TestReviewAdditions.test_rfc8785_key_order_example_utf16_units) ... ok
+test_short_escapes_b_f (test_verify_tersign.TestReviewAdditions.test_short_escapes_b_f) ... ok
+test_verify_file_never_raises (test_verify_tersign.TestReviewAdditions.test_verify_file_never_raises) ... ok
+
+----------------------------------------------------------------------
+Ran 56 tests in 0.195s
+
+OK

@@ -1,0 +1,416 @@
+{
+ "baseline": {
+  "concordant": 69,
+  "n": 69
+ },
+ "ablations": {
+  "keccak_to_sha3": {
+   "description": "content address / links / delivery digest computed with SHA3-256 instead of Keccak-256",
+   "concordant": 51,
+   "n": 69,
+   "verdict_discordant": [
+    "p1-live-genesis-receipt.json",
+    "p3-integer-key-utf16-order.json",
+    "p4-chain-link-genesis.json",
+    "p6-chain-set-complete.json",
+    "p12-ijson-integer-boundary.json",
+    "p13-decimal-string-beside-integer.json",
+    "p14-supplementary-plane-key-order.json",
+    "p23-delivery-independence-within-commitment.json",
+    "p24-witnessed-complete-set.json",
+    "p18-boundary-binds-prefix-and-position.json",
+    "p19-authority-reduction-bound.json",
+    "p20-suite-transition-preserves-prefix.json",
+    "n29-suite-transition-redigests-prefix.json",
+    "p15-offer-binding.json",
+    "p26-chain-commitment-complete.json",
+    "p27-live-chain-commitment-genesis-chain.json",
+    "p28-issuer-sequence-distinct-seq.json",
+    "p29-committed-prefix-one-record-per-position.json"
+   ],
+   "discordant": [
+    {
+     "file": "p1-live-genesis-receipt.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "p3-integer-key-utf16-order.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "p4-chain-link-genesis.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p6-chain-set-complete.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p12-ijson-integer-boundary.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "p13-decimal-string-beside-integer.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "p14-supplementary-plane-key-order.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "p23-delivery-independence-within-commitment.json",
+     "expect": "valid/None",
+     "got": "reject/independence_reject"
+    },
+    {
+     "file": "p24-witnessed-complete-set.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p18-boundary-binds-prefix-and-position.json",
+     "expect": "valid/None",
+     "got": "reject/boundary_reject"
+    },
+    {
+     "file": "p19-authority-reduction-bound.json",
+     "expect": "valid/None",
+     "got": "reject/binding_reject"
+    },
+    {
+     "file": "p20-suite-transition-preserves-prefix.json",
+     "expect": "valid/None",
+     "got": "reject/boundary_reject"
+    },
+    {
+     "file": "n29-suite-transition-redigests-prefix.json",
+     "expect": "reject/boundary_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "p15-offer-binding.json",
+     "expect": "valid/None",
+     "got": "reject/binding_reject"
+    },
+    {
+     "file": "p26-chain-commitment-complete.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p27-live-chain-commitment-genesis-chain.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p28-issuer-sequence-distinct-seq.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "p29-committed-prefix-one-record-per-position.json",
+     "expect": "valid/None",
+     "got": "reject/continuity_reject"
+    }
+   ]
+  },
+  "codepoint_key_order": {
+   "description": "JCS keys sorted by Unicode code point instead of UTF-16 code units",
+   "concordant": 67,
+   "n": 69,
+   "verdict_discordant": [
+    "p14-supplementary-plane-key-order.json",
+    "n12-codepoint-key-order.json"
+   ],
+   "discordant": [
+    {
+     "file": "p14-supplementary-plane-key-order.json",
+     "expect": "valid/None",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "n12-codepoint-key-order.json",
+     "expect": "reject/canonicalization_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_number_domain": {
+   "description": "non-integer number tokens and integers beyond 2^53-1 are serialized instead of rejected",
+   "concordant": 66,
+   "n": 69,
+   "verdict_discordant": [
+    "n10-float-in-digest-domain.json"
+   ],
+   "discordant": [
+    {
+     "file": "n10-float-in-digest-domain.json",
+     "expect": "reject/number_domain_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n11-integer-beyond-ijson-range.json",
+     "expect": "reject/number_domain_reject",
+     "got": "reject/recompute_mismatch"
+    },
+    {
+     "file": "n35-integer-valued-float-token.json",
+     "expect": "reject/number_domain_reject",
+     "got": "reject/canonicalization_reject"
+    }
+   ]
+  },
+  "no_seq_completeness": {
+   "description": "chain_set skips the every-seq-exactly-once check (missing / duplicate)",
+   "concordant": 66,
+   "n": 69,
+   "verdict_discordant": [
+    "n39-issuer-sequence-duplicate-seq.json"
+   ],
+   "discordant": [
+    {
+     "file": "n4-omitted-record.json",
+     "expect": "reject/completeness_reject",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "n34-witnessed-inclusion-not-completeness.json",
+     "expect": "reject/completeness_reject",
+     "got": "reject/continuity_reject"
+    },
+    {
+     "file": "n39-issuer-sequence-duplicate-seq.json",
+     "expect": "reject/completeness_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_link_recompute": {
+   "description": "chain_set does not recompute a presented `link`",
+   "concordant": 68,
+   "n": 69,
+   "verdict_discordant": [
+    "n17-renumbered-omission.json"
+   ],
+   "discordant": [
+    {
+     "file": "n17-renumbered-omission.json",
+     "expect": "reject/continuity_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_accumulator": {
+   "description": "chain_commitment does not compare head.acc with the fold",
+   "concordant": 66,
+   "n": 69,
+   "verdict_discordant": [
+    "n36-chain-commitment-prefix-substituted.json",
+    "n37-chain-commitment-last-link-only.json",
+    "n40-equivocating-record-at-committed-position.json"
+   ],
+   "discordant": [
+    {
+     "file": "n36-chain-commitment-prefix-substituted.json",
+     "expect": "reject/continuity_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n37-chain-commitment-last-link-only.json",
+     "expect": "reject/continuity_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n40-equivocating-record-at-committed-position.json",
+     "expect": "reject/continuity_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_independence": {
+   "description": "independence_claim does not require a non-party attestor",
+   "concordant": 64,
+   "n": 69,
+   "verdict_discordant": [
+    "n7-issuer-only-independence.json",
+    "n13-party-alias-whitespace.json",
+    "n32-delivery-self-attested.json",
+    "n30-independence-urn-self-attested.json",
+    "n31-independence-urn-alias-trailing-slash.json"
+   ],
+   "discordant": [
+    {
+     "file": "n7-issuer-only-independence.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n13-party-alias-whitespace.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n32-delivery-self-attested.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n30-independence-urn-self-attested.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n31-independence-urn-alias-trailing-slash.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_identity_normalization": {
+   "description": "identities compared byte-exact (no strip / lowercase / trailing-punctuation fold)",
+   "concordant": 66,
+   "n": 69,
+   "verdict_discordant": [
+    "n13-party-alias-whitespace.json",
+    "n14-unparseable-attestor.json",
+    "n31-independence-urn-alias-trailing-slash.json"
+   ],
+   "discordant": [
+    {
+     "file": "n13-party-alias-whitespace.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n14-unparseable-attestor.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n31-independence-urn-alias-trailing-slash.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_record_commits_presence": {
+   "description": "a declared `record_commits` field is ignored instead of rejected",
+   "concordant": 67,
+   "n": 69,
+   "verdict_discordant": [
+    "n23-independence-scope-null-declared.json",
+    "n24-independence-scope-declared-no-scope.json"
+   ],
+   "discordant": [
+    {
+     "file": "n23-independence-scope-null-declared.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n24-independence-scope-declared-no-scope.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "declared_commits": {
+   "description": "commitments are read from a declared `record_commits` list when present (the n22 override bug)",
+   "concordant": 66,
+   "n": 69,
+   "verdict_discordant": [
+    "n22-independence-scope-declared-override.json",
+    "n23-independence-scope-null-declared.json",
+    "n24-independence-scope-declared-no-scope.json"
+   ],
+   "discordant": [
+    {
+     "file": "n22-independence-scope-declared-override.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n23-independence-scope-null-declared.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n24-independence-scope-declared-no-scope.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_position_binding": {
+   "description": "boundary_binding does not require `position`",
+   "concordant": 69,
+   "n": 69,
+   "verdict_discordant": [],
+   "discordant": []
+  },
+  "no_coverage_bound": {
+   "description": "boundary_binding does not compare covered_through with attestedPrefixLength",
+   "concordant": 68,
+   "n": 69,
+   "verdict_discordant": [
+    "n26-coverage-claimed-over-empty-attestation.json"
+   ],
+   "discordant": [
+    {
+     "file": "n26-coverage-claimed-over-empty-attestation.json",
+     "expect": "reject/boundary_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "phase_any": {
+   "description": "phase_claim accepts any phase token (no vocabulary, no equality)",
+   "concordant": 67,
+   "n": 69,
+   "verdict_discordant": [
+    "n6-phase-confusion.json",
+    "n18-unrecognized-phase.json"
+   ],
+   "discordant": [
+    {
+     "file": "n6-phase-confusion.json",
+     "expect": "reject/phase_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n18-unrecognized-phase.json",
+     "expect": "reject/phase_reject",
+     "got": "valid/None"
+    }
+   ]
+  },
+  "no_unknown_claim_reject": {
+   "description": "unknown independence claim tokens are ignored instead of rejected",
+   "concordant": 67,
+   "n": 69,
+   "verdict_discordant": [
+    "n8-unrecognized-independence-claim.json",
+    "n9-unrecognized-member-in-claim-set.json"
+   ],
+   "discordant": [
+    {
+     "file": "n8-unrecognized-independence-claim.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    },
+    {
+     "file": "n9-unrecognized-member-in-claim-set.json",
+     "expect": "reject/independence_reject",
+     "got": "valid/None"
+    }
+   ]
+  }
+ }
+}

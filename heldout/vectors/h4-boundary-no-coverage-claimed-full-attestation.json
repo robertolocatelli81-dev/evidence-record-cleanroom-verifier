@@ -1,0 +1,29 @@
+{
+  "id": "h4-boundary-no-coverage-claimed-full-attestation",
+  "kind": "boundary_binding",
+  "expect": "valid",
+  "description": "Held-out (clean-room, Noûs for Roberto Locatelli, 2026-09-29). p18's boundary event (prefix digest binds, position binds, attestation reaches the whole prefix) with NO `covered_through`: no coverage is claimed, so there is nothing to compare against the attestation. p18: «the coverage IT CLAIMS is within the prefix its attestation actually reaches» — conditional on a claim. A verifier that requires the coverage field fails this vector.",
+  "input": {
+    "prefix": [
+      {
+        "event": "record",
+        "seq": 1
+      },
+      {
+        "event": "record",
+        "seq": 2
+      },
+      {
+        "event": "record",
+        "seq": 3
+      }
+    ],
+    "boundary_event": {
+      "event": "witness_ref_introduced",
+      "ruleVersion": "witness-ref-v1",
+      "prefixDigest": "0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086",
+      "position": 3,
+      "attestedPrefixLength": 3
+    }
+  }
+}

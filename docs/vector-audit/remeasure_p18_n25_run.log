@@ -1,0 +1,26 @@
+=== run_logged header ===
+cmd      : python3 docs/vector-audit/remeasure_p18_n25.py
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:33:53+02:00
+ended    : 2026-09-29T06:33:53+02:00
+exit     : 0
+=== stdout ===
+canonical(prefix) = [{"event":"record","seq":1},{"event":"record","seq":2},{"event":"record","seq":3}]
+keccak256(JCS(prefix)) = 0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086 == p18.prefixDigest: True
+sha3_256(JCS(prefix))  = 0x3afdd2170ef2c67f4a9663e1b3379a2fce008018713eab4bbf4b1ca889b309c8 == n29.prefixDigest: True
+n25 prefix canonical bytes identical to p18: True | n25.prefixDigest == p18.prefixDigest: True
+p18: apl-optional, position required -> ('valid', None) | expect valid
+n25: apl-optional, position required -> ('reject', 'binds no position') | expect reject
+n29: apl-optional, position required -> ('reject', 'prefixDigest does not bind') | expect reject
+n25: apl-optional AND position NOT required -> ('valid', None)
+rfc7493 L144:    messages SHOULD NOT include numbers that express greater magnitude or
+rfc7493 L145:    precision than an IEEE 754 double precision number provides, for
+rfc7493 L146:    example, 1E400 or 3.141592653589793238462643383279.
+rfc7493 L147: 
+rfc7493 L148:    An I-JSON sender cannot expect a receiver to treat an integer whose
+rfc7493 L149:    absolute value is greater than 9007199254740991 (i.e., that is
+rfc7493 L150:    outside the range [-(2**53)+1, (2**53)-1]) as an exact value.
+rfc7493 L151: 
+rfc7493 L152:    For applications that require the exact interchange of numbers with
+=== stderr ===

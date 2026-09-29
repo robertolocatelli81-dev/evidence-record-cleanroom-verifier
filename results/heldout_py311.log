@@ -1,0 +1,16 @@
+=== run_logged header ===
+cmd      : python3 verify_tersign.py heldout --json results/heldout_py311.json
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:34:08+02:00
+ended    : 2026-09-29T06:34:08+02:00
+exit     : 0
+=== stdout ===
+Tersign evidence-record-conformance-heldout-cleanroom v0.1.0 — independent verifier 0.1.0 — Python 3.11.2
+OK   h1-claimed-absent-is-silence.json                        independence_claim         expect=valid                              got=valid                              no `claimed` field: nothing is claimed about independence (silence, p9)
+OK   h2-claimed-absent-covers-present.json                    independence_claim         expect=valid                              got=valid                              no `claimed` field: nothing is claimed about independence (silence, p9)
+OK   h3-float-payload-without-claimed-canonical.json          canonical_bytes            expect=reject/number_domain_reject        got=reject/number_domain_reject        non-integer number token '1.1' in the digest domain
+OK   h4-boundary-no-coverage-claimed-full-attestation.json    boundary_binding           expect=valid                              got=valid                              prefixDigest binds 3 events under keccak256-jcs; position 3; no coverage claimed; attested 3
+OK   h5-boundary-empty-attestation-no-coverage.json           boundary_binding           expect=reject/boundary_reject             got=reject/boundary_reject             unattested prefix (attestedPrefixLength = 0) is its own outcome, not a pass (n26)
+verdict concordant 5/5; reason concordant 2/2 (where the manifest names one); fully concordant 5/5
+=== stderr ===

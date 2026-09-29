@@ -1,0 +1,22 @@
+{
+  "id": "h1-claimed-absent-is-silence",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Held-out (clean-room, Noûs for Roberto Locatelli, 2026-09-29). The `claimed` field is ABSENT: the record claims nothing about independence. p9 pins that «Silence is a valid state: the criterion disqualifies unsupported CLAIMS»; n8/n9 fail closed only on a claim that is PRESENT and cannot be read. A verifier that rejects a missing claim as uninterpretable fails this vector. Attestations are p8's (one non-party attestor) so the only thing that can produce a reject is the missing field.",
+  "input": {
+    "parties": [
+      "0x2222222222222222222222222222222222222222",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "0x2222222222222222222222222222222222222222",
+        "role": "payer"
+      },
+      {
+        "by": "0x9d38BA84730271eb27Ac9bD4Bd2620c08dB4FDa6",
+        "role": "counter-signing ledger"
+      }
+    ]
+  }
+}

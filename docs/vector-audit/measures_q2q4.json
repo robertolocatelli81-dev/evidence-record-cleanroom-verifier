@@ -1,0 +1,2877 @@
+{
+ "header": {
+  "started": "2026-09-29T06:33:49+02:00",
+  "ended": "2026-09-29T06:33:52+02:00",
+  "python": "3.11.2",
+  "verifier_sha256": "7f56bd043f008ff4b070ef707a583d1615a04d3e6adb5f42eaa9366aaa7157db",
+  "manifest_sha256": "b7a1c699b34ed0bb1e8979dbcfd981577d4cf6838d65482d1e66690a42477560",
+  "baseline_concordant": 69
+ },
+ "ablations": {
+  "keccak_to_sha3": {
+   "source": "builtin",
+   "description": "content address / links / delivery digest computed with SHA3-256 instead of Keccak-256",
+   "verdict_flips": [
+    "p1-live-genesis-receipt.json",
+    "p3-integer-key-utf16-order.json",
+    "p4-chain-link-genesis.json",
+    "p6-chain-set-complete.json",
+    "p12-ijson-integer-boundary.json",
+    "p13-decimal-string-beside-integer.json",
+    "p14-supplementary-plane-key-order.json",
+    "p23-delivery-independence-within-commitment.json",
+    "p24-witnessed-complete-set.json",
+    "p18-boundary-binds-prefix-and-position.json",
+    "p19-authority-reduction-bound.json",
+    "p20-suite-transition-preserves-prefix.json",
+    "n29-suite-transition-redigests-prefix.json",
+    "p15-offer-binding.json",
+    "p26-chain-commitment-complete.json",
+    "p27-live-chain-commitment-genesis-chain.json",
+    "p28-issuer-sequence-distinct-seq.json",
+    "p29-committed-prefix-one-record-per-position.json"
+   ],
+   "reason_only": []
+  },
+  "codepoint_key_order": {
+   "source": "builtin",
+   "description": "JCS keys sorted by Unicode code point instead of UTF-16 code units",
+   "verdict_flips": [
+    "p14-supplementary-plane-key-order.json",
+    "n12-codepoint-key-order.json"
+   ],
+   "reason_only": []
+  },
+  "no_number_domain": {
+   "source": "builtin",
+   "description": "non-integer number tokens and integers beyond 2^53-1 are serialized instead of rejected",
+   "verdict_flips": [
+    "n10-float-in-digest-domain.json"
+   ],
+   "reason_only": [
+    "n11-integer-beyond-ijson-range.json",
+    "n35-integer-valued-float-token.json"
+   ]
+  },
+  "no_seq_completeness": {
+   "source": "builtin",
+   "description": "chain_set skips the every-seq-exactly-once check (missing / duplicate)",
+   "verdict_flips": [
+    "n39-issuer-sequence-duplicate-seq.json"
+   ],
+   "reason_only": [
+    "n4-omitted-record.json",
+    "n34-witnessed-inclusion-not-completeness.json"
+   ]
+  },
+  "no_link_recompute": {
+   "source": "builtin",
+   "description": "chain_set does not recompute a presented `link`",
+   "verdict_flips": [
+    "n17-renumbered-omission.json"
+   ],
+   "reason_only": []
+  },
+  "no_accumulator": {
+   "source": "builtin",
+   "description": "chain_commitment does not compare head.acc with the fold",
+   "verdict_flips": [
+    "n36-chain-commitment-prefix-substituted.json",
+    "n37-chain-commitment-last-link-only.json",
+    "n40-equivocating-record-at-committed-position.json"
+   ],
+   "reason_only": []
+  },
+  "no_independence": {
+   "source": "builtin",
+   "description": "independence_claim does not require a non-party attestor",
+   "verdict_flips": [
+    "n7-issuer-only-independence.json",
+    "n13-party-alias-whitespace.json",
+    "n32-delivery-self-attested.json",
+    "n30-independence-urn-self-attested.json",
+    "n31-independence-urn-alias-trailing-slash.json"
+   ],
+   "reason_only": []
+  },
+  "no_identity_normalization": {
+   "source": "builtin",
+   "description": "identities compared byte-exact (no strip / lowercase / trailing-punctuation fold)",
+   "verdict_flips": [
+    "n13-party-alias-whitespace.json",
+    "n14-unparseable-attestor.json",
+    "n31-independence-urn-alias-trailing-slash.json"
+   ],
+   "reason_only": []
+  },
+  "no_record_commits_presence": {
+   "source": "builtin",
+   "description": "a declared `record_commits` field is ignored instead of rejected",
+   "verdict_flips": [
+    "n23-independence-scope-null-declared.json",
+    "n24-independence-scope-declared-no-scope.json"
+   ],
+   "reason_only": []
+  },
+  "declared_commits": {
+   "source": "builtin",
+   "description": "commitments are read from a declared `record_commits` list when present (the n22 override bug)",
+   "verdict_flips": [
+    "n22-independence-scope-declared-override.json",
+    "n23-independence-scope-null-declared.json",
+    "n24-independence-scope-declared-no-scope.json"
+   ],
+   "reason_only": []
+  },
+  "no_position_binding": {
+   "source": "builtin",
+   "description": "boundary_binding does not require `position`",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_coverage_bound": {
+   "source": "builtin",
+   "description": "boundary_binding does not compare covered_through with attestedPrefixLength",
+   "verdict_flips": [
+    "n26-coverage-claimed-over-empty-attestation.json"
+   ],
+   "reason_only": []
+  },
+  "phase_any": {
+   "source": "builtin",
+   "description": "phase_claim accepts any phase token (no vocabulary, no equality)",
+   "verdict_flips": [
+    "n6-phase-confusion.json",
+    "n18-unrecognized-phase.json"
+   ],
+   "reason_only": []
+  },
+  "no_unknown_claim_reject": {
+   "source": "builtin",
+   "description": "unknown independence claim tokens are ignored instead of rejected",
+   "verdict_flips": [
+    "n8-unrecognized-independence-claim.json",
+    "n9-unrecognized-member-in-claim-set.json"
+   ],
+   "reason_only": []
+  },
+  "no_digest_compare": {
+   "source": "extra",
+   "description": "digest_recompute: expected_digest is parsed but never compared",
+   "verdict_flips": [
+    "n1-value-drift.json"
+   ],
+   "reason_only": []
+  },
+  "numeric_hoist_keys": {
+   "source": "extra",
+   "description": "JCS: integer-like keys sorted numerically first (JS engine hoisting)",
+   "verdict_flips": [
+    "p3-integer-key-utf16-order.json",
+    "n2-hoisted-integer-keys.json"
+   ],
+   "reason_only": []
+  },
+  "insertion_order_keys": {
+   "source": "extra",
+   "description": "JCS: object keys emitted in insertion order (no sort)",
+   "verdict_flips": [
+    "p2-canonical-key-order.json",
+    "p3-integer-key-utf16-order.json",
+    "p13-decimal-string-beside-integer.json",
+    "p14-supplementary-plane-key-order.json",
+    "n12-codepoint-key-order.json",
+    "p19-authority-reduction-bound.json",
+    "p15-offer-binding.json"
+   ],
+   "reason_only": []
+  },
+  "strict_below_2_53": {
+   "source": "extra",
+   "description": "number domain: |n| <= 2^53-2 (rejects the boundary value 2^53-1 itself)",
+   "verdict_flips": [
+    "p12-ijson-integer-boundary.json"
+   ],
+   "reason_only": []
+  },
+  "accept_2_53": {
+   "source": "extra",
+   "description": "number domain: |n| <= 2^53 (off-by-one, accepts 2^53)",
+   "verdict_flips": [],
+   "reason_only": [
+    "n11-integer-beyond-ijson-range.json"
+   ]
+  },
+  "reject_payload_text": {
+   "source": "extra",
+   "description": "canonical_bytes: the raw-text (payload_text) pathway rejects unconditionally",
+   "verdict_flips": [
+    "p25-integer-token-in-text.json"
+   ],
+   "reason_only": [
+    "n35-integer-valued-float-token.json"
+   ]
+  },
+  "json_parse_collapses_integral_floats": {
+   "source": "extra",
+   "description": "loader: integer-valued float tokens (2.0, 3.0) collapse to int (JSON.parse engine)",
+   "verdict_flips": [
+    "n35-integer-valued-float-token.json",
+    "n38-chain-set-float-seq-token.json"
+   ],
+   "reason_only": []
+  },
+  "no_link_compare": {
+   "source": "extra",
+   "description": "chain_link: expected_link parsed but never compared",
+   "verdict_flips": [
+    "n3-chain-link-wrong-prev.json"
+   ],
+   "reason_only": []
+  },
+  "no_anchor_compare": {
+   "source": "extra",
+   "description": "anchor_relation: sha256(subject) never compared with anchored_digest",
+   "verdict_flips": [
+    "n5-truncated-anchor.json"
+   ],
+   "reason_only": []
+  },
+  "anchor_sha3": {
+   "source": "extra",
+   "description": "anchor_relation: SHA3-256 instead of SHA-256",
+   "verdict_flips": [
+    "p5-live-bitcoin-anchor.json"
+   ],
+   "reason_only": []
+  },
+  "no_prev_continuity": {
+   "source": "extra",
+   "description": "chain_set: prev_digest not compared with the previous record's artifact digest",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_head_digest_binding": {
+   "source": "extra",
+   "description": "chain_set: head.digest not compared with the final record's artifact digest",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_genesis_null_prev": {
+   "source": "extra",
+   "description": "chain_set: genesis record may carry a non-null prev_digest",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "witness_counts_as_presence": {
+   "source": "extra",
+   "description": "chain_set: a witnessed inclusion (leaf index) counts as a present record",
+   "verdict_flips": [
+    "n34-witnessed-inclusion-not-completeness.json"
+   ],
+   "reason_only": []
+  },
+  "acc_last_link_only": {
+   "source": "extra",
+   "description": "chain_commitment: head.acc compared with keccak(acc_0 || last link) only",
+   "verdict_flips": [
+    "p26-chain-commitment-complete.json",
+    "p27-live-chain-commitment-genesis-chain.json",
+    "n37-chain-commitment-last-link-only.json",
+    "p29-committed-prefix-one-record-per-position.json"
+   ],
+   "reason_only": []
+  },
+  "phase_vocab_only": {
+   "source": "extra",
+   "description": "phase_claim: vocabulary checked, equality record/presented NOT checked",
+   "verdict_flips": [
+    "n6-phase-confusion.json"
+   ],
+   "reason_only": []
+  },
+  "phase_equality_only": {
+   "source": "extra",
+   "description": "phase_claim: equality checked, vocabulary NOT checked",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "phase_later_only": {
+   "source": "extra",
+   "description": "phase_claim: reject only when presented as a LATER phase than the record's (spec's literal wording)",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "reject_all_party_only": {
+   "source": "extra",
+   "description": "independence: unconditional rejector of party-only attested records, whatever is claimed",
+   "verdict_flips": [
+    "p9-no-independence-claim.json",
+    "p11-claim-set-silence-only.json",
+    "p22-delivery-commitment-recomputed.json"
+   ],
+   "reason_only": []
+  },
+  "attestations_default_empty": {
+   "source": "extra",
+   "description": "independence: a missing `attestations` field is read as an empty list",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "attestation_string_as_by": {
+   "source": "extra",
+   "description": "independence: a bare-string attestation is read as {by: string}",
+   "verdict_flips": [
+    "n16-attestation-not-an-object.json"
+   ],
+   "reason_only": []
+  },
+  "covers_not_checked": {
+   "source": "extra",
+   "description": "independence: the `covers` scope is ignored",
+   "verdict_flips": [
+    "n20-independence-scope-uncommitted.json",
+    "n21-independence-scope-empty-settlement.json",
+    "n33-delivery-substitution-scope-overreach.json"
+   ],
+   "reason_only": []
+  },
+  "settlement_any_string": {
+   "source": "extra",
+   "description": "derivation: settlement committed when success is true and transaction is ANY string (empty ok)",
+   "verdict_flips": [
+    "n21-independence-scope-empty-settlement.json"
+   ],
+   "reason_only": []
+  },
+  "trust_declared_delivery_digest": {
+   "source": "extra",
+   "description": "derivation: delivery committed when digest present, bytes NOT recomputed",
+   "verdict_flips": [
+    "n33-delivery-substitution-scope-overreach.json"
+   ],
+   "reason_only": []
+  },
+  "derive_nothing": {
+   "source": "extra",
+   "description": "derivation: commitments always empty when the fields are present",
+   "verdict_flips": [
+    "p16-independence-scope-committed.json",
+    "p17-independence-scope-derived-settlement.json",
+    "p23-delivery-independence-within-commitment.json"
+   ],
+   "reason_only": []
+  },
+  "addr_only_identity": {
+   "source": "extra",
+   "description": "identity: only 0x-addresses parse (scheme-qualified identifiers fail closed)",
+   "verdict_flips": [
+    "p21-independence-urn-identities.json"
+   ],
+   "reason_only": []
+  },
+  "no_trailing_punct_fold": {
+   "source": "extra",
+   "description": "identity: scheme identifiers compared without trailing / . # fold",
+   "verdict_flips": [
+    "n31-independence-urn-alias-trailing-slash.json"
+   ],
+   "reason_only": []
+  },
+  "case_fold_scheme_ids": {
+   "source": "extra",
+   "description": "identity: scheme identifier paths compared case-insensitively",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_offer_compare": {
+   "source": "extra",
+   "description": "offer_binding: digest present but not compared",
+   "verdict_flips": [
+    "n19-offer-substitution.json"
+   ],
+   "reason_only": []
+  },
+  "no_offer_presence": {
+   "source": "extra",
+   "description": "offer_binding: a receipt without offerDigest is accepted",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_decision_presence": {
+   "source": "extra",
+   "description": "decision_evidence_binding: a record without decisionEvidenceDigest is accepted",
+   "verdict_flips": [
+    "n27-authority-reduction-unbound.json"
+   ],
+   "reason_only": []
+  },
+  "no_decision_compare": {
+   "source": "extra",
+   "description": "decision_evidence_binding: digest present but not compared",
+   "verdict_flips": [
+    "n28-authority-reduction-substitution.json"
+   ],
+   "reason_only": []
+  },
+  "redigest_under_toSuite": {
+   "source": "extra",
+   "description": "boundary: prefixDigest recomputed under the SUCCESSOR suite at a transition",
+   "verdict_flips": [
+    "p20-suite-transition-preserves-prefix.json",
+    "n29-suite-transition-redigests-prefix.json"
+   ],
+   "reason_only": []
+  },
+  "no_boundary_vocab": {
+   "source": "extra",
+   "description": "boundary: any event / ruleVersion / fromSuite accepted",
+   "verdict_flips": [],
+   "reason_only": []
+  },
+  "no_position_apl_optional": {
+   "source": "extra",
+   "description": "boundary: position not required AND attestedPrefixLength optional",
+   "verdict_flips": [
+    "n25-boundary-prefix-only-no-position.json"
+   ],
+   "reason_only": []
+  },
+  "apl_optional_only": {
+   "source": "extra",
+   "description": "boundary: attestedPrefixLength optional (position still required)",
+   "verdict_flips": [],
+   "reason_only": []
+  }
+ },
+ "mutations_total": {
+  "n": 66,
+  "flipped": 66
+ },
+ "vectors": {
+  "p1-live-genesis-receipt.json": {
+   "file": "p1-live-genesis-receipt.json",
+   "kind": "digest_recompute",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "digest recomputes: 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_digest",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n1-value-drift.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/payload/payload/issuedAt"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "payload"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p2-canonical-key-order.json": {
+   "file": "p2-canonical-key-order.json",
+   "kind": "canonical_bytes",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "canonical bytes match (15 bytes)",
+   "flips": [
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:claimed_canonical",
+     "flipped": true,
+     "reason": "canonicalization_reject"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "canonicalization_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n10-float-in-digest-domain.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/claimed_canonical"
+    ],
+    "added": [
+     "/payload/a",
+     "/payload/b"
+    ],
+    "removed": [
+     "/payload/amount"
+    ],
+    "top_level_fields": [
+     "claimed_canonical",
+     "payload"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p3-integer-key-utf16-order.json": {
+   "file": "p3-integer-key-utf16-order.json",
+   "kind": "digest_recompute",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "digest recomputes: 0x426b770f81b8ad5e307bcfb767deb02f8d32cd340d81a946be88bb184857e81b",
+   "flips": [
+    "keccak_to_sha3",
+    "numeric_hoist_keys",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_digest",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n11-integer-beyond-ijson-range.json",
+    "leaf_diff": 5,
+    "changed": [
+     "/expected_digest"
+    ],
+    "added": [
+     "/payload/1",
+     "/payload/10",
+     "/payload/2"
+    ],
+    "removed": [
+     "/payload/n"
+    ],
+    "top_level_fields": [
+     "expected_digest",
+     "payload"
+    ]
+   },
+   "n_flips": 3
+  },
+  "p4-chain-link-genesis.json": {
+   "file": "p4-chain-link-genesis.json",
+   "kind": "chain_link",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "link recomputes: 0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_link",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n3-chain-link-wrong-prev.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/prev_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "prev_digest"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p5-live-bitcoin-anchor.json": {
+   "file": "p5-live-bitcoin-anchor.json",
+   "kind": "anchor_relation",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "anchored digest binds the subject (existence of the anchor itself NOT checked: structural profile)",
+   "flips": [
+    "anchor_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:anchored_digest",
+     "flipped": true,
+     "reason": "existence_reject"
+    },
+    {
+     "mutation": "flip:subject_digest",
+     "flipped": true,
+     "reason": "existence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n5-truncated-anchor.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/subject_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "subject_digest"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p6-chain-set-complete.json": {
+   "file": "p6-chain-set-complete.json",
+   "kind": "chain_set",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "seq 1..3 present exactly once, prevs continuous, 3 links recompute, head binds final record",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n38-chain-set-float-seq-token.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/head/seq"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p7-phase-consistent.json": {
+   "file": "p7-phase-consistent.json",
+   "kind": "phase_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "record phase delivery == presented phase",
+   "flips": [],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "phase:record-funding",
+     "flipped": true,
+     "reason": "phase_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n6-phase-confusion.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/record/economic_phase"
+    ],
+    "added": [
+     "/record/deliverable_digest"
+    ],
+    "removed": [
+     "/record/amount",
+     "/record/asset"
+    ],
+    "top_level_fields": [
+     "record"
+    ]
+   },
+   "n_flips": 0
+  },
+  "p8-non-party-attestation.json": {
+   "file": "p8-non-party-attestation.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); no scope asserted",
+   "flips": [],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "independence:attestors-become-parties",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:declare-record_commits",
+     "flipped": true,
+     "reason": "independence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n14-unparseable-attestor.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/attestations[1]/by"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 0
+  },
+  "p9-no-independence-claim.json": {
+   "file": "p9-no-independence-claim.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "no independence claimed (silence): nothing to disqualify",
+   "flips": [
+    "reject_all_party_only"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "n7-issuer-only-independence.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/claimed"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n1-value-drift.json": {
+   "file": "n1-value-drift.json",
+   "kind": "digest_recompute",
+   "expect": "reject",
+   "expect_reason": "recompute_mismatch",
+   "baseline_verdict": "reject",
+   "baseline_reason": "recompute_mismatch",
+   "baseline_detail": "recomputed 0x60667ab757a706f55dc7391f053c53f991cba3c2d08b3c999cc4cc3670165616 != expected 0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+   "flips": [
+    "no_digest_compare"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p1-live-genesis-receipt.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/payload/payload/issuedAt"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "payload"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n2-hoisted-integer-keys.json": {
+   "file": "n2-hoisted-integer-keys.json",
+   "kind": "canonical_bytes",
+   "expect": "reject",
+   "expect_reason": "canonicalization_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "canonicalization_reject",
+   "baseline_detail": "canonical bytes '{\"1\":\"c\",\"10\":\"a\",\"2\":\"b\"}' != claimed '{\"1\":\"c\",\"2\":\"b\",\"10\":\"a\"}'",
+   "flips": [
+    "numeric_hoist_keys"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p25-integer-token-in-text.json",
+    "leaf_diff": 5,
+    "changed": [
+     "/claimed_canonical"
+    ],
+    "added": [
+     "/payload/1",
+     "/payload/10",
+     "/payload/2"
+    ],
+    "removed": [
+     "/payload_text"
+    ],
+    "top_level_fields": [
+     "claimed_canonical",
+     "payload",
+     "payload_text"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n3-chain-link-wrong-prev.json": {
+   "file": "n3-chain-link-wrong-prev.json",
+   "kind": "chain_link",
+   "expect": "reject",
+   "expect_reason": "continuity_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "continuity_reject",
+   "baseline_detail": "link recomputes to 0xe9128d550586cef308ecb68b3d9ad35f5dbd0734edbfe2b0e4eee69ea4bc1d0e, claimed 0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5 (prev/seq do not bind)",
+   "flips": [
+    "no_link_compare"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p4-chain-link-genesis.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/prev_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "prev_digest"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n4-omitted-record.json": {
+   "file": "n4-omitted-record.json",
+   "kind": "chain_set",
+   "expect": "reject",
+   "expect_reason": "completeness_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "completeness_reject",
+   "baseline_detail": "missing seq [2] under committed head",
+   "flips": [],
+   "reason_only": [
+    "no_seq_completeness"
+   ],
+   "closest_opposite_twin": {
+    "twin": "p6-chain-set-complete.json",
+    "leaf_diff": 9,
+    "changed": [
+     "/records[1]/artifact_digest",
+     "/records[1]/prev_digest",
+     "/records[1]/seq"
+    ],
+    "added": [],
+    "removed": [
+     "/records[0]/link",
+     "/records[1]/link",
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq"
+    ],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 0
+  },
+  "n5-truncated-anchor.json": {
+   "file": "n5-truncated-anchor.json",
+   "kind": "anchor_relation",
+   "expect": "reject",
+   "expect_reason": "existence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "existence_reject",
+   "baseline_detail": "sha256(subject) = 0x8c0a1d376820875befe0ccc8213a7f0620f42d5d6d60b375840abcfe96120f29 does not equal the anchored digest",
+   "flips": [
+    "no_anchor_compare"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p5-live-bitcoin-anchor.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/subject_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "subject_digest"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n6-phase-confusion.json": {
+   "file": "n6-phase-confusion.json",
+   "kind": "phase_claim",
+   "expect": "reject",
+   "expect_reason": "phase_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "phase_reject",
+   "baseline_detail": "a funding-phase record presented as delivery evidence",
+   "flips": [
+    "phase_any",
+    "phase_vocab_only"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p7-phase-consistent.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/record/economic_phase"
+    ],
+    "added": [
+     "/record/amount",
+     "/record/asset"
+    ],
+    "removed": [
+     "/record/deliverable_digest"
+    ],
+    "top_level_fields": [
+     "record"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n7-issuer-only-independence.json": {
+   "file": "n7-issuer-only-independence.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attested only by parties to the transaction: structure, not independence",
+   "flips": [
+    "no_independence"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p9-no-independence-claim.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/claimed"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p10-claim-set-independent.json": {
+   "file": "p10-claim-set-independent.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); no scope asserted",
+   "flips": [],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "n9-unrecognized-member-in-claim-set.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/claimed[0]"
+    ],
+    "added": [],
+    "removed": [
+     "/claimed[1]"
+    ],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 0
+  },
+  "p11-claim-set-silence-only.json": {
+   "file": "p11-claim-set-silence-only.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "no independence claimed (silence): nothing to disqualify",
+   "flips": [
+    "reject_all_party_only"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "n7-issuer-only-independence.json",
+    "leaf_diff": 2,
+    "changed": [],
+    "added": [
+     "/claimed[0]"
+    ],
+    "removed": [
+     "/claimed"
+    ],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n8-unrecognized-independence-claim.json": {
+   "file": "n8-unrecognized-independence-claim.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "claim member(s) ['effect_corroborated'] cannot be interpreted (fails closed)",
+   "flips": [
+    "no_unknown_claim_reject"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p9-no-independence-claim.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/claimed"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p12-ijson-integer-boundary.json": {
+   "file": "p12-ijson-integer-boundary.json",
+   "kind": "digest_recompute",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "digest recomputes: 0x1bbcd0a5a14e5f06f15a65af355156e744a40fdf8897bcb1081812ab1470a0e7",
+   "flips": [
+    "keccak_to_sha3",
+    "strict_below_2_53"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_digest",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n11-integer-beyond-ijson-range.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/expected_digest",
+     "/payload/n"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "expected_digest",
+     "payload"
+    ]
+   },
+   "n_flips": 2
+  },
+  "p13-decimal-string-beside-integer.json": {
+   "file": "p13-decimal-string-beside-integer.json",
+   "kind": "digest_recompute",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "digest recomputes: 0x81086b5801b1bfd992e4d1e929f54907e0d3be0e8ede94f1da1a954b4e78b250",
+   "flips": [
+    "keccak_to_sha3",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_digest",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n11-integer-beyond-ijson-range.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/expected_digest"
+    ],
+    "added": [
+     "/payload/issuedAt",
+     "/payload/tax/amount"
+    ],
+    "removed": [
+     "/payload/n"
+    ],
+    "top_level_fields": [
+     "expected_digest",
+     "payload"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n10-float-in-digest-domain.json": {
+   "file": "n10-float-in-digest-domain.json",
+   "kind": "canonical_bytes",
+   "expect": "reject",
+   "expect_reason": "number_domain_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "number_domain_reject",
+   "baseline_detail": "non-integer number token '1.1' in the digest domain",
+   "flips": [
+    "no_number_domain"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p25-integer-token-in-text.json",
+    "leaf_diff": 3,
+    "changed": [
+     "/claimed_canonical"
+    ],
+    "added": [
+     "/payload/amount"
+    ],
+    "removed": [
+     "/payload_text"
+    ],
+    "top_level_fields": [
+     "claimed_canonical",
+     "payload",
+     "payload_text"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n11-integer-beyond-ijson-range.json": {
+   "file": "n11-integer-beyond-ijson-range.json",
+   "kind": "digest_recompute",
+   "expect": "reject",
+   "expect_reason": "number_domain_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "number_domain_reject",
+   "baseline_detail": "integer 9007199254740992 outside the I-JSON exact range |n| <= 2^53-1",
+   "flips": [],
+   "reason_only": [
+    "no_number_domain",
+    "accept_2_53"
+   ],
+   "closest_opposite_twin": {
+    "twin": "p12-ijson-integer-boundary.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/expected_digest",
+     "/payload/n"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "expected_digest",
+     "payload"
+    ]
+   },
+   "n_flips": 0
+  },
+  "p14-supplementary-plane-key-order.json": {
+   "file": "p14-supplementary-plane-key-order.json",
+   "kind": "digest_recompute",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "digest recomputes: 0xecb8402c2b3a26aebd5f69e0a91c8f6c16d0a2cc679bc689b51f0d5bc4b36929",
+   "flips": [
+    "keccak_to_sha3",
+    "codepoint_key_order",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:expected_digest",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    },
+    {
+     "mutation": "payload:add-key",
+     "flipped": true,
+     "reason": "recompute_mismatch"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n11-integer-beyond-ijson-range.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/expected_digest"
+    ],
+    "added": [
+     "/payload/｡",
+     "/payload/𐀀"
+    ],
+    "removed": [
+     "/payload/n"
+    ],
+    "top_level_fields": [
+     "expected_digest",
+     "payload"
+    ]
+   },
+   "n_flips": 3
+  },
+  "n12-codepoint-key-order.json": {
+   "file": "n12-codepoint-key-order.json",
+   "kind": "canonical_bytes",
+   "expect": "reject",
+   "expect_reason": "canonicalization_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "canonicalization_reject",
+   "baseline_detail": "canonical bytes '{\"𐀀\":2,\"｡\":1}' != claimed '{\"｡\":1,\"𐀀\":2}'",
+   "flips": [
+    "codepoint_key_order",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p25-integer-token-in-text.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/claimed_canonical"
+    ],
+    "added": [
+     "/payload/｡",
+     "/payload/𐀀"
+    ],
+    "removed": [
+     "/payload_text"
+    ],
+    "top_level_fields": [
+     "claimed_canonical",
+     "payload",
+     "payload_text"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n13-party-alias-whitespace.json": {
+   "file": "n13-party-alias-whitespace.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attested only by parties to the transaction: structure, not independence",
+   "flips": [
+    "no_independence",
+    "no_identity_normalization"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p8-non-party-attestation.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/attestations[1]/by",
+     "/attestations[1]/role"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n14-unparseable-attestor.json": {
+   "file": "n14-unparseable-attestor.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attestor identifier '0x9d38BA84730271eb27Ac9bD4\\u200bBd2620c08dB4FDa6' does not parse (n14, fails closed)",
+   "flips": [
+    "no_identity_normalization"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p8-non-party-attestation.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/attestations[1]/by"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n15-claim-without-attestations.json": {
+   "file": "n15-claim-without-attestations.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "independence claimed with no attestations to evaluate (n15)",
+   "flips": [],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p21-independence-urn-identities.json",
+    "leaf_diff": 3,
+    "changed": [
+     "/parties[0]",
+     "/parties[1]"
+    ],
+    "added": [],
+    "removed": [
+     "/attestations[0]/by"
+    ],
+    "top_level_fields": [
+     "attestations",
+     "parties"
+    ]
+   },
+   "n_flips": 0
+  },
+  "n16-attestation-not-an-object.json": {
+   "file": "n16-attestation-not-an-object.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attestation is not an object naming its attestor (n16)",
+   "flips": [
+    "attestation_string_as_by"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p21-independence-urn-identities.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/parties[0]",
+     "/parties[1]"
+    ],
+    "added": [
+     "/attestations[0]"
+    ],
+    "removed": [
+     "/attestations[0]/by"
+    ],
+    "top_level_fields": [
+     "attestations",
+     "parties"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n17-renumbered-omission.json": {
+   "file": "n17-renumbered-omission.json",
+   "kind": "chain_set",
+   "expect": "reject",
+   "expect_reason": "continuity_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "continuity_reject",
+   "baseline_detail": "link at seq 2 does not recompute as keccak256(artifact || prev || seq_be8)",
+   "flips": [
+    "no_link_recompute"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p6-chain-set-complete.json",
+    "leaf_diff": 7,
+    "changed": [
+     "/head/seq",
+     "/records[1]/artifact_digest",
+     "/records[1]/link"
+    ],
+    "added": [],
+    "removed": [
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq"
+    ],
+    "top_level_fields": [
+     "head",
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n18-unrecognized-phase.json": {
+   "file": "n18-unrecognized-phase.json",
+   "kind": "phase_claim",
+   "expect": "reject",
+   "expect_reason": "phase_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "phase_reject",
+   "baseline_detail": "economic_phase 'settled_and_delivered' is outside the declared vocabulary ['funding', 'delivery', 'settlement', 'refund', 'reversal']",
+   "flips": [
+    "phase_any"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p7-phase-consistent.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/record/economic_phase"
+    ],
+    "added": [
+     "/record/amount",
+     "/record/asset"
+    ],
+    "removed": [
+     "/record/deliverable_digest"
+    ],
+    "top_level_fields": [
+     "record"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p16-independence-scope-committed.json": {
+   "file": "p16-independence-scope-committed.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); claim covers ['settlement', 'network'] within derived commitments ['network', 'settlement']",
+   "flips": [
+    "derive_nothing"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "independence:attestors-become-parties",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:declare-record_commits",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:cover-uncommitted-fact",
+     "flipped": true,
+     "reason": "independence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n20-independence-scope-uncommitted.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/covers[0]"
+    ],
+    "added": [
+     "/covers[1]"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "covers"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n20-independence-scope-uncommitted.json": {
+   "file": "n20-independence-scope-uncommitted.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "claim covers ['delivery'] — fact(s) the record does not commit to (derived commitments: ['network', 'settlement'])",
+   "flips": [
+    "covers_not_checked"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p16-independence-scope-committed.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/covers[0]"
+    ],
+    "added": [],
+    "removed": [
+     "/covers[1]"
+    ],
+    "top_level_fields": [
+     "covers"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p17-independence-scope-derived-settlement.json": {
+   "file": "p17-independence-scope-derived-settlement.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); claim covers ['settlement'] within derived commitments ['network', 'settlement']",
+   "flips": [
+    "derive_nothing"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "independence:attestors-become-parties",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:declare-record_commits",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:cover-uncommitted-fact",
+     "flipped": true,
+     "reason": "independence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n21-independence-scope-empty-settlement.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/settlement_result/transaction"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "settlement_result"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n21-independence-scope-empty-settlement.json": {
+   "file": "n21-independence-scope-empty-settlement.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "claim covers ['settlement'] — fact(s) the record does not commit to (derived commitments: ['network'])",
+   "flips": [
+    "covers_not_checked",
+    "settlement_any_string"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p17-independence-scope-derived-settlement.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/settlement_result/transaction"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "settlement_result"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n22-independence-scope-declared-override.json": {
+   "file": "n22-independence-scope-declared-override.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope",
+   "flips": [
+    "declared_commits"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p17-independence-scope-derived-settlement.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/settlement_result/transaction"
+    ],
+    "added": [
+     "/record_commits[0]"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "record_commits",
+     "settlement_result"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n23-independence-scope-null-declared.json": {
+   "file": "n23-independence-scope-null-declared.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope",
+   "flips": [
+    "no_record_commits_presence",
+    "declared_commits"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p17-independence-scope-derived-settlement.json",
+    "leaf_diff": 1,
+    "changed": [],
+    "added": [
+     "/record_commits"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "record_commits"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n24-independence-scope-declared-no-scope.json": {
+   "file": "n24-independence-scope-declared-no-scope.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope",
+   "flips": [
+    "no_record_commits_presence",
+    "declared_commits"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p8-non-party-attestation.json",
+    "leaf_diff": 1,
+    "changed": [],
+    "added": [
+     "/record_commits[0]"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "record_commits"
+    ]
+   },
+   "n_flips": 2
+  },
+  "p22-delivery-commitment-recomputed.json": {
+   "file": "p22-delivery-commitment-recomputed.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "no independence claimed (silence): nothing to disqualify",
+   "flips": [
+    "reject_all_party_only"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "n32-delivery-self-attested.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/claimed"
+    ],
+    "added": [],
+    "removed": [
+     "/covers[0]"
+    ],
+    "top_level_fields": [
+     "claimed",
+     "covers"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n32-delivery-self-attested.json": {
+   "file": "n32-delivery-self-attested.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attested only by parties to the transaction: structure, not independence",
+   "flips": [
+    "no_independence"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p22-delivery-commitment-recomputed.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/claimed"
+    ],
+    "added": [
+     "/covers[0]"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "claimed",
+     "covers"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p23-delivery-independence-within-commitment.json": {
+   "file": "p23-delivery-independence-within-commitment.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); claim covers ['delivery'] within derived commitments ['delivery']",
+   "flips": [
+    "keccak_to_sha3",
+    "derive_nothing"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "independence:attestors-become-parties",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:declare-record_commits",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:cover-uncommitted-fact",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:tamper-deliverable",
+     "flipped": true,
+     "reason": "independence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n33-delivery-substitution-scope-overreach.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/deliverable_bytes"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "deliverable_bytes"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n33-delivery-substitution-scope-overreach.json": {
+   "file": "n33-delivery-substitution-scope-overreach.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "claim covers ['delivery'] — fact(s) the record does not commit to (derived commitments: [])",
+   "flips": [
+    "covers_not_checked",
+    "trust_declared_delivery_digest"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p23-delivery-independence-within-commitment.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/deliverable_bytes"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "deliverable_bytes"
+    ]
+   },
+   "n_flips": 2
+  },
+  "p24-witnessed-complete-set.json": {
+   "file": "p24-witnessed-complete-set.json",
+   "kind": "chain_set",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "seq 1..3 present exactly once, prevs continuous, 3 links recompute, head binds final record",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n34-witnessed-inclusion-not-completeness.json",
+    "leaf_diff": 8,
+    "changed": [
+     "/records[1]/artifact_digest",
+     "/records[1]/link",
+     "/records[1]/prev_digest",
+     "/records[1]/seq"
+    ],
+    "added": [
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n34-witnessed-inclusion-not-completeness.json": {
+   "file": "n34-witnessed-inclusion-not-completeness.json",
+   "kind": "chain_set",
+   "expect": "reject",
+   "expect_reason": "completeness_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "completeness_reject",
+   "baseline_detail": "missing seq [2] under committed head",
+   "flips": [
+    "witness_counts_as_presence"
+   ],
+   "reason_only": [
+    "no_seq_completeness"
+   ],
+   "closest_opposite_twin": {
+    "twin": "p24-witnessed-complete-set.json",
+    "leaf_diff": 8,
+    "changed": [
+     "/records[1]/artifact_digest",
+     "/records[1]/link",
+     "/records[1]/prev_digest",
+     "/records[1]/seq"
+    ],
+    "added": [],
+    "removed": [
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq"
+    ],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p18-boundary-binds-prefix-and-position.json": {
+   "file": "p18-boundary-binds-prefix-and-position.json",
+   "kind": "boundary_binding",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "prefixDigest binds 3 events under keccak256-jcs; position 3; coverage 3 <= attested 3",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "boundary:flip-prefixDigest",
+     "flipped": true,
+     "reason": "boundary_reject"
+    },
+    {
+     "mutation": "boundary:drop-position",
+     "flipped": true,
+     "reason": "boundary_reject"
+    },
+    {
+     "mutation": "boundary:coverage-beyond-attested",
+     "flipped": true,
+     "reason": "boundary_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n26-coverage-claimed-over-empty-attestation.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/boundary_event/attestedPrefixLength"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "boundary_event"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n25-boundary-prefix-only-no-position.json": {
+   "file": "n25-boundary-prefix-only-no-position.json",
+   "kind": "boundary_binding",
+   "expect": "reject",
+   "expect_reason": "boundary_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "boundary_reject",
+   "baseline_detail": "boundary event binds no position in the prefix's continuation (n25)",
+   "flips": [
+    "no_position_apl_optional"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p18-boundary-binds-prefix-and-position.json",
+    "leaf_diff": 3,
+    "changed": [],
+    "added": [],
+    "removed": [
+     "/boundary_event/attestedPrefixLength",
+     "/boundary_event/position",
+     "/covered_through"
+    ],
+    "top_level_fields": [
+     "boundary_event",
+     "covered_through"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n26-coverage-claimed-over-empty-attestation.json": {
+   "file": "n26-coverage-claimed-over-empty-attestation.json",
+   "kind": "boundary_binding",
+   "expect": "reject",
+   "expect_reason": "boundary_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "boundary_reject",
+   "baseline_detail": "unattested prefix (attestedPrefixLength = 0) is its own outcome, not a pass (n26)",
+   "flips": [
+    "no_coverage_bound"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p18-boundary-binds-prefix-and-position.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/boundary_event/attestedPrefixLength"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "boundary_event"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p19-authority-reduction-bound.json": {
+   "file": "p19-authority-reduction-bound.json",
+   "kind": "decision_evidence_binding",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "record binds the exact decision-evidence object",
+   "flips": [
+    "keccak_to_sha3",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "evidence:change-policy",
+     "flipped": true,
+     "reason": "binding_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n28-authority-reduction-substitution.json",
+    "leaf_diff": 6,
+    "changed": [
+     "/decision_evidence/effective/budgets/nodes",
+     "/decision_evidence/hostAllowed/budgets/nodes",
+     "/decision_evidence/policy/version"
+    ],
+    "added": [
+     "/decision_evidence/delta/reducedBudgets"
+    ],
+    "removed": [
+     "/decision_evidence/delta/reducedBudgets/nodes/effective",
+     "/decision_evidence/delta/reducedBudgets/nodes/requested"
+    ],
+    "top_level_fields": [
+     "decision_evidence"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n27-authority-reduction-unbound.json": {
+   "file": "n27-authority-reduction-unbound.json",
+   "kind": "decision_evidence_binding",
+   "expect": "reject",
+   "expect_reason": "binding_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "binding_reject",
+   "baseline_detail": "record carries no decisionEvidenceDigest: the presented reduction is unbound",
+   "flips": [
+    "no_decision_presence"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p19-authority-reduction-bound.json",
+    "leaf_diff": 7,
+    "changed": [
+     "/decision_evidence/effective/budgets/nodes",
+     "/decision_evidence/hostAllowed/budgets/nodes",
+     "/decision_evidence/policy/version"
+    ],
+    "added": [
+     "/decision_evidence/delta/reducedBudgets/nodes/effective",
+     "/decision_evidence/delta/reducedBudgets/nodes/requested"
+    ],
+    "removed": [
+     "/decision_evidence/delta/reducedBudgets",
+     "/record/decisionEvidenceDigest"
+    ],
+    "top_level_fields": [
+     "decision_evidence",
+     "record"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n28-authority-reduction-substitution.json": {
+   "file": "n28-authority-reduction-substitution.json",
+   "kind": "decision_evidence_binding",
+   "expect": "reject",
+   "expect_reason": "binding_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "binding_reject",
+   "baseline_detail": "keccak256(canonical(decision_evidence)) = 0x6f1e5578989368eebfa56b16bea09352aecc4f2f17ec7831301121c72100a909 != committed digest (substitution)",
+   "flips": [
+    "no_decision_compare"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p19-authority-reduction-bound.json",
+    "leaf_diff": 6,
+    "changed": [
+     "/decision_evidence/effective/budgets/nodes",
+     "/decision_evidence/hostAllowed/budgets/nodes",
+     "/decision_evidence/policy/version"
+    ],
+    "added": [
+     "/decision_evidence/delta/reducedBudgets/nodes/effective",
+     "/decision_evidence/delta/reducedBudgets/nodes/requested"
+    ],
+    "removed": [
+     "/decision_evidence/delta/reducedBudgets"
+    ],
+    "top_level_fields": [
+     "decision_evidence"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p20-suite-transition-preserves-prefix.json": {
+   "file": "p20-suite-transition-preserves-prefix.json",
+   "kind": "boundary_binding",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "prefixDigest binds 3 events under keccak256-jcs; position 3; coverage 3 <= attested 3",
+   "flips": [
+    "keccak_to_sha3",
+    "redigest_under_toSuite"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "boundary:flip-prefixDigest",
+     "flipped": true,
+     "reason": "boundary_reject"
+    },
+    {
+     "mutation": "boundary:drop-position",
+     "flipped": true,
+     "reason": "boundary_reject"
+    },
+    {
+     "mutation": "boundary:coverage-beyond-attested",
+     "flipped": true,
+     "reason": "boundary_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n29-suite-transition-redigests-prefix.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/boundary_event/prefixDigest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "boundary_event"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n29-suite-transition-redigests-prefix.json": {
+   "file": "n29-suite-transition-redigests-prefix.json",
+   "kind": "boundary_binding",
+   "expect": "reject",
+   "expect_reason": "boundary_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "boundary_reject",
+   "baseline_detail": "prefixDigest does not bind the prefix under keccak256-jcs (recomputed 0x359d141c2ce3530ee54762bc13d9a51676cdec13becc24deddc45fb536bbd086) — re-digested or forged history",
+   "flips": [
+    "keccak_to_sha3",
+    "redigest_under_toSuite"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p20-suite-transition-preserves-prefix.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/boundary_event/prefixDigest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "boundary_event"
+    ]
+   },
+   "n_flips": 2
+  },
+  "p21-independence-urn-identities.json": {
+   "file": "p21-independence-urn-identities.json",
+   "kind": "independence_claim",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "1 non-party attestor(s); no scope asserted",
+   "flips": [
+    "addr_only_identity"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "independence:attestors-become-parties",
+     "flipped": true,
+     "reason": "independence_reject"
+    },
+    {
+     "mutation": "independence:declare-record_commits",
+     "flipped": true,
+     "reason": "independence_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n30-independence-urn-self-attested.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/attestations[0]/by"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n30-independence-urn-self-attested.json": {
+   "file": "n30-independence-urn-self-attested.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attested only by parties to the transaction: structure, not independence",
+   "flips": [
+    "no_independence"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p21-independence-urn-identities.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/attestations[0]/by"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n31-independence-urn-alias-trailing-slash.json": {
+   "file": "n31-independence-urn-alias-trailing-slash.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "attested only by parties to the transaction: structure, not independence",
+   "flips": [
+    "no_independence",
+    "no_identity_normalization",
+    "no_trailing_punct_fold"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p21-independence-urn-identities.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/attestations[0]/by"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "attestations"
+    ]
+   },
+   "n_flips": 3
+  },
+  "p15-offer-binding.json": {
+   "file": "p15-offer-binding.json",
+   "kind": "offer_binding",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "receipt.offerDigest binds the presented offer",
+   "flips": [
+    "keccak_to_sha3",
+    "insertion_order_keys"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "offer:change-amount",
+     "flipped": true,
+     "reason": "binding_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n19-offer-substitution.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/offer/amount",
+     "/offer/payTo"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "offer"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n19-offer-substitution.json": {
+   "file": "n19-offer-substitution.json",
+   "kind": "offer_binding",
+   "expect": "reject",
+   "expect_reason": "binding_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "binding_reject",
+   "baseline_detail": "keccak256(canonical(offer)) = 0xe2a62813411c0da59e0755511fadb89803183c6aac59f1d12f83a6e3be545e9c != receipt.offerDigest (terms substituted)",
+   "flips": [
+    "no_offer_compare"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p15-offer-binding.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/offer/amount",
+     "/offer/payTo"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "offer"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n9-unrecognized-member-in-claim-set.json": {
+   "file": "n9-unrecognized-member-in-claim-set.json",
+   "kind": "independence_claim",
+   "expect": "reject",
+   "expect_reason": "independence_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "independence_reject",
+   "baseline_detail": "claim member(s) ['unknown-claim'] cannot be interpreted (fails closed)",
+   "flips": [
+    "no_unknown_claim_reject"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p10-claim-set-independent.json",
+    "leaf_diff": 2,
+    "changed": [
+     "/claimed[0]"
+    ],
+    "added": [
+     "/claimed[1]"
+    ],
+    "removed": [],
+    "top_level_fields": [
+     "claimed"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p25-integer-token-in-text.json": {
+   "file": "p25-integer-token-in-text.json",
+   "kind": "canonical_bytes",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "canonical bytes match (12 bytes)",
+   "flips": [
+    "reject_payload_text"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "flip:claimed_canonical",
+     "flipped": true,
+     "reason": "canonicalization_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n35-integer-valued-float-token.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/payload_text"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "payload_text"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n35-integer-valued-float-token.json": {
+   "file": "n35-integer-valued-float-token.json",
+   "kind": "canonical_bytes",
+   "expect": "reject",
+   "expect_reason": "number_domain_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "number_domain_reject",
+   "baseline_detail": "non-integer number token '2.0' in the digest domain",
+   "flips": [
+    "json_parse_collapses_integral_floats"
+   ],
+   "reason_only": [
+    "no_number_domain",
+    "reject_payload_text"
+   ],
+   "closest_opposite_twin": {
+    "twin": "p25-integer-token-in-text.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/payload_text"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "payload_text"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p26-chain-commitment-complete.json": {
+   "file": "p26-chain-commitment-complete.json",
+   "kind": "chain_commitment",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "head.acc equals the fold over all 3 recomputed links",
+   "flips": [
+    "keccak_to_sha3",
+    "acc_last_link_only"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "head:flip-acc",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n37-chain-commitment-last-link-only.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/head/acc"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head"
+    ]
+   },
+   "n_flips": 2
+  },
+  "p27-live-chain-commitment-genesis-chain.json": {
+   "file": "p27-live-chain-commitment-genesis-chain.json",
+   "kind": "chain_commitment",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "head.acc equals the fold over all 13 recomputed links",
+   "flips": [
+    "keccak_to_sha3",
+    "acc_last_link_only"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "head:flip-acc",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n36-chain-commitment-prefix-substituted.json",
+    "leaf_diff": 41,
+    "changed": [
+     "/head/acc",
+     "/head/digest",
+     "/head/seq",
+     "/records[0]/artifact_digest",
+     "/records[1]/artifact_digest",
+     "/records[1]/prev_digest",
+     "/records[2]/artifact_digest",
+     "/records[2]/prev_digest"
+    ],
+    "added": [
+     "/records[10]/artifact_digest",
+     "/records[10]/prev_digest",
+     "/records[10]/seq",
+     "/records[11]/artifact_digest",
+     "/records[11]/prev_digest",
+     "/records[11]/seq",
+     "/records[12]/artifact_digest",
+     "/records[12]/prev_digest",
+     "/records[12]/seq",
+     "/records[3]/artifact_digest",
+     "/records[3]/prev_digest",
+     "/records[3]/seq",
+     "/records[4]/artifact_digest",
+     "/records[4]/prev_digest",
+     "/records[4]/seq",
+     "/records[5]/artifact_digest",
+     "/records[5]/prev_digest",
+     "/records[5]/seq",
+     "/records[6]/artifact_digest",
+     "/records[6]/prev_digest",
+     "/records[6]/seq",
+     "/records[7]/artifact_digest",
+     "/records[7]/prev_digest",
+     "/records[7]/seq",
+     "/records[8]/artifact_digest",
+     "/records[8]/prev_digest",
+     "/records[8]/seq",
+     "/records[9]/artifact_digest",
+     "/records[9]/prev_digest",
+     "/records[9]/seq"
+    ],
+    "removed": [
+     "/records[0]/link",
+     "/records[1]/link",
+     "/records[2]/link"
+    ],
+    "top_level_fields": [
+     "head",
+     "records"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n36-chain-commitment-prefix-substituted.json": {
+   "file": "n36-chain-commitment-prefix-substituted.json",
+   "kind": "chain_commitment",
+   "expect": "reject",
+   "expect_reason": "continuity_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "continuity_reject",
+   "baseline_detail": "accumulator mismatch: fold over 3 links = 0x5479a41d713938384141892656be4e7e8e0ffbdf621b65b6f2194ccd2688e3ba, head.acc = 0xae28e0e8b22b15cd27de2390efbe4e3c206decbfe5cede4751b85410f6648f4f",
+   "flips": [
+    "no_accumulator"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p26-chain-commitment-complete.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/records[0]/artifact_digest",
+     "/records[0]/link",
+     "/records[1]/link",
+     "/records[1]/prev_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n37-chain-commitment-last-link-only.json": {
+   "file": "n37-chain-commitment-last-link-only.json",
+   "kind": "chain_commitment",
+   "expect": "reject",
+   "expect_reason": "continuity_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "continuity_reject",
+   "baseline_detail": "accumulator mismatch: fold over 3 links = 0xae28e0e8b22b15cd27de2390efbe4e3c206decbfe5cede4751b85410f6648f4f, head.acc = 0x4062010194c5605f41afc27e0094266c1cee5063703f5614901893c7fb67ec64",
+   "flips": [
+    "no_accumulator",
+    "acc_last_link_only"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p26-chain-commitment-complete.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/head/acc"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n38-chain-set-float-seq-token.json": {
+   "file": "n38-chain-set-float-seq-token.json",
+   "kind": "chain_set",
+   "expect": "reject",
+   "expect_reason": "completeness_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "completeness_reject",
+   "baseline_detail": "head.seq '3.0' is not a positive integer token",
+   "flips": [
+    "json_parse_collapses_integral_floats"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p6-chain-set-complete.json",
+    "leaf_diff": 1,
+    "changed": [
+     "/head/seq"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p28-issuer-sequence-distinct-seq.json": {
+   "file": "p28-issuer-sequence-distinct-seq.json",
+   "kind": "chain_set",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "seq 1..4 present exactly once, prevs continuous, 4 links recompute, head binds final record",
+   "flips": [
+    "keccak_to_sha3"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n39-issuer-sequence-duplicate-seq.json",
+    "leaf_diff": 10,
+    "changed": [
+     "/head/digest",
+     "/head/seq",
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq",
+     "/records[3]/artifact_digest",
+     "/records[3]/link",
+     "/records[3]/prev_digest",
+     "/records[3]/seq"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head",
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "n39-issuer-sequence-duplicate-seq.json": {
+   "file": "n39-issuer-sequence-duplicate-seq.json",
+   "kind": "chain_set",
+   "expect": "reject",
+   "expect_reason": "completeness_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "completeness_reject",
+   "baseline_detail": "duplicate seq [2] under committed head",
+   "flips": [
+    "no_seq_completeness"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p28-issuer-sequence-distinct-seq.json",
+    "leaf_diff": 10,
+    "changed": [
+     "/head/digest",
+     "/head/seq",
+     "/records[2]/artifact_digest",
+     "/records[2]/link",
+     "/records[2]/prev_digest",
+     "/records[2]/seq",
+     "/records[3]/artifact_digest",
+     "/records[3]/link",
+     "/records[3]/prev_digest",
+     "/records[3]/seq"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "head",
+     "records"
+    ]
+   },
+   "n_flips": 1
+  },
+  "p29-committed-prefix-one-record-per-position.json": {
+   "file": "p29-committed-prefix-one-record-per-position.json",
+   "kind": "chain_commitment",
+   "expect": "valid",
+   "expect_reason": null,
+   "baseline_verdict": "valid",
+   "baseline_reason": null,
+   "baseline_detail": "head.acc equals the fold over all 3 recomputed links",
+   "flips": [
+    "keccak_to_sha3",
+    "acc_last_link_only"
+   ],
+   "reason_only": [],
+   "mutations": [
+    {
+     "mutation": "head:flip-digest",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "head:flip-acc",
+     "flipped": true,
+     "reason": "continuity_reject"
+    },
+    {
+     "mutation": "records:omit-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:dup-seq2",
+     "flipped": true,
+     "reason": "completeness_reject"
+    },
+    {
+     "mutation": "records:flip-prev-last",
+     "flipped": true,
+     "reason": "continuity_reject"
+    }
+   ],
+   "closest_opposite_twin": {
+    "twin": "n40-equivocating-record-at-committed-position.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/records[1]/artifact_digest",
+     "/records[1]/link",
+     "/records[2]/link",
+     "/records[2]/prev_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 2
+  },
+  "n40-equivocating-record-at-committed-position.json": {
+   "file": "n40-equivocating-record-at-committed-position.json",
+   "kind": "chain_commitment",
+   "expect": "reject",
+   "expect_reason": "continuity_reject",
+   "baseline_verdict": "reject",
+   "baseline_reason": "continuity_reject",
+   "baseline_detail": "accumulator mismatch: fold over 3 links = 0x5483c6ea9111e3f93798a784ccd4a4489815f4186e94b06fe5688413e980d45c, head.acc = 0x2a1fe13ab3b6da8e6cc2486e58c4303aa7ecac2ae568bc3fdc21eb42a8a47cd8",
+   "flips": [
+    "no_accumulator"
+   ],
+   "reason_only": [],
+   "closest_opposite_twin": {
+    "twin": "p29-committed-prefix-one-record-per-position.json",
+    "leaf_diff": 4,
+    "changed": [
+     "/records[1]/artifact_digest",
+     "/records[1]/link",
+     "/records[2]/link",
+     "/records[2]/prev_digest"
+    ],
+    "added": [],
+    "removed": [],
+    "top_level_fields": [
+     "records"
+    ]
+   },
+   "n_flips": 1
+  }
+ }
+}

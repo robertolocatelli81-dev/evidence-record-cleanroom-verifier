@@ -1,0 +1,33 @@
+{
+  "id": "p29-committed-prefix-one-record-per-position",
+  "kind": "chain_commitment",
+  "expect": "valid",
+  "description": "Accepting twin of n40: the committed prefix \u2014 three issuer records (n39's seq 1, first seq 2 and seq 3), head.acc folded over every recomputed link. Valid: the presented prefix is the one the commitment was built over, so the record at each position is the one committed there. In production the links are counter-signed at issuance by a party outside the transaction and the commitment is anchored; this structural profile checks the fold only.",
+  "input": {
+    "head": {
+      "seq": 3,
+      "digest": "0x4cccd4e30892574acf4911c9a41445aace4f8c440c7208a412b2c11b00393713",
+      "acc": "0x2a1fe13ab3b6da8e6cc2486e58c4303aa7ecac2ae568bc3fdc21eb42a8a47cd8"
+    },
+    "records": [
+      {
+        "seq": 1,
+        "artifact_digest": "0x1712e679abe04f5c28e6da42f11f5a9b9f559248f7ac60add74af52fe847d6de",
+        "prev_digest": null,
+        "link": "0x8e0e243a003b6a0658b8674a9e0ecb6d730234013e380e87735342e596bb363f"
+      },
+      {
+        "seq": 2,
+        "artifact_digest": "0x32fc3d4332b34965f257f6fad13c1e1c31c2e3e758a5b49657249fe4cec1f32c",
+        "prev_digest": "0x1712e679abe04f5c28e6da42f11f5a9b9f559248f7ac60add74af52fe847d6de",
+        "link": "0xf96bd00e60c821d793c5387a6b4721b773966da4c4a26f3135d8997b67d107dd"
+      },
+      {
+        "seq": 3,
+        "artifact_digest": "0x4cccd4e30892574acf4911c9a41445aace4f8c440c7208a412b2c11b00393713",
+        "prev_digest": "0x32fc3d4332b34965f257f6fad13c1e1c31c2e3e758a5b49657249fe4cec1f32c",
+        "link": "0xc25a2814a692a21c61ae2b401a3878d5e998162d464ab195c5ba3c0b2505a7e7"
+      }
+    ]
+  }
+}

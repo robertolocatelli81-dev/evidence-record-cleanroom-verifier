@@ -1,0 +1,10 @@
+=== run_logged header ===
+cmd      : python3 verify_tersign.py spec --flip-expect --quiet
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-09-29T06:34:12+02:00
+ended    : 2026-09-29T06:34:12+02:00
+exit     : 1
+=== stdout ===
+fully concordant 0/69
+=== stderr ===

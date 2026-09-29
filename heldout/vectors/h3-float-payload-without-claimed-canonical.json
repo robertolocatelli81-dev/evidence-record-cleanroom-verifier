@@ -1,0 +1,12 @@
+{
+  "id": "h3-float-payload-without-claimed-canonical",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "number_domain_reject",
+  "description": "Held-out (clean-room, Noûs for Roberto Locatelli, 2026-09-29). n10's payload (a non-integer number token) with `claimed_canonical` REMOVED. The number-domain boundary is evaluated before anything else about the canonical bytes (MANIFEST canonicalization; x402 compliance_fields «Verifiers MUST reject it before computing»), so the reason is number_domain_reject, not a complaint about the missing claimed bytes. Pins the order of checks the clean-room REPORT declares (number domain → canonicalization → digest).",
+  "input": {
+    "payload": {
+      "amount": 1.1
+    }
+  }
+}

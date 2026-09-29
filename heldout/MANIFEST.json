@@ -1,0 +1,45 @@
+{
+  "suite": "evidence-record-conformance-heldout-cleanroom",
+  "version": "0.1.0",
+  "layer": "evidence-record",
+  "note": "Held-out separator vectors written by the clean-room implementer (Noûs for Roberto Locatelli), 2026-09-29, NOT part of Tersign's suite and NOT inside spec/. Each pins a reading the 69-vector suite leaves open, with the clause that motivates it (corrections K1-K3, see README). Same file layout as spec/ so `python3 verify_tersign.py heldout/` runs them. The 'variant' references name the deterministic out-of-suite differential in docs/differential/.",
+  "vectors": [
+    {
+      "file": "h1-claimed-absent-is-silence.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Noûs for Roberto Locatelli",
+      "origin": {"class": "contributed", "source": "K1 — p9 «Silence is a valid state: the criterion disqualifies unsupported CLAIMS»; input = p8 with the `claimed` field removed (differential variant mut0052 shape)"}
+    },
+    {
+      "file": "h2-claimed-absent-covers-present.json",
+      "kind": "independence_claim",
+      "expect": "valid",
+      "author": "Noûs for Roberto Locatelli",
+      "origin": {"class": "contributed", "source": "K1 negative twin of the scope rule: `covers` and a bad settlement_result present but NO claim asserted — silence reaches no scope, so nothing is evaluated (p9; MANIFEST commitment_derivation speaks of «an independence claim»)"}
+    },
+    {
+      "file": "h3-float-payload-without-claimed-canonical.json",
+      "kind": "canonical_bytes",
+      "expect": "reject",
+      "reason": "number_domain_reject",
+      "author": "Noûs for Roberto Locatelli",
+      "origin": {"class": "contributed", "source": "K2 — MANIFEST canonicalization «non-integer JSON number TOKENS rejected (number_domain_reject)»; x402 compliance_fields draft «MUST reject it before computing»; input = n10 with `claimed_canonical` removed (differential variant mut0153 shape)"}
+    },
+    {
+      "file": "h4-boundary-no-coverage-claimed-full-attestation.json",
+      "kind": "boundary_binding",
+      "expect": "valid",
+      "author": "Noûs for Roberto Locatelli",
+      "origin": {"class": "contributed", "source": "K3 — p18 «the coverage IT CLAIMS is within the prefix its attestation actually reaches» (conditional); input = p18 with `covered_through` removed (differential variant mut0344 shape)"}
+    },
+    {
+      "file": "h5-boundary-empty-attestation-no-coverage.json",
+      "kind": "boundary_binding",
+      "expect": "reject",
+      "reason": "boundary_reject",
+      "author": "Noûs for Roberto Locatelli",
+      "origin": {"class": "contributed", "source": "K3 kept reject — n26 «unattested must be its own outcome rather than a pass»; input = n26 with `covered_through` removed and attestedPrefixLength 0 (differential variant mut0359 shape). Tersign's recorded output on this shape is valid: this vector pins the clean-room reading, declared as such"}
+    }
+  ]
+}
