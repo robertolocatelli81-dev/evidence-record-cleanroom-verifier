@@ -23,9 +23,9 @@ LINK field, and both this runner (before 2026-09-30) and the PR runner crashed o
 others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
 reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
 an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, prev_digest is absent
-(absent is not null), or another link field is missing. A missing or non-string countersignature is
-`malformed_signature` (link fields are checked first, README step order). The signature hex must be "0x" + hex
-digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No input makes the runner raise.
+(absent is not null), or another link field is missing. The form of every field, ledger_signer included, is
+checked before the signature; a missing or non-string countersignature is then `malformed_signature`. The signature hex must be "0x" + hex
+digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No value of `input` makes the runner raise (a vector FILE that is not a JSON object is outside this rule).
 
 Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
 Stdlib only.
@@ -149,7 +149,7 @@ def link_of(inp: Dict) -> bytes:
 
 def signer_of(inp: Dict) -> str:
     val = inp.get("ledger_signer")
-    val = val.strip() if isinstance(val, str) else val
+    val = val.strip().lower() if isinstance(val, str) else val      # README: compared after strip + lowercase
     if not (isinstance(val, str) and val.startswith("0x") and len(val) == 42 and set(val[2:]) <= _HEX):
         raise Reject(MALFORMED_INPUT, "ledger_signer is not 0x + 40 hex")
     return val.lower()
@@ -162,6 +162,7 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
         if not isinstance(inp, dict):
             raise Reject(MALFORMED_INPUT, "vector input is absent or not a JSON object")
         link = link_fn(inp)
+        want = fixed_signer or signer_of(inp)       # every field's FORM is checked before the signature
         r, s, v = parse_sig(inp.get("countersignature"), allow_v)
         if v not in (27, 28):          # mutant path: an out-of-range v "normalised" instead of refused
             v = 27 + (v - 27) % 2
@@ -169,7 +170,6 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
             raise Reject(NON_CANONICAL, "s > n/2 (EIP-2)")
         h = personal_hash(link) if eip191 else link
         got = recover(h, r, s, v)
-        want = fixed_signer or signer_of(inp)
         if got != want:
             raise Reject(MISMATCH, f"recovered {got} != ledger_signer {want}")
         return "valid", None, f"recovers to {got}"
