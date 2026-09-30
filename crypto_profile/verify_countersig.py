@@ -1,33 +1,34 @@
 #!/usr/bin/env python3
-"""verify_countersig.py — clean-room runner for the counter-signature ("crypto profile") vectors proposed in
-tersignhq/evidence-record-conformance PR #11 (head 399bcf8a, 2026-09-29).
+"""verify_countersig.py — clean-room runner for the counter-signature ("crypto profile") vectors of
+tersignhq/evidence-record-conformance PR #11. Current target: the PR at 410869732eb0 (4108697, 2026-09-30, rebased on
+ab7704d, Tersign's merge list applied): 37 vectors, six reject reasons.
 
-Clean-room rule, as for the core suite: written from the PR's crypto/README.md (the four-step check and the four
-reject reasons), its MANIFEST.json and its vectors ONLY. The PR's verify_crypto.py and secp256k1_recover.py were not
-read while this runner and its tests were written (2026-09-30, first version 01:41Z); they were later downloaded with
-a clone of the fork and EXECUTED as a black box for differential runs, and a separate local patching experiment read
-verify_crypto.py after that (not used by this file). Hashing and chain_link come from this repository's own verify_tersign.py; the
-secp256k1 arithmetic is this repository's own (docs/vector-audit/live_check.py, 2026-09-29), with the canonical
-checks added here.
+Clean-room rule, as for the core suite: written from the PR's crypto/README.md, its MANIFEST.json and its vectors ONLY.
+The PR's verify_crypto.py and secp256k1_recover.py were not read while this runner and its tests were written (first
+version 2026-09-30 01:41Z); they were later downloaded with a clone of the fork and EXECUTED as a black box for
+differential runs, and a separate local patching experiment read verify_crypto.py after that (not used by this file).
+Hashing and chain_link come from this repository's own verify_tersign.py; the secp256k1 arithmetic is this repository's
+own (docs/vector-audit/live_check.py, 2026-09-29), with the canonical checks added here.
 
-The check, per crypto/README.md:
-  1. link = chain_link(artifact_digest, prev_digest, seq)            (the core link, recomputed from the vector)
-  2. countersignature = 65 bytes r||s||v with v in {27, 28}           else malformed_signature
-  3. low-s (EIP-2): s <= n/2                                          else non_canonical_s
-  4. EIP-191 personal_sign recovery over the 32 link bytes            unrecoverable if no point / r, s out of range
-     must equal ledger_signer (0x-address, strip + lowercase)         else signer_mismatch
-Choices the README leaves open, stated: r or s outside [1, n-1] and an x without a curve point are
-`unrecoverable`; a non-hex or wrong-length hex string is `malformed_signature`; the recovery id is v-27 only
-(x = r, never r + n, since v is restricted to 27/28). The README does not say what a runner does with a malformed
-LINK field, and both this runner (before 2026-09-30) and the PR runner crashed on some and silently accepted
-others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
-reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
-an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex (form checked as given, no strip: suite vector cn18 at d7c7fdc; lower-cased for comparison), prev_digest is absent
-or another link field is missing (an omitted prev_digest means genesis, like null: suite vector cp3 at 1e08f4e,
-which replaced our earlier absent-is-not-null reading). The form of every field, ledger_signer included, is
-checked before the signature; an absent countersignature key is then `malformed_input` (the README scopes
-`malformed_signature` to the signature field's own shape), a present non-string one `malformed_signature`. The signature hex must be "0x" + hex
-digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No value of `input` makes the runner raise (a vector FILE that is not a JSON object is outside this rule).
+The check, in the order of the PR README at 4108697 (the first failing step decides the reason):
+  1. artifact_digest, seq, countersignature and ledger_signer are present            else malformed_input
+  2. field domain: artifact_digest, prev_digest (when present) and ledger_signer are stripped of leading/trailing
+     Unicode White_Space (the explicit set WHITE_SPACE below, NOT str.strip()) and lower-cased, then must be exactly
+     0x + 64 hex (digests) or 0x + 40 hex (signer); an omitted or null prev_digest means genesis (32 zero bytes);
+     seq is an integer (never bool/str/float) in [1, 2^53 - 1]                        else malformed_input
+  3. link_version: absent means 1; any value other than the integer 1                else unsupported_link_version
+  4. link = keccak256(artifact_digest || prev_digest or 32 zero bytes || uint64_be(seq))
+  5. countersignature matched whole, never normalized: a string, 0x + 130 hex digits (no whitespace, no 0X), v in
+     {27, 28}                                                                          else malformed_signature
+  6. low-s (EIP-2, s <= n/2), checked on the signature bytes before recovery         else non_canonical_s
+  7. EIP-191 personal_sign recovery over the 32 link bytes defines a public key       else unrecoverable
+  8. its address equals the normalized ledger_signer                                  else signer_mismatch
+Choices the README does not spell out, stated: r or s outside [1, n-1] and an x without a curve point are
+`unrecoverable`; the recovery id is v-27 only (x = r, never r + n). A vector whose `input` is absent or not a JSON
+object is `malformed_input`; no value of `input` makes this runner raise (a vector FILE that is not a JSON object is
+outside this rule). Any unexpected exception is reported as `internal_error`, never as a verdict reason.
+History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
+d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
 
 Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
 Stdlib only.
@@ -51,7 +52,7 @@ G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
 
 MALFORMED, NON_CANONICAL, UNRECOVERABLE, MISMATCH = (
     "malformed_signature", "non_canonical_s", "unrecoverable", "signer_mismatch")
-MALFORMED_INPUT = "malformed_input"          # outside the README's four reasons: a declared choice (see docstring)
+MALFORMED_INPUT = "malformed_input"          # suite reason at 4108697 (step 1-2)
 INTERNAL_ERROR = "internal_error"            # never expected: a test fails if any input produces it
 UNSUPPORTED_LINK_VERSION = "unsupported_link_version"   # suite at 4108697, step 3
 # Unicode White_Space property (the core's identifier_normalization set), listed explicitly: str.strip() is NOT this set

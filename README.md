@@ -68,22 +68,23 @@ measured in `docs/vector-audit/AUDIT_69.md`, which also states where the suite i
 
 ## Crypto profile: counter-signature recovery (tersignhq/evidence-record-conformance PR #11)
 
-`crypto_profile/verify_countersig.py` is a second, separate runner for the crypto profile proposed in
+`crypto_profile/verify_countersig.py` is a second, separate runner for the crypto profile of
 tersignhq/evidence-record-conformance PR #11 (EIP-191 `personal_sign` counter-signatures over chain links). It was
 written from that PR's `crypto/README.md`, `MANIFEST.json` and vectors; the PR's `verify_crypto.py` was run only as a
-black box. Hashing and `chain_link` come from `verify_tersign.py`. Where the vectors pin a reading that differs from
-an earlier one of ours, the runner follows the vectors (absent `prev_digest` = genesis, cp3; `ledger_signer` form
-checked without stripping, cn18; absent `countersignature` = `malformed_input`), and its docstring says so.
+black box. Hashing and `chain_link` come from `verify_tersign.py`. It follows the eight steps of the PR README at
+`4108697` (identifiers stripped of Unicode White_Space and lower-cased before the shape check, `seq` in [1, 2^53 − 1],
+`link_version`, signature matched whole); where an earlier reading of ours differed, the vectors decided, and the
+docstring records it.
 
 | measure (Python 3.9.25 / 3.11.2 / 3.13.15, identical) | value | reproduce |
 |---|---|---|
-| PR #11 vectors at `d7c7fdc` | 21/21 verdicts and reasons | `python3 crypto_profile/verify_countersig.py <dir with the PR's crypto/MANIFEST.json and crypto/vectors>` |
+| PR #11 vectors at `4108697` | 37/37 verdicts and reasons | `python3 crypto_profile/verify_countersig.py <dir with the PR's crypto/MANIFEST.json and crypto/vectors>` |
 | mutants of this runner, each killed by a named vector | 5/5 | same, with `--mutants` |
 | unit tests (built from this repository's own p1/p4 data) | 14/14 | `python3 -m unittest -v test_crypto_profile` |
 
 The PR's vectors are not redistributed here; fetch them from the PR branch at the commit you want to test. The live
-audit (`docs/vector-audit/live_check.py`) now rejects non-canonical ECDSA signatures (65 bytes, `v` in {27, 28},
-EIP-2 low-s) before recovery; its new check refuses the high-s twin of the published p1 counter-signature, and all
+audit (`docs/vector-audit/live_check.py`) rejects non-canonical ECDSA signatures (65 bytes, `v` in {27, 28},
+EIP-2 low-s) before recovery; its check refuses the high-s twin of the published p1 counter-signature, and all
 15 published signatures it checks are canonical.
 
 ## Readings where the manifest is silent (all declared, none chosen from a vector's outcome)
