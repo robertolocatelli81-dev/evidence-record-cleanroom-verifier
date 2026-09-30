@@ -53,6 +53,13 @@ MALFORMED, NON_CANONICAL, UNRECOVERABLE, MISMATCH = (
     "malformed_signature", "non_canonical_s", "unrecoverable", "signer_mismatch")
 MALFORMED_INPUT = "malformed_input"          # outside the README's four reasons: a declared choice (see docstring)
 INTERNAL_ERROR = "internal_error"            # never expected: a test fails if any input produces it
+UNSUPPORTED_LINK_VERSION = "unsupported_link_version"   # suite at 4108697, step 3
+# Unicode White_Space property (the core's identifier_normalization set), listed explicitly: str.strip() is NOT this set
+# (it also strips U+001C..U+001F, which are not White_Space). U+FEFF is not White_Space and is not stripped (vector cn17).
+WHITE_SPACE = ("\u0009\u000a\u000b\u000c\u000d\u0020\u0085\u00a0\u1680"
+               "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a"
+               "\u2028\u2029\u202f\u205f\u3000")
+SEQ_MAX = 2 ** 53 - 1
 _HEX = set("0123456789abcdefABCDEF")
 
 
@@ -129,35 +136,41 @@ def recover(h32: bytes, r: int, s: int, v: int) -> str:
     return address_of_point(Q)
 
 
-def _hex_field(inp: Dict, key: str, nbytes: int, nullable: bool = False) -> Optional[bytes]:
+def _identifier(inp: Dict, key: str, nbytes: int, nullable: bool = False) -> Optional[bytes]:
+    """Suite at 4108697, step 2: strip leading/trailing Unicode White_Space, lowercase, then exactly 0x + 2*nbytes hex."""
     if key not in inp:
+        if nullable:
+            return None                      # an absent prev_digest means genesis (cp3)
         raise Reject(MALFORMED_INPUT, f"{key} missing")
     val = inp[key]
     if val is None and nullable:
         return None
-    if not (isinstance(val, str) and val.startswith("0x") and len(val) == 2 + 2 * nbytes and set(val[2:]) <= _HEX):
-        raise Reject(MALFORMED_INPUT, f"{key} is not 0x + {2 * nbytes} hex")
+    if not isinstance(val, str):
+        raise Reject(MALFORMED_INPUT, f"{key} is not a string")
+    val = val.strip(WHITE_SPACE).lower()
+    if not (val.startswith("0x") and len(val) == 2 + 2 * nbytes and set(val[2:]) <= _HEX):
+        raise Reject(MALFORMED_INPUT, f"{key} is not 0x + {2 * nbytes} hex after White_Space strip and lowercase")
     return bytes.fromhex(val[2:])
 
 
 def link_of(inp: Dict) -> bytes:
-    art = _hex_field(inp, "artifact_digest", 32)
-    # suite decision at 1e08f4e (vector cp3): an omitted prev_digest key and an explicit null both mean genesis
-    prev = _hex_field(inp, "prev_digest", 32, nullable=True) if "prev_digest" in inp else None
+    """Steps 1-4 of the suite at 4108697 (required fields, field domain, link_version, link)."""
+    for key in ("artifact_digest", "seq", "countersignature", "ledger_signer"):
+        if key not in inp:
+            raise Reject(MALFORMED_INPUT, f"{key} missing")                      # step 1
+    art = _identifier(inp, "artifact_digest", 32)
+    prev = _identifier(inp, "prev_digest", 32, nullable=True)
+    _identifier(inp, "ledger_signer", 20)
     seq = inp.get("seq")
-    if type(seq) is not int or not (0 <= seq <= 2 ** 64 - 1):
-        raise Reject(MALFORMED_INPUT, "seq is not an integer in [0, 2^64 - 1]")
-    return V.chain_link(art, prev, seq)
+    if type(seq) is not int or not (1 <= seq <= SEQ_MAX):
+        raise Reject(MALFORMED_INPUT, "seq is not an integer in [1, 2^53 - 1]")    # step 2
+    if "link_version" in inp and not (type(inp["link_version"]) is int and inp["link_version"] == 1):
+        raise Reject(UNSUPPORTED_LINK_VERSION, f"link_version {inp['link_version']!r} is not the integer 1")  # step 3
+    return V.chain_link(art, prev, seq)                                            # step 4
 
 
 def signer_of(inp: Dict) -> str:
-    val = inp.get("ledger_signer")
-    # suite at d7c7fdc (cn18): the FORM is checked on the value as given (no strip: a trailing newline or a leading space is
-    # malformed_input); case-folding is kept for the comparison, so "0X…" in upper case stays the same address (cb3)
-    val = val.lower() if isinstance(val, str) else val
-    if not (isinstance(val, str) and val.startswith("0x") and len(val) == 42 and set(val[2:]) <= _HEX):
-        raise Reject(MALFORMED_INPUT, "ledger_signer is not 0x + 40 hex")
-    return val.lower()
+    return "0x" + _identifier(inp, "ledger_signer", 20).hex()
 
 
 def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer: Optional[str] = None,
@@ -168,8 +181,6 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
             raise Reject(MALFORMED_INPUT, "vector input is absent or not a JSON object")
         link = link_fn(inp)
         want = fixed_signer or signer_of(inp)       # every field's FORM is checked before the signature
-        if "countersignature" not in inp:           # suite reading (d7c7fdc): an absent key is a record-shape question
-            raise Reject(MALFORMED_INPUT, "countersignature member absent")
         r, s, v = parse_sig(inp.get("countersignature"), allow_v)
         if v not in (27, 28):          # mutant path: an out-of-range v "normalised" instead of refused
             v = 27 + (v - 27) % 2

@@ -97,9 +97,15 @@ class TestCountersignature(unittest.TestCase):
         for name, case in bad.items():
             with self.subTest(name):
                 self.assertEqual(C.check(case)[:2], ("reject", C.MALFORMED_INPUT))
-        # seq at the uint64 edge is well-formed (it only fails to match the live signature)
-        self.assertEqual(C.check(dict(inp, seq=2 ** 64 - 1))[1], C.MISMATCH)
-        self.assertEqual(C.check(dict(inp, seq=0))[1], C.MISMATCH)
+        # suite at 4108697: seq in [1, 2^53 - 1]; 0, 2^53 and 2^64 - 1 are malformed, 2^53 - 1 is well formed
+        self.assertEqual(C.check(dict(inp, seq=0))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, seq=2 ** 53))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, seq=2 ** 64 - 1))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, seq=2 ** 53 - 1))[1], C.MISMATCH)
+        # link_version: absent = 1; the integer 1 accepted; anything else rejects on its own reason
+        self.assertEqual(C.check(dict(inp, link_version=1))[:2], ("valid", None))
+        for lv in (2, "1", 1.0, True, None):
+            self.assertEqual(C.check(dict(inp, link_version=lv))[1], C.UNSUPPORTED_LINK_VERSION)
 
     def test_prev_digest_absent_equals_null(self):
         # suite vector cp3 (1e08f4e): omitted key == explicit null == genesis
@@ -114,20 +120,23 @@ class TestCountersignature(unittest.TestCase):
         self.assertEqual(C.check(None)[1], C.MALFORMED_INPUT)
 
     def test_tolerated_forms_per_readme(self):
+        # suite at 4108697, step 2: identifiers are stripped of Unicode White_Space and lower-cased before the shape check
         inp = _live()
-        # suite at d7c7fdc (cn18): ledger_signer form checked as given (no strip); case-folding kept for the comparison
-        self.assertEqual(C.check(dict(inp, ledger_signer="0X" + inp["ledger_signer"][2:].upper()))[:2], ("valid", None))
-        for bad in (" " + inp["ledger_signer"], inp["ledger_signer"] + "\n", inp["ledger_signer"] + " "):
-            self.assertEqual(C.check(dict(inp, ledger_signer=bad))[1], C.MALFORMED_INPUT)
-        # uppercase hex digits in the signature are still hex; a "0X" prefix or leading space is not accepted
-        self.assertEqual(C.check(dict(inp, countersignature="0x" + inp["countersignature"][2:].upper()))[:2], ("valid", None))
-        self.assertEqual(C.check(dict(inp, countersignature="0X" + inp["countersignature"][2:]))[1], C.MALFORMED)
-        self.assertEqual(C.check(dict(inp, countersignature=" " + inp["countersignature"]))[1], C.MALFORMED)
+        for sg in (" " + inp["ledger_signer"], inp["ledger_signer"] + "\n", "0X" + inp["ledger_signer"][2:].upper(),
+                   "\u3000" + inp["ledger_signer"] + "\u2028"):
+            self.assertEqual(C.check(dict(inp, ledger_signer=sg))[:2], ("valid", None))
+        for ad in (inp["artifact_digest"] + "\n", "0X" + inp["artifact_digest"][2:], "\t" + inp["artifact_digest"]):
+            self.assertEqual(C.check(dict(inp, artifact_digest=ad))[:2], ("valid", None))
+        # U+FEFF and U+001C are NOT White_Space: not stripped (cn17); str.strip() would have stripped U+001C
+        self.assertEqual(C.check(dict(inp, artifact_digest="\ufeff" + inp["artifact_digest"]))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, artifact_digest="\u001c" + inp["artifact_digest"]))[1], C.MALFORMED_INPUT)
+        # the signature is matched whole and never normalized
         sig = inp["countersignature"]
-        for bad in (sig[:10] + " " + sig[10:], sig + " ", sig + "\n", sig + "\t", sig[:30] + "\n" + sig[30:]):
-            self.assertEqual(C.check(dict(inp, countersignature=bad))[1], C.MALFORMED)   # whitespace is not hex
-        self.assertEqual(C.check({k: v for k, v in inp.items() if k != "countersignature"})[1], C.MALFORMED_INPUT)  # absent key: record shape
-        self.assertEqual(C.check(dict(inp, countersignature=None))[1], C.MALFORMED)            # present, not a string
+        self.assertEqual(C.check(dict(inp, countersignature="0x" + sig[2:].upper()))[:2], ("valid", None))
+        for bad in ("0X" + sig[2:], " " + sig, sig + "\n", sig[:10] + " " + sig[10:], sig[2:]):
+            self.assertEqual(C.check(dict(inp, countersignature=bad))[1], C.MALFORMED)
+        self.assertEqual(C.check({k: v for k, v in inp.items() if k != "countersignature"})[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, countersignature=None))[1], C.MALFORMED)
 
     def test_no_internal_error_on_any_case_here(self):
         inp = _live()
