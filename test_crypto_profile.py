@@ -81,6 +81,40 @@ class TestCountersignature(unittest.TestCase):
     def test_no_eip191_prefix_mutant_breaks_live(self):
         self.assertEqual(C.check(_live(), eip191=False)[1], C.MISMATCH)
 
+    def test_malformed_link_fields_rejected_never_crash(self):
+        inp = _live()
+        bad = {
+            "art_bad_hex": dict(inp, artifact_digest="0xzz" + inp["artifact_digest"][4:]),
+            "art_short": dict(inp, artifact_digest=inp["artifact_digest"][:-2]),
+            "art_no0x": dict(inp, artifact_digest=inp["artifact_digest"][2:]),
+            "prev_short": dict(inp, prev_digest="0x" + "11" * 31),
+            "seq_neg": dict(inp, seq=-1), "seq_2e64": dict(inp, seq=2 ** 64),
+            "seq_str": dict(inp, seq="1"), "seq_float": dict(inp, seq=1.0), "seq_bool": dict(inp, seq=True),
+            "signer_missing": {k: v for k, v in inp.items() if k != "ledger_signer"},
+            "signer_short": dict(inp, ledger_signer=inp["ledger_signer"][:-2]),
+            "art_missing": {k: v for k, v in inp.items() if k != "artifact_digest"},
+        }
+        for name, case in bad.items():
+            with self.subTest(name):
+                self.assertEqual(C.check(case)[:2], ("reject", C.MALFORMED_INPUT))
+        # seq at the uint64 edge is well-formed (it only fails to match the live signature)
+        self.assertEqual(C.check(dict(inp, seq=2 ** 64 - 1))[1], C.MISMATCH)
+        self.assertEqual(C.check(dict(inp, seq=0))[1], C.MISMATCH)
+
+    def test_tolerated_forms_per_readme(self):
+        inp = _live()
+        # README: ledger_signer compared after strip + lowercase
+        self.assertEqual(C.check(dict(inp, ledger_signer=" " + inp["ledger_signer"].upper().replace("0X", "0x") + " "))[:2], ("valid", None))
+        # uppercase hex digits in the signature are still hex; a "0X" prefix or leading space is not accepted
+        self.assertEqual(C.check(dict(inp, countersignature="0x" + inp["countersignature"][2:].upper()))[:2], ("valid", None))
+        self.assertEqual(C.check(dict(inp, countersignature="0X" + inp["countersignature"][2:]))[1], C.MALFORMED)
+        self.assertEqual(C.check(dict(inp, countersignature=" " + inp["countersignature"]))[1], C.MALFORMED)
+
+    def test_no_internal_error_on_any_case_here(self):
+        inp = _live()
+        for case in (inp, dict(inp, seq=None), dict(inp, artifact_digest=5), dict(inp, prev_digest=[]), {}):
+            self.assertNotEqual(C.check(case)[1], C.INTERNAL_ERROR)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

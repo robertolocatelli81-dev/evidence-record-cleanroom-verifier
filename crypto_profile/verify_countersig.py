@@ -16,7 +16,12 @@ The check, per crypto/README.md:
      must equal ledger_signer (0x-address, strip + lowercase)         else signer_mismatch
 Choices the README leaves open, stated: r or s outside [1, n-1] and an x without a curve point are
 `unrecoverable`; a non-hex or wrong-length hex string is `malformed_signature`; the recovery id is v-27 only
-(x = r, never r + n, since v is restricted to 27/28).
+(x = r, never r + n, since v is restricted to 27/28). The README does not say what a runner does with a malformed
+LINK field, and both this runner (before 2026-09-30) and the PR runner crashed on some and silently accepted
+others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
+reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
+an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, or a field is missing.
+No input makes the runner raise.
 
 Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
 Stdlib only.
@@ -40,6 +45,9 @@ G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
 
 MALFORMED, NON_CANONICAL, UNRECOVERABLE, MISMATCH = (
     "malformed_signature", "non_canonical_s", "unrecoverable", "signer_mismatch")
+MALFORMED_INPUT = "malformed_input"          # outside the README's four reasons: a declared choice (see docstring)
+INTERNAL_ERROR = "internal_error"            # never expected: a test fails if any input produces it
+_HEX = set("0123456789abcdefABCDEF")
 
 
 class Reject(Exception):
@@ -113,10 +121,32 @@ def recover(h32: bytes, r: int, s: int, v: int) -> str:
     return address_of_point(Q)
 
 
+def _hex_field(inp: Dict, key: str, nbytes: int, nullable: bool = False) -> Optional[bytes]:
+    if key not in inp:
+        raise Reject(MALFORMED_INPUT, f"{key} missing")
+    val = inp[key]
+    if val is None and nullable:
+        return None
+    if not (isinstance(val, str) and val.startswith("0x") and len(val) == 2 + 2 * nbytes and set(val[2:]) <= _HEX):
+        raise Reject(MALFORMED_INPUT, f"{key} is not 0x + {2 * nbytes} hex")
+    return bytes.fromhex(val[2:])
+
+
 def link_of(inp: Dict) -> bytes:
-    art = bytes.fromhex(inp["artifact_digest"][2:])
-    prev = None if inp.get("prev_digest") is None else bytes.fromhex(inp["prev_digest"][2:])
-    return V.chain_link(art, prev, int(inp["seq"]))
+    art = _hex_field(inp, "artifact_digest", 32)
+    prev = _hex_field(inp, "prev_digest", 32, nullable=True)
+    seq = inp.get("seq")
+    if type(seq) is not int or not (0 <= seq <= 2 ** 64 - 1):
+        raise Reject(MALFORMED_INPUT, "seq is not an integer in [0, 2^64 - 1]")
+    return V.chain_link(art, prev, seq)
+
+
+def signer_of(inp: Dict) -> str:
+    val = inp.get("ledger_signer")
+    val = val.strip() if isinstance(val, str) else val
+    if not (isinstance(val, str) and val.startswith("0x") and len(val) == 42 and set(val[2:]) <= _HEX):
+        raise Reject(MALFORMED_INPUT, "ledger_signer is not 0x + 40 hex")
+    return val.lower()
 
 
 def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer: Optional[str] = None,
@@ -131,12 +161,14 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
             raise Reject(NON_CANONICAL, "s > n/2 (EIP-2)")
         h = personal_hash(link) if eip191 else link
         got = recover(h, r, s, v)
-        want = (fixed_signer or str(inp.get("ledger_signer", ""))).strip().lower()
+        want = fixed_signer or signer_of(inp)
         if got != want:
             raise Reject(MISMATCH, f"recovered {got} != ledger_signer {want}")
         return "valid", None, f"recovers to {got}"
     except Reject as e:
         return "reject", e.reason, str(e)
+    except Exception as e:  # last resort: never crash, but never disguise a runner bug as a verdict reason
+        return "reject", INTERNAL_ERROR, f"runner bug: {type(e).__name__}: {e}"
 
 
 LEDGER = "0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6"
