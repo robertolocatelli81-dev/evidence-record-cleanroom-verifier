@@ -27,6 +27,8 @@ jobs:
         run: cd spec && sha256sum -c ../SPEC_SHA256SUMS
       - name: unit tests
         run: python -m unittest -v test_verify_tersign
+      - name: unit tests — crypto profile runner (PR #11)
+        run: python -m unittest -v test_crypto_profile
       - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)
         run: python verify_tersign.py spec/
       - name: held-out separators (5 vectors)

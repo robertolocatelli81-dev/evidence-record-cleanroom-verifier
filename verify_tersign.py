@@ -520,7 +520,7 @@ def k_phase_claim(inp: Dict[str, Any]) -> str:
     if not isinstance(presented, str) or presented not in PHASES:
         raise Reject(R_PHASE, f"presented_as {presented!r} is outside the declared vocabulary")
     # READING (stricter than the spec's "any later phase"): a record verifies only as evidence of ITS OWN
-    # phase. Declared choice, see REPORT_FABLE.md §Ambiguità.
+    # phase. Declared choice, see README.md «Readings where the manifest is silent» (economic phase vocabulary).
     if phase != presented:
         raise Reject(R_PHASE, f"a {phase}-phase record presented as {presented} evidence")
     return f"record phase {phase} == presented phase"

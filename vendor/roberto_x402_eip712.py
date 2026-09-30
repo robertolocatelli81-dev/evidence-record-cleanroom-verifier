@@ -172,7 +172,7 @@ def encode_value(tipo: str, valore, types: dict | None = None) -> bytes:
         return keccak256(valore.encode("utf-8"))
     if tipo == "bytes":
         # Dal JSON arriva una stringa "0x…", non byte raw (bug dormiente trovato dalla revisione
-        # Gemini 3.1 Pro dell'11/09/2026, vettore 054). bytes.fromhex salta gli spazi: la regex prima.
+        # esterna dell'11/09/2026, vettore 054). bytes.fromhex salta gli spazi: la regex prima.
         return keccak256(bytes.fromhex(_stringa_che_combacia(tipo, _RE_BYTES, valore)[2:]))
     m = _RE_TIPO_INT.fullmatch(tipo)
     if m:

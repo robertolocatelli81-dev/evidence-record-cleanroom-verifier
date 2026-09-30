@@ -66,6 +66,26 @@ meant to pin it (n25) is over-determined (it also lacks the attestation fields),
 rule separately. Four reasons (n4, n34, n11, n35) are pinned only through the order of checks. Both facts are
 measured in `docs/vector-audit/AUDIT_69.md`, which also states where the suite is solid.
 
+## Crypto profile: counter-signature recovery (tersignhq/evidence-record-conformance PR #11)
+
+`crypto_profile/verify_countersig.py` is a second, separate runner for the crypto profile proposed in
+tersignhq/evidence-record-conformance PR #11 (EIP-191 `personal_sign` counter-signatures over chain links). It was
+written from that PR's `crypto/README.md`, `MANIFEST.json` and vectors; the PR's `verify_crypto.py` was run only as a
+black box. Hashing and `chain_link` come from `verify_tersign.py`. Where the vectors pin a reading that differs from
+an earlier one of ours, the runner follows the vectors (absent `prev_digest` = genesis, cp3; `ledger_signer` form
+checked without stripping, cn18; absent `countersignature` = `malformed_input`), and its docstring says so.
+
+| measure (Python 3.9.25 / 3.11.2 / 3.13.15, identical) | value | reproduce |
+|---|---|---|
+| PR #11 vectors at `d7c7fdc` | 21/21 verdicts and reasons | `python3 crypto_profile/verify_countersig.py <dir with the PR's crypto/MANIFEST.json and crypto/vectors>` |
+| mutants of this runner, each killed by a named vector | 5/5 | same, with `--mutants` |
+| unit tests (built from this repository's own p1/p4 data) | 14/14 | `python3 -m unittest -v test_crypto_profile` |
+
+The PR's vectors are not redistributed here; fetch them from the PR branch at the commit you want to test. The live
+audit (`docs/vector-audit/live_check.py`) now rejects non-canonical ECDSA signatures (65 bytes, `v` in {27, 28},
+EIP-2 low-s) before recovery; its new check refuses the high-s twin of the published p1 counter-signature, and all
+15 published signatures it checks are canonical.
+
 ## Readings where the manifest is silent (all declared, none chosen from a vector's outcome)
 
 - economic phase vocabulary: funding, delivery, settlement, refund, reversal — consistent with the draft Tersign
@@ -111,6 +131,7 @@ explorers), as a check of the suite's data, not as part of the verifier.
 
 - `verify_tersign.py` — the verifier; each rule cites the manifest / specification sentence it derives from.
 - `test_verify_tersign.py` — unit tests (`unittest`).
+- `crypto_profile/verify_countersig.py`, `test_crypto_profile.py` — the crypto-profile runner (PR #11) and its tests.
 - `positive_controls.py`, `ablation_study.py`, `run_logged.py` — the bench that can fail, and headed logs.
 - `spec/` — the upstream manifest and vectors, unmodified, Apache-2.0, hash-pinned (`SPEC_SHA256SUMS`, `spec/NOTICE.tersign.md`).
 - `heldout/` — 5 separator vectors written here (not part of the upstream suite).
@@ -124,7 +145,7 @@ explorers), as a check of the suite's data, not as part of the verifier.
 - `DELIVERABLES_SHA256SUMS` — SHA-256 of every tracked file except itself (the upstream vectors are also
   covered by `SPEC_SHA256SUMS`, the vendored primitives by `vendor/PROVENANCE.md`).
 
-CI (`.github/workflows/ci.yml`): Python 3.9 / 3.11 / 3.13 run the hash check, unit tests, suite, held-out, the
+CI (`.github/workflows/ci.yml`): Python 3.9 / 3.11 / 3.13 run the hash check, unit tests (verifier and crypto profile), suite, held-out, the
 positive controls, the ablations, the offline audit checks and the deterministic regeneration of the 524 variants,
 with no network; a separate job runs gitleaks (pinned release, default rules).
 
