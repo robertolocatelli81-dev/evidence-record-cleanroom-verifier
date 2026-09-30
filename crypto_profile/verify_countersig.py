@@ -30,8 +30,10 @@ object is `malformed_input`, and so is a vector file that is not UTF-8 JSON or n
 MAX_DEPTH (900) levels. Integers are parsed without Python's int-string limit (an integer too long for int() becomes a
 non-integer marker: seq -> malformed_input, link_version -> unsupported_link_version, countersignature ->
 malformed_signature, an unread key -> ignored), so the verdict does not depend on PYTHONINTMAXSTRDIGITS or on the
-interpreter's recursion limit. A MANIFEST.json that cannot be loaded, or a listed vector file that cannot be opened
-(missing, a directory, a broken link), stops the run with a one-line message and exit code 2, no traceback. Any other
+interpreter's recursion limit. A MANIFEST.json that cannot be loaded (not UTF-8 JSON, nested deeper than MAX_DEPTH, no `vectors`
+list of objects with a string `file`), or a listed vector file that cannot be opened (missing, a directory, a broken link,
+a NUL in its name), stops the run with a one-line message and exit code 2, no traceback; MANIFEST.json is parsed like the
+vector files, so this outcome does not depend on PYTHONINTMAXSTRDIGITS or on the interpreter either. Any other
 unexpected exception while checking a loaded vector is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
 d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
@@ -266,8 +268,8 @@ def load_vector(path: str):
     try:
         with open(path, "rb") as fh:
             raw = fh.read()
-    except OSError as e:
-        raise RunStopped(f"vector file cannot be opened: {path}: {type(e).__name__}: {e.strerror or e}")
+    except (OSError, ValueError) as e:     # ValueError: a NUL in the file name
+        raise RunStopped(f"vector file cannot be opened: {path!r}: {type(e).__name__}")
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
@@ -282,11 +284,16 @@ def load_vector(path: str):
 
 def run(spec_dir: str, **kw):
     try:
-        with open(os.path.join(spec_dir, "MANIFEST.json"), encoding="utf-8") as fh:
-            man = json.load(fh)
+        with open(os.path.join(spec_dir, "MANIFEST.json"), "rb") as fh:
+            text = fh.read().decode("utf-8")
+        if _depth(text) > MAX_DEPTH:
+            raise ValueError(f"nests deeper than {MAX_DEPTH} levels")
+        man = json.loads(text, parse_int=_parse_int)
         entries = man["vectors"]
-    except (OSError, ValueError, KeyError, TypeError) as e:
+    except (OSError, ValueError, KeyError, TypeError, RecursionError) as e:
         raise RunStopped(f"MANIFEST.json cannot be loaded from {spec_dir}: {type(e).__name__}: {e}")
+    if not isinstance(entries, list) or not all(isinstance(e, dict) and isinstance(e.get("file"), str) for e in entries):
+        raise RunStopped("MANIFEST.json: vectors must be a list of objects with a string \"file\"")
     rows = []
     for ent in entries:
         vec, load_error = load_vector(os.path.join(spec_dir, "vectors", ent["file"]))

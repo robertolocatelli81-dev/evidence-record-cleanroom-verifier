@@ -278,7 +278,9 @@ class TestCountersignature(unittest.TestCase):
 
     def test_unloadable_manifest_stops_the_run_without_a_traceback(self):
         import subprocess, tempfile
-        for body in ("{not json", '{"profile": "x"}'):
+        for body in ("{not json", '{"profile": "x"}', '{"vectors": [1]}', '{"vectors": {}}', '{"vectors": [{"x": 1}]}',
+                     '{"vectors": [{"file": 5}]}', '{"vectors": ' + "[" * 1000 + "]" * 1000 + "}",
+                     '{"vectors": ' + "[" * 100000 + "]" * 100000 + "}", '{"vectors": [{"file": "a\\u0000b.json"}]}'):
             d = tempfile.mkdtemp()
             open(os.path.join(d, "MANIFEST.json"), "w").write(body)
             p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d],
