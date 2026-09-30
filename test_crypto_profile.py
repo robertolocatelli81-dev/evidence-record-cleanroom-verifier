@@ -93,6 +93,7 @@ class TestCountersignature(unittest.TestCase):
             "signer_missing": {k: v for k, v in inp.items() if k != "ledger_signer"},
             "signer_short": dict(inp, ledger_signer=inp["ledger_signer"][:-2]),
             "art_missing": {k: v for k, v in inp.items() if k != "artifact_digest"},
+            "prev_absent": {k: v for k, v in inp.items() if k != "prev_digest"},
         }
         for name, case in bad.items():
             with self.subTest(name):
@@ -100,6 +101,13 @@ class TestCountersignature(unittest.TestCase):
         # seq at the uint64 edge is well-formed (it only fails to match the live signature)
         self.assertEqual(C.check(dict(inp, seq=2 ** 64 - 1))[1], C.MISMATCH)
         self.assertEqual(C.check(dict(inp, seq=0))[1], C.MISMATCH)
+
+    def test_link_fields_checked_before_signature(self):
+        inp = _live()
+        r, s, v = _parts(inp["countersignature"])
+        mixed = dict(inp, seq="1", countersignature=_hex(r, C.N - s, 55 - v))   # bad seq AND high-s
+        self.assertEqual(C.check(mixed)[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(None)[1], C.MALFORMED_INPUT)
 
     def test_tolerated_forms_per_readme(self):
         inp = _live()
@@ -112,7 +120,7 @@ class TestCountersignature(unittest.TestCase):
 
     def test_no_internal_error_on_any_case_here(self):
         inp = _live()
-        for case in (inp, dict(inp, seq=None), dict(inp, artifact_digest=5), dict(inp, prev_digest=[]), {}):
+        for case in (inp, dict(inp, seq=None), dict(inp, artifact_digest=5), dict(inp, prev_digest=[]), {}, None, [], "x"):
             self.assertNotEqual(C.check(case)[1], C.INTERNAL_ERROR)
 
 

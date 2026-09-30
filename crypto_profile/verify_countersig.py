@@ -153,6 +153,8 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
           link_fn: Callable[[Dict], bytes] = link_of) -> Tuple[str, Optional[str], str]:
     """Returns (verdict, reject_reason, detail). Keyword switches exist only to build the mutants below."""
     try:
+        if not isinstance(inp, dict):
+            raise Reject(MALFORMED_INPUT, "vector input is absent or not a JSON object")
         link = link_fn(inp)
         r, s, v = parse_sig(inp.get("countersignature"), allow_v)
         if v not in (27, 28):          # mutant path: an out-of-range v "normalised" instead of refused
@@ -186,7 +188,7 @@ def run(spec_dir: str, **kw):
     rows = []
     for ent in man["vectors"]:
         vec = json.load(open(os.path.join(spec_dir, "vectors", ent["file"]), encoding="utf-8"))
-        verdict, reason, detail = check(vec["input"], **kw)
+        verdict, reason, detail = check(vec.get("input") if isinstance(vec, dict) else None, **kw)
         exp_v, exp_r = vec.get("expect"), vec.get("reject_reason")
         ok = verdict == exp_v and (exp_v != "reject" or reason == exp_r)
         rows.append({"file": ent["file"], "expect": exp_v, "expect_reason": exp_r, "verdict": verdict,
