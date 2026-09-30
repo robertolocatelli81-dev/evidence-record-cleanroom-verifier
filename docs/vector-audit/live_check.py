@@ -45,8 +45,17 @@ def _mul(k, pt):
 
 
 def ecrecover(h32: bytes, sig: bytes):
+    # 2026-09-30: CANONICAL form enforced (EIP-2 low-s, v in {27, 28}, 65 bytes, r/s in range). Before this, a
+    # high-s malleation of a published signature (s' = n - s, v flipped) recovered the same signer and passed —
+    # the point raised on tersignhq/evidence-record-conformance PR #11 (vector cn3), measured here on p1.
+    if len(sig) != 65:
+        raise ValueError(f"signature is {len(sig)} bytes, not 65")
     r, s, v = int.from_bytes(sig[:32], "big"), int.from_bytes(sig[32:64], "big"), sig[64]
-    rec = v - 27 if v >= 27 else v
+    if v not in (27, 28):
+        raise ValueError(f"v = {v}, not in {{27, 28}}")
+    if not (1 <= r < N and 1 <= s <= N // 2):
+        raise ValueError("r out of range or s not low-s (EIP-2)")
+    rec = v - 27
     x = r + (rec // 2) * N
     y = pow((x ** 3 + 7) % P, (P + 1) // 4, P)
     if y % 2 != rec % 2:
@@ -125,6 +134,15 @@ p4 = vec("p4-chain-link-genesis.json")
 check("p4 expected_link == chain_link(genesis, null, 1) recomputed", "0x" + link1.hex() == p4["input"]["expected_link"])
 rv = recover_variants(link1, g["countersignature"])
 out["p1_recover"] = rv
+_sig1 = bytes.fromhex(g["countersignature"][2:])
+_r1, _s1, _v1 = int.from_bytes(_sig1[:32], "big"), int.from_bytes(_sig1[32:64], "big"), _sig1[64]
+_hs = _r1.to_bytes(32, "big") + (N - _s1).to_bytes(32, "big") + bytes([55 - _v1])
+try:
+    ecrecover(personal_hash(link1), _hs)
+    _hs_refused = False
+except ValueError:
+    _hs_refused = True
+check("p1 high-s twin (s'=n-s, v flipped) REFUSED by the canonical ecrecover (PR #11 cn3)", _hs_refused, "EIP-2 low-s")
 hit = [k for k, a in rv.items() if a.lower() == g["ledgerSigner"].lower()]
 check("p1 countersignature recovers to ledgerSigner (personal_sign over the chain-link digest)", bool(hit), f"variant={hit} recovered={rv}")
 v1 = json.loads(rd("p1_verify.json").decode())

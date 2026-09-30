@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""verify_countersig.py — clean-room runner for the counter-signature ("crypto profile") vectors proposed in
+tersignhq/evidence-record-conformance PR #11 (head 399bcf8a, 2026-09-29).
+
+Clean-room rule, as for the core suite: written from the PR's crypto/README.md (the four-step check and the four
+reject reasons), its MANIFEST.json and its vectors ONLY. The PR's verify_crypto.py and secp256k1_recover.py were
+not downloaded and not read. Hashing and chain_link come from this repository's own verify_tersign.py; the
+secp256k1 arithmetic is this repository's own (docs/vector-audit/live_check.py, 2026-09-29), with the canonical
+checks added here.
+
+The check, per crypto/README.md:
+  1. link = chain_link(artifact_digest, prev_digest, seq)            (the core link, recomputed from the vector)
+  2. countersignature = 65 bytes r||s||v with v in {27, 28}           else malformed_signature
+  3. low-s (EIP-2): s <= n/2                                          else non_canonical_s
+  4. EIP-191 personal_sign recovery over the 32 link bytes            unrecoverable if no point / r, s out of range
+     must equal ledger_signer (0x-address, strip + lowercase)         else signer_mismatch
+Choices the README leaves open, stated: r or s outside [1, n-1] and an x without a curve point are
+`unrecoverable`; a non-hex or wrong-length hex string is `malformed_signature`; the recovery id is v-27 only
+(x = r, never r + n, since v is restricted to 27/28).
+
+Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
+Stdlib only.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import sys
+from typing import Callable, Dict, Optional, Tuple
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..")))
+import verify_tersign as V  # noqa: E402  (this repository's keccak256 and chain_link)
+
+P = 2 ** 256 - 2 ** 32 - 977
+N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+     0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)
+
+MALFORMED, NON_CANONICAL, UNRECOVERABLE, MISMATCH = (
+    "malformed_signature", "non_canonical_s", "unrecoverable", "signer_mismatch")
+
+
+class Reject(Exception):
+    def __init__(self, reason: str, detail: str):
+        super().__init__(detail)
+        self.reason = reason
+
+
+def _add(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    if a[0] == b[0] and (a[1] + b[1]) % P == 0:
+        return None
+    if a == b:
+        lam = (3 * a[0] * a[0]) * pow(2 * a[1], -1, P) % P
+    else:
+        lam = (b[1] - a[1]) * pow(b[0] - a[0], -1, P) % P
+    x = (lam * lam - a[0] - b[0]) % P
+    return (x, (lam * (a[0] - x) - a[1]) % P)
+
+
+def _mul(k, pt):
+    r = None
+    while k:
+        if k & 1:
+            r = _add(r, pt)
+        pt = _add(pt, pt)
+        k >>= 1
+    return r
+
+
+def address_of_point(Q) -> str:
+    return "0x" + V.keccak256_pure(Q[0].to_bytes(32, "big") + Q[1].to_bytes(32, "big"))[12:].hex()
+
+
+def personal_hash(msg: bytes) -> bytes:
+    return V.keccak256_pure(b"\x19Ethereum Signed Message:\n" + str(len(msg)).encode() + msg)
+
+
+def parse_sig(sig_hex, allow_v=(27, 28)) -> Tuple[int, int, int]:
+    if not isinstance(sig_hex, str) or not sig_hex.startswith("0x"):
+        raise Reject(MALFORMED, "countersignature is not a 0x-hex string")
+    try:
+        sig = bytes.fromhex(sig_hex[2:])
+    except ValueError:
+        raise Reject(MALFORMED, "countersignature is not valid hex") from None
+    if len(sig) != 65:
+        raise Reject(MALFORMED, f"countersignature is {len(sig)} bytes, not 65")
+    r, s, v = int.from_bytes(sig[:32], "big"), int.from_bytes(sig[32:64], "big"), sig[64]
+    if v not in allow_v:
+        raise Reject(MALFORMED, f"v = {v}, not in {{27, 28}}")
+    return r, s, v
+
+
+def recover(h32: bytes, r: int, s: int, v: int) -> str:
+    if not (1 <= r < N and 1 <= s < N):
+        raise Reject(UNRECOVERABLE, "r or s outside [1, n-1]")
+    x = r
+    y2 = (pow(x, 3, P) + 7) % P
+    y = pow(y2, (P + 1) // 4, P)
+    if (y * y) % P != y2:
+        raise Reject(UNRECOVERABLE, "r is not the x of a curve point")
+    if y % 2 != (v - 27) % 2:
+        y = P - y
+    e = int.from_bytes(h32, "big")
+    Q = _mul(pow(r, -1, N), _add(_mul(s, (x, y)), _mul((-e) % N, G)))
+    if Q is None:
+        raise Reject(UNRECOVERABLE, "recovered point at infinity")
+    return address_of_point(Q)
+
+
+def link_of(inp: Dict) -> bytes:
+    art = bytes.fromhex(inp["artifact_digest"][2:])
+    prev = None if inp.get("prev_digest") is None else bytes.fromhex(inp["prev_digest"][2:])
+    return V.chain_link(art, prev, int(inp["seq"]))
+
+
+def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer: Optional[str] = None,
+          link_fn: Callable[[Dict], bytes] = link_of) -> Tuple[str, Optional[str], str]:
+    """Returns (verdict, reject_reason, detail). Keyword switches exist only to build the mutants below."""
+    try:
+        link = link_fn(inp)
+        r, s, v = parse_sig(inp.get("countersignature"), allow_v)
+        if v not in (27, 28):          # mutant path: an out-of-range v "normalised" instead of refused
+            v = 27 + (v - 27) % 2
+        if low_s and s > N // 2:
+            raise Reject(NON_CANONICAL, "s > n/2 (EIP-2)")
+        h = personal_hash(link) if eip191 else link
+        got = recover(h, r, s, v)
+        want = (fixed_signer or str(inp.get("ledger_signer", ""))).strip().lower()
+        if got != want:
+            raise Reject(MISMATCH, f"recovered {got} != ledger_signer {want}")
+        return "valid", None, f"recovers to {got}"
+    except Reject as e:
+        return "reject", e.reason, str(e)
+
+
+LEDGER = "0x9d38ba84730271eb27ac9bd4bd2620c08db4fda6"
+MUTANTS = {
+    "no_low_s": dict(low_s=False),
+    "no_eip191_prefix": dict(eip191=False),
+    "v_normalised_not_refused": dict(allow_v=tuple(range(256))),
+    "hardcoded_ledger_signer": dict(fixed_signer=LEDGER),
+    "link_ignores_seq": dict(link_fn=lambda inp: link_of(dict(inp, seq=1))),
+}
+
+
+def run(spec_dir: str, **kw):
+    man = json.load(open(os.path.join(spec_dir, "MANIFEST.json"), encoding="utf-8"))
+    rows = []
+    for ent in man["vectors"]:
+        vec = json.load(open(os.path.join(spec_dir, "vectors", ent["file"]), encoding="utf-8"))
+        verdict, reason, detail = check(vec["input"], **kw)
+        exp_v, exp_r = vec.get("expect"), vec.get("reject_reason")
+        ok = verdict == exp_v and (exp_v != "reject" or reason == exp_r)
+        rows.append({"file": ent["file"], "expect": exp_v, "expect_reason": exp_r, "verdict": verdict,
+                     "reason": reason, "detail": detail, "concordant": ok})
+    return man, rows
+
+
+def main(argv):
+    if not argv:
+        print(__doc__)
+        return 2
+    spec = argv[0]
+    man, rows = run(spec)
+    for r in rows:
+        print(f"[{'OK' if r['concordant'] else 'DIFF'}] {r['file']:48s} -> {r['verdict']}"
+              f"{'/' + r['reason'] if r['reason'] else ''}  ({r['detail'][:70]})")
+    n_ok = sum(r["concordant"] for r in rows)
+    print(f"concordant {n_ok}/{len(rows)}")
+    out = {"spec_manifest_sha256": hashlib.sha256(open(os.path.join(spec, "MANIFEST.json"), "rb").read()).hexdigest(),
+           "rows": rows, "concordant": n_ok, "n": len(rows)}
+    if "--mutants" in argv:
+        out["mutants"] = {}
+        for name, kw in MUTANTS.items():
+            _, mrows = run(spec, **kw)
+            killers = [r["file"] for r in mrows if not r["concordant"]]
+            out["mutants"][name] = killers
+            print(f"mutant {name:26s} {'KILLED by ' + ', '.join(killers) if killers else 'SURVIVES'}")
+    if "--json" in argv:
+        json.dump(out, open(argv[argv.index("--json") + 1], "w", encoding="utf-8"), indent=1)
+    return 0 if n_ok == len(rows) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

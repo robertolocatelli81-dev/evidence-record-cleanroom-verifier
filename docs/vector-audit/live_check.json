@@ -1,5 +1,5 @@
 {
- "run_at": "2026-09-29T06:33:52+02:00",
+ "run_at": "2026-09-30T03:43:37+02:00",
  "checks": [
   {
    "label": "ecrecover positive control (own key: sign -> recover)",
@@ -45,6 +45,11 @@
    "label": "p4 expected_link == chain_link(genesis, null, 1) recomputed",
    "pass": true,
    "extra": ""
+  },
+  {
+   "label": "p1 high-s twin (s'=n-s, v flipped) REFUSED by the canonical ecrecover (PR #11 cn3)",
+   "pass": true,
+   "extra": "EIP-2 low-s"
   },
   {
    "label": "p1 countersignature recovers to ledgerSigner (personal_sign over the chain-link digest)",
