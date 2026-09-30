@@ -3,8 +3,10 @@
 tersignhq/evidence-record-conformance PR #11 (head 399bcf8a, 2026-09-29).
 
 Clean-room rule, as for the core suite: written from the PR's crypto/README.md (the four-step check and the four
-reject reasons), its MANIFEST.json and its vectors ONLY. The PR's verify_crypto.py and secp256k1_recover.py were
-not downloaded and not read. Hashing and chain_link come from this repository's own verify_tersign.py; the
+reject reasons), its MANIFEST.json and its vectors ONLY. The PR's verify_crypto.py and secp256k1_recover.py were not
+read while this runner and its tests were written (2026-09-30, first version 01:41Z); they were later downloaded with
+a clone of the fork and EXECUTED as a black box for differential runs, and a separate local patching experiment read
+verify_crypto.py after that (not used by this file). Hashing and chain_link come from this repository's own verify_tersign.py; the
 secp256k1 arithmetic is this repository's own (docs/vector-audit/live_check.py, 2026-09-29), with the canonical
 checks added here.
 
@@ -20,8 +22,10 @@ Choices the README leaves open, stated: r or s outside [1, n-1] and an x without
 LINK field, and both this runner (before 2026-09-30) and the PR runner crashed on some and silently accepted
 others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
 reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
-an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, or a field is missing.
-No input makes the runner raise.
+an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, prev_digest is absent
+(absent is not null), or another link field is missing. A missing or non-string countersignature is
+`malformed_signature` (link fields are checked first, README step order). The signature hex must be "0x" + hex
+digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No input makes the runner raise.
 
 Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
 Stdlib only.
@@ -92,6 +96,8 @@ def personal_hash(msg: bytes) -> bytes:
 def parse_sig(sig_hex, allow_v=(27, 28)) -> Tuple[int, int, int]:
     if not isinstance(sig_hex, str) or not sig_hex.startswith("0x"):
         raise Reject(MALFORMED, "countersignature is not a 0x-hex string")
+    if not set(sig_hex[2:]) <= _HEX:           # bytes.fromhex would silently skip spaces, tabs, newlines
+        raise Reject(MALFORMED, "countersignature contains non-hex characters")
     try:
         sig = bytes.fromhex(sig_hex[2:])
     except ValueError:
