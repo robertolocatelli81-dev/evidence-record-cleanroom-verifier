@@ -327,7 +327,7 @@ def main(argv):
             out["mutants"][name] = killers
             print(f"mutant {name:26s} {'KILLED by ' + ', '.join(killers) if killers else 'SURVIVES'}")
     if "--json" in argv:
-        json.dump(out, open(argv[argv.index("--json") + 1], "w", encoding="utf-8"), indent=1)
+        json.dump(out, open(argv[argv.index("--json") + 1], "w", encoding="utf-8"), indent=1, default=repr)   # Oversized
     return 0 if n_ok == len(rows) else 1
 
 

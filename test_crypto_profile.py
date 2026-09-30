@@ -254,6 +254,68 @@ class TestCountersignature(unittest.TestCase):
             self.assertNotIn("Traceback", p.stderr)
             self.assertIn("run stopped", p.stderr)
 
+    def test_loader_edges(self):
+        # Verification B (30/09): nine non-equivalent mutants of the loader survived; each case below kills one or more
+        live = json.dumps(_live())[1:-1]
+
+        def doc(extra):
+            return '{"expect": "valid", "input": {' + live + ', "x_extra": ' + extra + "}}"
+        cases = {"l1.json": (doc('"' + "[" * 1000 + '"'), "valid"),                       # brackets inside a string
+                 "l2.json": (doc('"a\\"' + "[" * 1000 + '"'), "valid"),                  # escaped quote, string goes on
+                 "l3.json": (doc("[" + ",".join(["[]"] * 1000) + "]"), "valid"),           # 1,000 siblings, depth 4
+                 "l4.json": (doc("[" + "[" * 897 + "]" * 897 + ",[]]"), "valid"),          # depth exactly 900, scan active
+                 "l5.json": (doc('"\xff"').encode("latin-1"), "reject"),                   # not UTF-8
+                 "l6.json": (doc("1")[:-3], "reject")}                                       # truncated JSON
+        import tempfile
+        d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "vectors"))
+        for name, (body, _) in cases.items():
+            open(os.path.join(d, "vectors", name), "wb").write(body if isinstance(body, bytes) else body.encode())
+        json.dump({"vectors": [{"file": n, "expect": exp, "reject_reason": C.MALFORMED_INPUT if exp == "reject" else None}
+                               for n, (_, exp) in cases.items()]}, open(os.path.join(d, "MANIFEST.json"), "w"))
+        _, rows = C.run(d)
+        got = {r["file"]: (r["verdict"], r["reason"], r["concordant"]) for r in rows}
+        self.assertEqual(got, {n: (exp, C.MALFORMED_INPUT if exp == "reject" else None, True) for n, (_, exp) in cases.items()})
+
+    def test_unloadable_manifest_stops_the_run_without_a_traceback(self):
+        import subprocess, tempfile
+        for body in ("{not json", '{"profile": "x"}'):
+            d = tempfile.mkdtemp()
+            open(os.path.join(d, "MANIFEST.json"), "w").write(body)
+            p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d],
+                               capture_output=True, text=True)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr, "run stopped" in p.stderr), (2, False, True))
+
+    def test_depth_scan_across_escapes_and_after_the_deepest_point(self):
+        # 30/09 re-check of the survivors: 950 levels load on 3.9, 3.11 and 3.13, so only the scan can refuse them
+        live = json.dumps(_live())[1:-1]
+        deep = "[" * 947 + "]" * 947
+
+        def doc(extra):
+            return '{"input": {' + live + ', "x_extra": ' + extra + "}}"
+        cases = {"esc_n.json": doc('["a\\n", ' + deep + "]"),       # an escape must not hide what follows the string
+                 "esc_q.json": doc('["a\\"b", ' + deep + "]"),
+                 "shallow_after.json": doc("[" + deep + ", []]")}       # the deepest point, not the last one, counts
+        d = self._run_one(cases)
+        _, rows = C.run(d)
+        self.assertEqual({r["file"]: (r["verdict"], r["reason"]) for r in rows},
+                         {n: ("reject", C.MALFORMED_INPUT) for n in cases})
+
+    def test_json_report_with_an_oversized_expect(self):
+        # 30/09: --json raised TypeError (Oversized not serializable) when a vector's "expect" was a 5,000-digit integer
+        import subprocess
+        d = self._run_one({"x.json": '{"expect": ' + "9" * 5000 + ', "input": ' + json.dumps(_live()) + "}"})
+        out = os.path.join(d, "report.json")
+        for limit, want in ((None, "<integer of 5000 digits>"), ("0", None)):
+            env = {k: v for k, v in os.environ.items() if k != "PYTHONINTMAXSTRDIGITS"}
+            if limit is not None:
+                env["PYTHONINTMAXSTRDIGITS"] = limit      # no limit: the integer loads as an int, no marker to report
+            p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d,
+                                "--json", out], capture_output=True, text=True, env=env)
+            self.assertNotIn("Traceback", p.stderr)
+            self.assertEqual(p.stdout.split("->")[1].split()[0], "valid")
+            if want:
+                self.assertEqual(json.load(open(out))["rows"][0]["expect"], want)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
