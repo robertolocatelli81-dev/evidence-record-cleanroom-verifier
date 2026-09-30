@@ -205,6 +205,55 @@ class TestCountersignature(unittest.TestCase):
         _, rows = C.run(d)
         self.assertEqual([(r["verdict"], r["reason"]) for r in rows], [("reject", C.MALFORMED_INPUT)] * 2)
 
+    def _run_one(self, body_by_name):
+        import tempfile
+        d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "vectors"))
+        for name, body in body_by_name.items():
+            open(os.path.join(d, "vectors", name), "w").write(body)
+        json.dump({"vectors": [{"file": n} for n in body_by_name]}, open(os.path.join(d, "MANIFEST.json"), "w"))
+        return d
+
+    def test_oversized_integers_do_not_depend_on_the_int_string_limit(self):
+        # Verification A (30/09): with the 4300-digit default a VALID vector with a long integer in an unread key was
+        # malformed_input, and valid with PYTHONINTMAXSTRDIGITS=0; link_version/signature gave the wrong step's reason
+        live = _live()
+        big = "9" * 5000
+        base = json.dumps({"expect": "valid", "input": live})
+        cases = {"extra.json": base[:-2] + ', "zz_extra": ' + big + "}}",
+                 "lv.json": json.dumps({"input": dict(live, link_version=0)}).replace('"link_version": 0', '"link_version": ' + big),
+                 "sig.json": json.dumps({"input": dict(live, countersignature=0)}).replace('"countersignature": 0', '"countersignature": ' + big),
+                 "seq.json": json.dumps({"input": dict(live, seq=0)}).replace('"seq": 0', '"seq": ' + big)}
+        _, rows = C.run(self._run_one(cases))
+        got = {r["file"]: (r["verdict"], r["reason"]) for r in rows}
+        self.assertEqual(got, {"extra.json": ("valid", None), "lv.json": ("reject", C.UNSUPPORTED_LINK_VERSION),
+                               "sig.json": ("reject", C.MALFORMED), "seq.json": ("reject", C.MALFORMED_INPUT)})
+
+    def test_nesting_verdict_is_the_same_on_every_interpreter(self):
+        # Verification A (30/09): 1,000 levels were malformed_input on 3.9/3.11 and valid on 3.13
+        live = json.dumps({"input": _live()})
+        # total depth = the two enclosing objects (vector, input) + k brackets
+        cases = {f"n{k + 2}.json": live[:-2] + ', "zz": ' + "[" * k + "]" * k + "}}" for k in (897, 898, 899, 998, 4998)}
+        _, rows = C.run(self._run_one(cases))
+        got = {r["file"]: r["verdict"] for r in rows}
+        self.assertEqual(got, {"n899.json": "valid", "n900.json": "valid", "n901.json": "reject",
+                               "n1000.json": "reject", "n5000.json": "reject"})
+
+    def test_unopenable_vector_file_stops_the_run_without_a_traceback(self):
+        # Verification A (30/09): a directory, a broken link or a listed-but-missing file raised a Python traceback
+        import subprocess
+        d = self._run_one({"ok.json": json.dumps({"input": _live()})})
+        os.makedirs(os.path.join(d, "vectors", "dir.json"))
+        m = json.load(open(os.path.join(d, "MANIFEST.json")))
+        for extra in ({"file": "dir.json"}, {"file": "missing.json"}):
+            json.dump({"vectors": m["vectors"] + [extra]}, open(os.path.join(d, "MANIFEST.json"), "w"))
+            with self.assertRaises(C.RunStopped):
+                C.run(d)
+            p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d],
+                               capture_output=True, text=True)
+            self.assertEqual(p.returncode, 2)
+            self.assertNotIn("Traceback", p.stderr)
+            self.assertIn("run stopped", p.stderr)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

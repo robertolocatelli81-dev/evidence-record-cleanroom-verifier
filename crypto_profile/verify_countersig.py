@@ -26,8 +26,13 @@ The check, in the order of the PR README at 4108697 (the first failing step deci
 Choices the README does not spell out, stated: r outside [1, n-1], s = 0, an x without a curve point and a
 recovered point at infinity are `unrecoverable`; s > n/2 (s >= n included) is `non_canonical_s`, because step 6
 precedes step 7; the recovery id is v-27 only (x = r, never r + n). A vector whose `input` is absent or not a JSON
-object is `malformed_input`, and so is a vector file that JSON cannot load (an integer beyond Python's 4300-digit
-conversion limit, nesting beyond the recursion limit); a MANIFEST.json that cannot be loaded still stops the run. Any unexpected exception is reported as `internal_error`, never as a verdict reason.
+object is `malformed_input`, and so is a vector file that is not UTF-8 JSON or nests arrays/objects deeper than
+MAX_DEPTH (900) levels. Integers are parsed without Python's int-string limit (an integer too long for int() becomes a
+non-integer marker: seq -> malformed_input, link_version -> unsupported_link_version, countersignature ->
+malformed_signature, an unread key -> ignored), so the verdict does not depend on PYTHONINTMAXSTRDIGITS or on the
+interpreter's recursion limit. A MANIFEST.json that cannot be loaded, or a listed vector file that cannot be opened
+(missing, a directory, a broken link), stops the run with a one-line message and exit code 2, no traceback. Any other
+unexpected exception while checking a loaded vector is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
 d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
 
@@ -209,16 +214,82 @@ MUTANTS = {
 }
 
 
+class Oversized:
+    """An integer literal too long for int() under the interpreter's int-string limit: not an int, never a crash."""
+    def __init__(self, digits: str):
+        self.digits = len(digits)
+
+    def __repr__(self):
+        return f"<integer of {self.digits} digits>"
+
+
+def _parse_int(text: str):
+    try:
+        return int(text)
+    except ValueError:
+        return Oversized(text)
+
+
+MAX_DEPTH = 900   # below every supported interpreter's JSON recursion limit (3.9/3.11 fail near 1000 levels)
+
+
+def _depth(text: str) -> int:
+    """Deepest [ / { nesting outside JSON strings (a pre-scan, so json never recurses past MAX_DEPTH)."""
+    if text.count("[") + text.count("{") <= MAX_DEPTH:
+        return 0   # cannot nest deeper than MAX_DEPTH: skip the per-character scan
+    depth = deepest = 0
+    in_str = esc = False
+    for ch in text:
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch in "[{":
+            depth += 1
+            deepest = max(deepest, depth)
+        elif ch in "]}":
+            depth -= 1
+    return deepest
+
+
+class RunStopped(Exception):
+    """The vector SET cannot be read (manifest unloadable, a listed file that cannot be opened): the run stops."""
+
+
+def load_vector(path: str):
+    """Return (vector, None) or (None, reason text). OSError is not a vector verdict: it raises RunStopped."""
+    try:
+        with open(path, "rb") as fh:
+            raw = fh.read()
+    except OSError as e:
+        raise RunStopped(f"vector file cannot be opened: {path}: {type(e).__name__}: {e.strerror or e}")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return None, "vector file is not UTF-8"
+    if _depth(text) > MAX_DEPTH:
+        return None, f"vector file nests deeper than {MAX_DEPTH} levels"
+    try:
+        return json.loads(text, parse_int=_parse_int), None
+    except (ValueError, RecursionError) as e:
+        return None, f"vector file not loadable as JSON: {type(e).__name__}"
+
+
 def run(spec_dir: str, **kw):
-    man = json.load(open(os.path.join(spec_dir, "MANIFEST.json"), encoding="utf-8"))
+    try:
+        with open(os.path.join(spec_dir, "MANIFEST.json"), encoding="utf-8") as fh:
+            man = json.load(fh)
+        entries = man["vectors"]
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise RunStopped(f"MANIFEST.json cannot be loaded from {spec_dir}: {type(e).__name__}: {e}")
     rows = []
-    for ent in man["vectors"]:
-        try:   # a vector file JSON cannot load (an integer beyond Python's 4300-digit limit, nesting beyond the recursion
-            with open(os.path.join(spec_dir, "vectors", ent["file"]), encoding="utf-8") as fh:   # limit) is a verdict, not a crash
-                vec = json.load(fh)
-            load_error = None
-        except (ValueError, RecursionError) as e:
-            vec, load_error = None, f"vector file not loadable as JSON: {type(e).__name__}"
+    for ent in entries:
+        vec, load_error = load_vector(os.path.join(spec_dir, "vectors", ent["file"]))
         if load_error:
             verdict, reason, detail = "reject", MALFORMED_INPUT, load_error
         else:
@@ -236,7 +307,11 @@ def main(argv):
         print(__doc__)
         return 2
     spec = argv[0]
-    man, rows = run(spec)
+    try:
+        man, rows = run(spec)
+    except RunStopped as e:
+        print(f"run stopped: {e}", file=sys.stderr)
+        return 2
     for r in rows:
         print(f"[{'OK' if r['concordant'] else 'DIFF'}] {r['file']:48s} -> {r['verdict']}"
               f"{'/' + r['reason'] if r['reason'] else ''}  ({r['detail'][:70]})")
