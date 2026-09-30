@@ -143,6 +143,56 @@ class TestCountersignature(unittest.TestCase):
         for case in (inp, dict(inp, seq=None), dict(inp, artifact_digest=5), dict(inp, prev_digest=[]), {}, None, [], "x"):
             self.assertNotEqual(C.check(case)[1], C.INTERNAL_ERROR)
 
+    def test_white_space_set_exact_on_every_identifier(self):
+        # Test 2 (30/09): pin all 25 White_Space characters and the usual impostors, on each identifier
+        inp = _live()
+        # INDEPENDENT list, from Unicode PropList.txt (White_Space), NOT the runner's constant: a test that iterates over the
+        # code's own set cannot notice a character missing from it (Test 2 re-run, 30/09)
+        unicode_white_space = [0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0x85, 0xA0, 0x1680] + list(range(0x2000, 0x200B)) + \
+                              [0x2028, 0x2029, 0x202F, 0x205F, 0x3000]
+        self.assertEqual(len(unicode_white_space), 25)
+        for ch in map(chr, unicode_white_space):
+            for key in ("artifact_digest", "ledger_signer"):
+                with self.subTest(key=key, ch=hex(ord(ch))):
+                    self.assertEqual(C.check(dict(inp, **{key: ch + inp[key] + ch}))[:2], ("valid", None))
+            with self.subTest(key="prev_digest", ch=hex(ord(ch))):
+                self.assertEqual(C.check(dict(inp, prev_digest=ch + "0x" + "00" * 32 + ch))[:2], ("valid", None))
+        for ch in ("\u0000", "\u001c", "\u001d", "\u001e", "\u001f", "\u180e", "\u200b", "\ufeff"):
+            for key in ("artifact_digest", "ledger_signer"):
+                with self.subTest(key=key, bad=hex(ord(ch))):
+                    self.assertEqual(C.check(dict(inp, **{key: ch + inp[key]}))[1], C.MALFORMED_INPUT)
+
+    def test_order_between_steps(self):
+        inp = _live()
+        r, s, v = _parts(inp["countersignature"])
+        self.assertEqual(C.check({k: x for k, x in inp.items() if k != "seq"} | {"link_version": 2})[1], C.MALFORMED_INPUT)  # 1 before 3
+        self.assertEqual(C.check(dict(inp, artifact_digest="0xzz", link_version=2))[1], C.MALFORMED_INPUT)                  # 2 before 3
+        self.assertEqual(C.check(dict(inp, countersignature="0xzz", link_version=2))[1], C.UNSUPPORTED_LINK_VERSION)        # 3 before 5
+        x = 1
+        while pow((pow(x, 3, C.P) + 7) % C.P, (C.P - 1) // 2, C.P) == 1:
+            x += 1
+        self.assertEqual(C.check(dict(inp, countersignature=_hex(x, C.N - 1, 27)))[1], C.NON_CANONICAL)                      # 6 before 7
+
+    def test_signature_and_identifier_shapes(self):
+        inp = _live(); sig = inp["countersignature"]
+        self.assertEqual(C.check(dict(inp, countersignature=sig + "00"))[1], C.MALFORMED)       # 66 bytes
+        self.assertEqual(C.check(dict(inp, countersignature=sig + "0"))[1], C.MALFORMED)        # odd length
+        self.assertEqual(C.check(dict(inp, artifact_digest=inp["artifact_digest"] + "00"))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, artifact_digest="00" + inp["artifact_digest"][2:]))[1], C.MALFORMED_INPUT)
+        self.assertEqual(C.check(dict(inp, prev_digest="0x" + "\ufb00" * 32))[1], C.MALFORMED_INPUT)   # no casefold (ﬀ)
+        for key in ("artifact_digest", "ledger_signer"):
+            self.assertEqual(C.check(dict(inp, **{key: None}))[1], C.MALFORMED_INPUT)
+            self.assertEqual(C.check(dict(inp, **{key: 5}))[1], C.MALFORMED_INPUT)
+
+    def test_recovery_extremes(self):
+        inp = _live()
+        r, s, v = _parts(inp["countersignature"])
+        self.assertEqual(C.check(dict(inp, countersignature=_hex(r, 0, v)))[1], C.UNRECOVERABLE)          # s = 0
+        self.assertEqual(C.check(dict(inp, countersignature=_hex(C.N, s, v)))[1], C.UNRECOVERABLE)        # r = n
+        e = int.from_bytes(C.personal_hash(C.link_of(inp)), "big")
+        R = C._mul(e % C.N, C.G)                                                                           # s=1, R=e*G -> point at infinity
+        self.assertEqual(C.check(dict(inp, countersignature=_hex(R[0], 1, 27 + (R[1] % 2))))[1], C.UNRECOVERABLE)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

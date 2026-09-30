@@ -70,8 +70,9 @@ measured in `docs/vector-audit/AUDIT_69.md`, which also states where the suite i
 
 `crypto_profile/verify_countersig.py` is a second, separate runner for the crypto profile of
 tersignhq/evidence-record-conformance PR #11 (EIP-191 `personal_sign` counter-signatures over chain links). It was
-written from that PR's `crypto/README.md`, `MANIFEST.json` and vectors; the PR's `verify_crypto.py` was run only as a
-black box. Hashing and `chain_link` come from `verify_tersign.py`. It follows the eight steps of the PR README at
+written from that PR's `crypto/README.md`, `MANIFEST.json` and vectors, without reading the PR's `verify_crypto.py`,
+which every comparison ran as a black box; after the first version, a separate local patching experiment of ours
+read `verify_crypto.py` (it is not used by this runner, and the docstring says so). Hashing and `chain_link` come from `verify_tersign.py`. It follows the eight steps of the PR README at
 `4108697` (identifiers stripped of Unicode White_Space and lower-cased before the shape check, `seq` in [1, 2^53 − 1],
 `link_version`, signature matched whole); where an earlier reading of ours differed, the vectors decided, and the
 docstring records it.

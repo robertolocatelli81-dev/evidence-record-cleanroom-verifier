@@ -23,8 +23,9 @@ The check, in the order of the PR README at 4108697 (the first failing step deci
   6. low-s (EIP-2, s <= n/2), checked on the signature bytes before recovery         else non_canonical_s
   7. EIP-191 personal_sign recovery over the 32 link bytes defines a public key       else unrecoverable
   8. its address equals the normalized ledger_signer                                  else signer_mismatch
-Choices the README does not spell out, stated: r or s outside [1, n-1] and an x without a curve point are
-`unrecoverable`; the recovery id is v-27 only (x = r, never r + n). A vector whose `input` is absent or not a JSON
+Choices the README does not spell out, stated: r outside [1, n-1], s = 0, an x without a curve point and a
+recovered point at infinity are `unrecoverable`; s > n/2 (s >= n included) is `non_canonical_s`, because step 6
+precedes step 7; the recovery id is v-27 only (x = r, never r + n). A vector whose `input` is absent or not a JSON
 object is `malformed_input`; no value of `input` makes this runner raise (a vector FILE that is not a JSON object is
 outside this rule). Any unexpected exception is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
@@ -53,7 +54,7 @@ G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
 MALFORMED, NON_CANONICAL, UNRECOVERABLE, MISMATCH = (
     "malformed_signature", "non_canonical_s", "unrecoverable", "signer_mismatch")
 MALFORMED_INPUT = "malformed_input"          # suite reason at 4108697 (step 1-2)
-INTERNAL_ERROR = "internal_error"            # never expected: a test fails if any input produces it
+INTERNAL_ERROR = "internal_error"            # never expected: the unit tests assert it on a set of hostile inputs; benches count it
 UNSUPPORTED_LINK_VERSION = "unsupported_link_version"   # suite at 4108697, step 3
 # Unicode White_Space property (the core's identifier_normalization set), listed explicitly: str.strip() is NOT this set
 # (it also strips U+001C..U+001F, which are not White_Space). U+FEFF is not White_Space and is not stripped (vector cn17).
