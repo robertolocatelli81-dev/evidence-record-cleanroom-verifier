@@ -23,7 +23,8 @@ LINK field, and both this runner (before 2026-09-30) and the PR runner crashed o
 others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
 reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
 an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, prev_digest is absent
-(absent is not null), or another link field is missing. The form of every field, ledger_signer included, is
+or another link field is missing (an omitted prev_digest means genesis, like null: suite vector cp3 at 1e08f4e,
+which replaced our earlier absent-is-not-null reading). The form of every field, ledger_signer included, is
 checked before the signature; a missing or non-string countersignature is then `malformed_signature`. The signature hex must be "0x" + hex
 digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No value of `input` makes the runner raise (a vector FILE that is not a JSON object is outside this rule).
 
@@ -140,7 +141,8 @@ def _hex_field(inp: Dict, key: str, nbytes: int, nullable: bool = False) -> Opti
 
 def link_of(inp: Dict) -> bytes:
     art = _hex_field(inp, "artifact_digest", 32)
-    prev = _hex_field(inp, "prev_digest", 32, nullable=True)
+    # suite decision at 1e08f4e (vector cp3): an omitted prev_digest key and an explicit null both mean genesis
+    prev = _hex_field(inp, "prev_digest", 32, nullable=True) if "prev_digest" in inp else None
     seq = inp.get("seq")
     if type(seq) is not int or not (0 <= seq <= 2 ** 64 - 1):
         raise Reject(MALFORMED_INPUT, "seq is not an integer in [0, 2^64 - 1]")

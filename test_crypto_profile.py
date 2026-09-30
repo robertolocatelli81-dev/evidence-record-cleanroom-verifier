@@ -93,7 +93,6 @@ class TestCountersignature(unittest.TestCase):
             "signer_missing": {k: v for k, v in inp.items() if k != "ledger_signer"},
             "signer_short": dict(inp, ledger_signer=inp["ledger_signer"][:-2]),
             "art_missing": {k: v for k, v in inp.items() if k != "artifact_digest"},
-            "prev_absent": {k: v for k, v in inp.items() if k != "prev_digest"},
         }
         for name, case in bad.items():
             with self.subTest(name):
@@ -101,6 +100,11 @@ class TestCountersignature(unittest.TestCase):
         # seq at the uint64 edge is well-formed (it only fails to match the live signature)
         self.assertEqual(C.check(dict(inp, seq=2 ** 64 - 1))[1], C.MISMATCH)
         self.assertEqual(C.check(dict(inp, seq=0))[1], C.MISMATCH)
+
+    def test_prev_digest_absent_equals_null(self):
+        # suite vector cp3 (1e08f4e): omitted key == explicit null == genesis
+        inp = _live()
+        self.assertEqual(C.check({k: v for k, v in inp.items() if k != "prev_digest"})[:2], ("valid", None))
 
     def test_link_fields_checked_before_signature(self):
         inp = _live()
