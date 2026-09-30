@@ -22,7 +22,7 @@ Choices the README leaves open, stated: r or s outside [1, n-1] and an x without
 LINK field, and both this runner (before 2026-09-30) and the PR runner crashed on some and silently accepted
 others (seq "1", 1.0 or true; digests of the wrong length). Chosen here, outside the README's four reasons:
 reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 hex (prev may be null), seq is not
-an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex after strip, prev_digest is absent
+an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex (form checked as given, no strip: suite vector cn18 at d7c7fdc; lower-cased for comparison), prev_digest is absent
 or another link field is missing (an omitted prev_digest means genesis, like null: suite vector cp3 at 1e08f4e,
 which replaced our earlier absent-is-not-null reading). The form of every field, ledger_signer included, is
 checked before the signature; a missing or non-string countersignature is then `malformed_signature`. The signature hex must be "0x" + hex
@@ -151,7 +151,9 @@ def link_of(inp: Dict) -> bytes:
 
 def signer_of(inp: Dict) -> str:
     val = inp.get("ledger_signer")
-    val = val.strip().lower() if isinstance(val, str) else val      # README: compared after strip + lowercase
+    # suite at d7c7fdc (cn18): the FORM is checked on the value as given (no strip: a trailing newline or a leading space is
+    # malformed_input); case-folding is kept for the comparison, so "0X…" in upper case stays the same address (cb3)
+    val = val.lower() if isinstance(val, str) else val
     if not (isinstance(val, str) and val.startswith("0x") and len(val) == 42 and set(val[2:]) <= _HEX):
         raise Reject(MALFORMED_INPUT, "ledger_signer is not 0x + 40 hex")
     return val.lower()

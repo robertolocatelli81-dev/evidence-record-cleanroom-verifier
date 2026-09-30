@@ -115,8 +115,10 @@ class TestCountersignature(unittest.TestCase):
 
     def test_tolerated_forms_per_readme(self):
         inp = _live()
-        # README: ledger_signer compared after strip + lowercase
-        self.assertEqual(C.check(dict(inp, ledger_signer=" " + inp["ledger_signer"].upper().replace("0X", "0x") + " "))[:2], ("valid", None))
+        # suite at d7c7fdc (cn18): ledger_signer form checked as given (no strip); case-folding kept for the comparison
+        self.assertEqual(C.check(dict(inp, ledger_signer="0X" + inp["ledger_signer"][2:].upper()))[:2], ("valid", None))
+        for bad in (" " + inp["ledger_signer"], inp["ledger_signer"] + "\n", inp["ledger_signer"] + " "):
+            self.assertEqual(C.check(dict(inp, ledger_signer=bad))[1], C.MALFORMED_INPUT)
         # uppercase hex digits in the signature are still hex; a "0X" prefix or leading space is not accepted
         self.assertEqual(C.check(dict(inp, countersignature="0x" + inp["countersignature"][2:].upper()))[:2], ("valid", None))
         self.assertEqual(C.check(dict(inp, countersignature="0X" + inp["countersignature"][2:]))[1], C.MALFORMED)
