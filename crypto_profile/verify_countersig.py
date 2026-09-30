@@ -26,8 +26,8 @@ The check, in the order of the PR README at 4108697 (the first failing step deci
 Choices the README does not spell out, stated: r outside [1, n-1], s = 0, an x without a curve point and a
 recovered point at infinity are `unrecoverable`; s > n/2 (s >= n included) is `non_canonical_s`, because step 6
 precedes step 7; the recovery id is v-27 only (x = r, never r + n). A vector whose `input` is absent or not a JSON
-object is `malformed_input`; no value of `input` makes this runner raise (a vector FILE that is not a JSON object is
-outside this rule). Any unexpected exception is reported as `internal_error`, never as a verdict reason.
+object is `malformed_input`, and so is a vector file that JSON cannot load (an integer beyond Python's 4300-digit
+conversion limit, nesting beyond the recursion limit); a MANIFEST.json that cannot be loaded still stops the run. Any unexpected exception is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
 d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
 
@@ -213,9 +213,18 @@ def run(spec_dir: str, **kw):
     man = json.load(open(os.path.join(spec_dir, "MANIFEST.json"), encoding="utf-8"))
     rows = []
     for ent in man["vectors"]:
-        vec = json.load(open(os.path.join(spec_dir, "vectors", ent["file"]), encoding="utf-8"))
-        verdict, reason, detail = check(vec.get("input") if isinstance(vec, dict) else None, **kw)
-        exp_v, exp_r = vec.get("expect"), vec.get("reject_reason")
+        try:   # a vector file JSON cannot load (an integer beyond Python's 4300-digit limit, nesting beyond the recursion
+            with open(os.path.join(spec_dir, "vectors", ent["file"]), encoding="utf-8") as fh:   # limit) is a verdict, not a crash
+                vec = json.load(fh)
+            load_error = None
+        except (ValueError, RecursionError) as e:
+            vec, load_error = None, f"vector file not loadable as JSON: {type(e).__name__}"
+        if load_error:
+            verdict, reason, detail = "reject", MALFORMED_INPUT, load_error
+        else:
+            verdict, reason, detail = check(vec.get("input") if isinstance(vec, dict) else None, **kw)
+        exp_v = vec.get("expect") if isinstance(vec, dict) else ent.get("expect")
+        exp_r = vec.get("reject_reason") if isinstance(vec, dict) else ent.get("reject_reason")
         ok = verdict == exp_v and (exp_v != "reject" or reason == exp_r)
         rows.append({"file": ent["file"], "expect": exp_v, "expect_reason": exp_r, "verdict": verdict,
                      "reason": reason, "detail": detail, "concordant": ok})

@@ -193,6 +193,18 @@ class TestCountersignature(unittest.TestCase):
         R = C._mul(e % C.N, C.G)                                                                           # s=1, R=e*G -> point at infinity
         self.assertEqual(C.check(dict(inp, countersignature=_hex(R[0], 1, 27 + (R[1] % 2))))[1], C.UNRECOVERABLE)
 
+    def test_unloadable_vector_file_is_a_verdict_not_a_crash(self):
+        # Test 3 (30/09): a 4,301-digit integer or 100,000 levels of nesting made json.load raise inside run()
+        import tempfile
+        d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "vectors"))
+        bodies = {"big.json": '{"expect":"reject","input":{"seq":' + "9" * 4301 + "}}",
+                  "deep.json": '{"expect":"reject","input":' + "[" * 100000 + "]" * 100000 + "}"}
+        for name, body in bodies.items():
+            open(os.path.join(d, "vectors", name), "w").write(body)
+        json.dump({"vectors": [{"file": n, "expect": "reject"} for n in bodies]}, open(os.path.join(d, "MANIFEST.json"), "w"))
+        _, rows = C.run(d)
+        self.assertEqual([(r["verdict"], r["reason"]) for r in rows], [("reject", C.MALFORMED_INPUT)] * 2)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
