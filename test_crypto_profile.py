@@ -126,7 +126,8 @@ class TestCountersignature(unittest.TestCase):
         sig = inp["countersignature"]
         for bad in (sig[:10] + " " + sig[10:], sig + " ", sig + "\n", sig + "\t", sig[:30] + "\n" + sig[30:]):
             self.assertEqual(C.check(dict(inp, countersignature=bad))[1], C.MALFORMED)   # whitespace is not hex
-        self.assertEqual(C.check({k: v for k, v in inp.items() if k != "countersignature"})[1], C.MALFORMED)
+        self.assertEqual(C.check({k: v for k, v in inp.items() if k != "countersignature"})[1], C.MALFORMED_INPUT)  # absent key: record shape
+        self.assertEqual(C.check(dict(inp, countersignature=None))[1], C.MALFORMED)            # present, not a string
 
     def test_no_internal_error_on_any_case_here(self):
         inp = _live()

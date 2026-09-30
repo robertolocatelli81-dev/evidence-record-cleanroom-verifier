@@ -25,7 +25,8 @@ reject `malformed_input` when artifact_digest / prev_digest are not "0x" + 64 he
 an integer in [0, 2^64 - 1] (bool excluded), ledger_signer is not "0x" + 40 hex (form checked as given, no strip: suite vector cn18 at d7c7fdc; lower-cased for comparison), prev_digest is absent
 or another link field is missing (an omitted prev_digest means genesis, like null: suite vector cp3 at 1e08f4e,
 which replaced our earlier absent-is-not-null reading). The form of every field, ledger_signer included, is
-checked before the signature; a missing or non-string countersignature is then `malformed_signature`. The signature hex must be "0x" + hex
+checked before the signature; an absent countersignature key is then `malformed_input` (the README scopes
+`malformed_signature` to the signature field's own shape), a present non-string one `malformed_signature`. The signature hex must be "0x" + hex
 digits only: bytes.fromhex skips whitespace, so it is checked before decoding. No value of `input` makes the runner raise (a vector FILE that is not a JSON object is outside this rule).
 
 Usage:  python3 verify_countersig.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]
@@ -167,6 +168,8 @@ def check(inp: Dict, *, low_s=True, eip191=True, allow_v=(27, 28), fixed_signer:
             raise Reject(MALFORMED_INPUT, "vector input is absent or not a JSON object")
         link = link_fn(inp)
         want = fixed_signer or signer_of(inp)       # every field's FORM is checked before the signature
+        if "countersignature" not in inp:           # suite reading (d7c7fdc): an absent key is a record-shape question
+            raise Reject(MALFORMED_INPUT, "countersignature member absent")
         r, s, v = parse_sig(inp.get("countersignature"), allow_v)
         if v not in (27, 28):          # mutant path: an out-of-range v "normalised" instead of refused
             v = 27 + (v - 27) % 2
