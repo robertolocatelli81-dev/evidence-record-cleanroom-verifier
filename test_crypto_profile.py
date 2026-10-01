@@ -249,7 +249,7 @@ class TestCountersignature(unittest.TestCase):
             with self.assertRaises(C.RunStopped):
                 C.run(d)
             p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d],
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, timeout=60)
             self.assertEqual(p.returncode, 2)
             self.assertNotIn("Traceback", p.stderr)
             self.assertIn("run stopped", p.stderr)
@@ -284,7 +284,7 @@ class TestCountersignature(unittest.TestCase):
             d = tempfile.mkdtemp()
             open(os.path.join(d, "MANIFEST.json"), "w").write(body)
             p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d],
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, timeout=60)
             self.assertEqual((p.returncode, "Traceback" in p.stderr, "run stopped" in p.stderr), (2, False, True))
 
     def test_depth_scan_across_escapes_and_after_the_deepest_point(self):
@@ -312,7 +312,7 @@ class TestCountersignature(unittest.TestCase):
             if limit is not None:
                 env["PYTHONINTMAXSTRDIGITS"] = limit      # no limit: the integer loads as an int, no marker to report
             p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d,
-                                "--json", out], capture_output=True, text=True, env=env)
+                                "--json", out], capture_output=True, text=True, env=env, timeout=60)
             self.assertNotIn("Traceback", p.stderr)
             self.assertEqual(p.stdout.split("->")[1].split()[0], "valid")
             if want:
@@ -321,7 +321,7 @@ class TestCountersignature(unittest.TestCase):
     def _cli(self, d, *extra):
         import subprocess
         return subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d, *extra],
-                              capture_output=True, text=True)
+                              capture_output=True, text=True, timeout=60)   # a hang must fail the test, not block the suite
 
     def test_exit_codes_and_concordance(self):
         # second verification of b1987a0 (01/10): exit codes and the concordance rule were not pinned by any test.
@@ -407,20 +407,20 @@ class TestCountersignature(unittest.TestCase):
         import subprocess
         tool = os.path.join(HERE, "crypto_profile", "verify_countersig.py")
         for argv in ([], ["--help"], ["-x"]):
-            p = subprocess.run([sys.executable, "-B", tool, *argv], capture_output=True, text=True)
+            p = subprocess.run([sys.executable, "-B", tool, *argv], capture_output=True, text=True, timeout=60)
             self.assertEqual((p.returncode, "Traceback" in p.stderr), (2, False), argv)
         r, s, v = _parts(_live()["countersignature"])
         vecs = {"cp.json": json.dumps({"expect": "valid", "input": _live()}),
                 "hs.json": json.dumps({"expect": "reject", "reject_reason": C.NON_CANONICAL,
                                        "input": dict(_live(), countersignature=_hex(r, C.N - s, 55 - v))})}
         d = self._run_one(vecs)
-        p = subprocess.run([sys.executable, "-B", tool, d, "--mutants"], capture_output=True, text=True)
+        p = subprocess.run([sys.executable, "-B", tool, d, "--mutants"], capture_output=True, text=True, timeout=60)
         lines = [l for l in p.stdout.splitlines() if l.startswith("mutant ")]
         got = {l.split()[1]: l.split(None, 2)[2] for l in lines}
         self.assertEqual(got, {"no_low_s": "KILLED by hs.json", "no_eip191_prefix": "KILLED by cp.json",
                                "v_normalised_not_refused": "SURVIVES", "hardcoded_ledger_signer": "SURVIVES",
                                "link_ignores_seq": "SURVIVES"})     # the exact killer map pins each built-in mutant's definition
-        p0 = subprocess.run([sys.executable, "-B", tool, d], capture_output=True, text=True)
+        p0 = subprocess.run([sys.executable, "-B", tool, d], capture_output=True, text=True, timeout=60)
         self.assertFalse(any(l.startswith("mutant ") for l in p0.stdout.splitlines()))   # no --mutants, no mutant lines
         self.assertEqual((p.returncode, "concordant 2/2" in p.stdout), (0, True))    # exit code follows the vectors, not the mutants
 
@@ -438,6 +438,23 @@ class TestCountersignature(unittest.TestCase):
         open(os.path.join(d, "MANIFEST.json"), "w").write('{"note": ' + "9" * 5000 + ', "vectors": [{"file": "v.json"}]}')
         _, rows = C.run(d)
         self.assertEqual([(r["verdict"], r["concordant"]) for r in rows], [("valid", True)])
+
+    def test_backslash_name_stops_even_when_the_file_exists(self):
+        # 3rd verification (01/10): the "a\\b.json" case had no file, so it stopped anyway; with the file present it must still stop
+        d = self._run_one({"a\\b.json": json.dumps({"expect": "valid", "input": _live()})})
+        open(os.path.join(d, "MANIFEST.json"), "w").write('{"vectors": [{"file": "a\\\\b.json"}]}')
+        p = self._cli(d)
+        self.assertEqual((p.returncode, "Traceback" in p.stderr, "unsafe vector file name" in p.stderr), (2, False, True))
+
+    def test_unprintable_file_name_does_not_crash_the_report(self):
+        # 3rd verification (01/10): a name stdout cannot encode made the report raise UnicodeEncodeError (rc 1, no --json)
+        import subprocess
+        d = self._run_one({"caf\u00e9.json": json.dumps({"expect": "valid", "input": _live()})})
+        out = os.path.join(d, "r.json")
+        env = dict(os.environ, PYTHONIOENCODING="ascii")
+        p = subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d, "--json", out],
+                           capture_output=True, text=True, env=env, timeout=60)
+        self.assertEqual((p.returncode, "Traceback" in p.stderr, os.path.exists(out)), (0, False, True))
 
 
 if __name__ == "__main__":

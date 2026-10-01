@@ -81,7 +81,7 @@ docstring records it.
 |---|---|---|
 | PR #11 vectors at `4108697` | 37/37 verdicts and reasons | `python3 crypto_profile/verify_countersig.py <dir with the PR's crypto/MANIFEST.json and crypto/vectors>` |
 | mutants of this runner, each killed by a named vector | 5/5 | same, with `--mutants` |
-| unit tests (built from this repository's own p1/p4 data) | 36/36 | `python3 -m unittest -v test_crypto_profile` |
+| unit tests (built from this repository's own p1/p4 data) | 38/38 | `python3 -m unittest -v test_crypto_profile` |
 
 The PR's vectors are not redistributed here; fetch them from the PR branch at the commit you want to test. The live
 audit (`docs/vector-audit/live_check.py`) rejects non-canonical ECDSA signatures (65 bytes, `v` in {27, 28},

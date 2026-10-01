@@ -36,7 +36,7 @@ no `vectors` list of objects with a string `file`, an empty list), an entry whos
 a FIFO, a device, a broken link) stops the run with a one-line message and exit code 2, no traceback; MANIFEST.json is
 parsed like the vector files, so this outcome does not depend on PYTHONINTMAXSTRDIGITS or on the interpreter either.
 Exit codes: 0 every vector concordant, 1 at least one not, 2 the run stopped or a usage error (--json without a writable
-path). A vector is concordant when the verdict matches and, for a reject, the reason matches too. Any other
+path); a file name the terminal cannot encode is printed with backslash escapes. A symbolic link inside vectors/ is followed. A vector is concordant when the verdict matches and, for a reject, the reason matches too. Any other
 unexpected exception while checking a loaded vector is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
 d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
@@ -336,6 +336,7 @@ def main(argv):
         print("usage error: --json needs an output path", file=sys.stderr)
         return 2
     spec = argv[0]
+    sys.stdout.reconfigure(errors="backslashreplace")   # a file name stdout cannot encode is printed escaped, never a crash
     try:
         man, rows = run(spec)
     except RunStopped as e:
