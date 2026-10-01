@@ -30,10 +30,13 @@ object is `malformed_input`, and so is a vector file that is not UTF-8 JSON or n
 MAX_DEPTH (900) levels. Integers are parsed without Python's int-string limit (an integer too long for int() becomes a
 non-integer marker: seq -> malformed_input, link_version -> unsupported_link_version, countersignature ->
 malformed_signature, an unread key -> ignored), so the verdict does not depend on PYTHONINTMAXSTRDIGITS or on the
-interpreter's recursion limit. A MANIFEST.json that cannot be loaded (not UTF-8 JSON, nested deeper than MAX_DEPTH, no `vectors`
-list of objects with a string `file`), or a listed vector file that cannot be opened (missing, a directory, a broken link,
-a NUL in its name), stops the run with a one-line message and exit code 2, no traceback; MANIFEST.json is parsed like the
-vector files, so this outcome does not depend on PYTHONINTMAXSTRDIGITS or on the interpreter either. Any other
+interpreter's recursion limit. A MANIFEST.json that cannot be loaded (not a regular file, not UTF-8 JSON, nested deeper than MAX_DEPTH,
+no `vectors` list of objects with a string `file`, an empty list), an entry whose `file` is not a plain name inside vectors/
+(a separator, "..", an absolute path, a NUL), or a listed vector that is not a readable regular file (missing, a directory,
+a FIFO, a device, a broken link) stops the run with a one-line message and exit code 2, no traceback; MANIFEST.json is
+parsed like the vector files, so this outcome does not depend on PYTHONINTMAXSTRDIGITS or on the interpreter either.
+Exit codes: 0 every vector concordant, 1 at least one not, 2 the run stopped or a usage error (--json without a writable
+path). A vector is concordant when the verdict matches and, for a reject, the reason matches too. Any other
 unexpected exception while checking a loaded vector is reported as `internal_error`, never as a verdict reason.
 History: earlier readings of ours (absent prev_digest malformed; ledger_signer checked without strip, cn18 at
 d7c7fdc; seq in [0, 2^64 - 1]) were replaced by the suite's as each was pinned (cp3 at 1e08f4e; merge list at 4108697).
@@ -46,6 +49,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import sys
 from typing import Callable, Dict, Optional, Tuple
 
@@ -263,13 +267,27 @@ class RunStopped(Exception):
     """The vector SET cannot be read (manifest unloadable, a listed file that cannot be opened): the run stops."""
 
 
-def load_vector(path: str):
-    """Return (vector, None) or (None, reason text). OSError is not a vector verdict: it raises RunStopped."""
+def _read_regular(path: str, what: str) -> bytes:
+    """Read a regular file; anything else (missing, a directory, a FIFO, a device, a NUL in the name) stops the run."""
     try:
+        if not stat.S_ISREG(os.stat(path).st_mode):
+            raise RunStopped(f"{what} is not a regular file: {path!r}")
         with open(path, "rb") as fh:
-            raw = fh.read()
+            return fh.read()
     except (OSError, ValueError) as e:     # ValueError: a NUL in the file name
-        raise RunStopped(f"vector file cannot be opened: {path!r}: {type(e).__name__}")
+        raise RunStopped(f"{what} cannot be opened: {path!r}: {type(e).__name__}")
+
+
+def _vector_path(spec_dir: str, name: str) -> str:
+    """A MANIFEST entry names a file directly inside vectors/: no separator, no '..', no absolute path, no NUL."""
+    if not name or name in (".", "..") or "/" in name or "\\" in name or "\0" in name or os.path.isabs(name):
+        raise RunStopped(f"MANIFEST.json: unsafe vector file name {name!r} (a plain file name inside vectors/ is required)")
+    return os.path.join(spec_dir, "vectors", name)
+
+
+def load_vector(path: str):
+    """Return (vector, None) or (None, reason text). A file that cannot be read is not a vector verdict: RunStopped."""
+    raw = _read_regular(path, "vector file")
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
@@ -284,8 +302,7 @@ def load_vector(path: str):
 
 def run(spec_dir: str, **kw):
     try:
-        with open(os.path.join(spec_dir, "MANIFEST.json"), "rb") as fh:
-            text = fh.read().decode("utf-8")
+        text = _read_regular(os.path.join(spec_dir, "MANIFEST.json"), "MANIFEST.json").decode("utf-8")
         if _depth(text) > MAX_DEPTH:
             raise ValueError(f"nests deeper than {MAX_DEPTH} levels")
         man = json.loads(text, parse_int=_parse_int)
@@ -294,9 +311,11 @@ def run(spec_dir: str, **kw):
         raise RunStopped(f"MANIFEST.json cannot be loaded from {spec_dir}: {type(e).__name__}: {e}")
     if not isinstance(entries, list) or not all(isinstance(e, dict) and isinstance(e.get("file"), str) for e in entries):
         raise RunStopped("MANIFEST.json: vectors must be a list of objects with a string \"file\"")
+    if not entries:
+        raise RunStopped("MANIFEST.json lists no vectors: an empty set proves nothing")
     rows = []
     for ent in entries:
-        vec, load_error = load_vector(os.path.join(spec_dir, "vectors", ent["file"]))
+        vec, load_error = load_vector(_vector_path(spec_dir, ent["file"]))
         if load_error:
             verdict, reason, detail = "reject", MALFORMED_INPUT, load_error
         else:
@@ -310,8 +329,11 @@ def run(spec_dir: str, **kw):
 
 
 def main(argv):
-    if not argv:
+    if not argv or argv[0].startswith("-"):
         print(__doc__)
+        return 2
+    if "--json" in argv and (argv.index("--json") + 1 >= len(argv) or argv[argv.index("--json") + 1].startswith("-")):
+        print("usage error: --json needs an output path", file=sys.stderr)
         return 2
     spec = argv[0]
     try:
@@ -324,7 +346,7 @@ def main(argv):
               f"{'/' + r['reason'] if r['reason'] else ''}  ({r['detail'][:70]})")
     n_ok = sum(r["concordant"] for r in rows)
     print(f"concordant {n_ok}/{len(rows)}")
-    out = {"spec_manifest_sha256": hashlib.sha256(open(os.path.join(spec, "MANIFEST.json"), "rb").read()).hexdigest(),
+    out = {"spec_manifest_sha256": hashlib.sha256(_read_regular(os.path.join(spec, "MANIFEST.json"), "MANIFEST.json")).hexdigest(),
            "rows": rows, "concordant": n_ok, "n": len(rows)}
     if "--mutants" in argv:
         out["mutants"] = {}
@@ -334,7 +356,12 @@ def main(argv):
             out["mutants"][name] = killers
             print(f"mutant {name:26s} {'KILLED by ' + ', '.join(killers) if killers else 'SURVIVES'}")
     if "--json" in argv:
-        json.dump(out, open(argv[argv.index("--json") + 1], "w", encoding="utf-8"), indent=1, default=repr)   # Oversized
+        try:
+            with open(argv[argv.index("--json") + 1], "w", encoding="utf-8") as fh:
+                json.dump(out, fh, indent=1, default=repr)   # default=repr: an Oversized marker in a vector's own fields
+        except OSError as e:
+            print(f"run stopped: --json output cannot be written: {type(e).__name__}", file=sys.stderr)
+            return 2
     return 0 if n_ok == len(rows) else 1
 
 

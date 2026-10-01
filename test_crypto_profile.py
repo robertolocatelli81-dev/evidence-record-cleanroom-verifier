@@ -318,6 +318,65 @@ class TestCountersignature(unittest.TestCase):
             if want:
                 self.assertEqual(json.load(open(out))["rows"][0]["expect"], want)
 
+    def _cli(self, d, *extra):
+        import subprocess
+        return subprocess.run([sys.executable, "-B", os.path.join(HERE, "crypto_profile", "verify_countersig.py"), d, *extra],
+                              capture_output=True, text=True)
+
+    def test_exit_codes_and_concordance(self):
+        # second verification of b1987a0 (01/10): exit codes and the concordance rule were not pinned by any test.
+        # The expectation is read from the vector file itself (the MANIFEST entry is the fallback for unloadable files).
+        def vec(expect, reason=None, inp=None):
+            return json.dumps({"expect": expect, "reject_reason": reason, "input": inp or _live()})
+        bad = dict(_live(), countersignature="0x" + "00" * 65)
+        got_reason = C.check(bad)[1]
+        other = C.MISMATCH if got_reason != C.MISMATCH else C.MALFORMED
+        for body, rc, line in ((vec("valid"), 0, "concordant 1/1"),
+                               (vec("reject", C.MALFORMED), 1, "concordant 0/1"),
+                               (vec("reject", got_reason, bad), 0, "concordant 1/1"),
+                               (vec("reject", other, bad), 1, "concordant 0/1")):     # right verdict, wrong reason: not concordant
+            d = self._run_one({"v.json": body})
+            p = self._cli(d)
+            self.assertEqual((p.returncode, line in p.stdout, "Traceback" in p.stderr), (rc, True, False), body[:60])
+        d = self._run_one({"v.json": vec("valid")})
+        for argv in (("--json",), ("--json", "--mutants"), ("--json", os.path.join(d, "no", "such", "dir", "x.json"))):
+            p = self._cli(d, *argv)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr), (2, False), argv)
+
+    def test_manifest_shapes_and_unsafe_names_stop_the_run(self):
+        import tempfile
+        live = json.dumps({"input": _live()})
+        cases = ['[]', '"x"', 'null', '{"vectors": []}', '{"vectors": [{"file": "../MANIFEST.json"}]}',
+                 '{"vectors": [{"file": "/etc/hostname"}]}', '{"vectors": [{"file": "sub/ok.json"}]}', '{"vectors": [{"file": ".."}]}',
+                 '{"vectors": [{"file": ""}]}', '{"vectors": [{"file": "a\\\\b.json"}]}']
+        for body in cases + [None, "FIFO", "DEVZERO"]:
+            d = self._run_one({"ok.json": live})
+            man = os.path.join(d, "MANIFEST.json")
+            if body is None:
+                os.remove(man)                                                       # MANIFEST missing
+            elif body == "FIFO":
+                os.mkfifo(os.path.join(d, "vectors", "f.json"))
+                json.dump({"vectors": [{"file": "f.json"}]}, open(man, "w"))
+            elif body == "DEVZERO":
+                os.symlink("/dev/zero", os.path.join(d, "vectors", "z.json"))
+                json.dump({"vectors": [{"file": "z.json"}]}, open(man, "w"))
+            else:
+                open(man, "w").write(body)
+            p = self._cli(d)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr, "run stopped" in p.stderr), (2, False, True), (body, p.stderr[-200:]))
+
+    def test_signature_with_every_hex_digit_in_both_cases(self):
+        # 0x + 130 hex digits accepts upper- and lower-case digits; a signature using all 22 characters stays valid
+        sig = _live()["countersignature"]
+        mixed, seen = [], set()
+        for ch in sig[2:]:
+            up = ch in "abcdef" and ch not in seen
+            seen.add(ch)
+            mixed.append(ch.upper() if up else ch)
+        mixed = "0x" + "".join(mixed)
+        self.assertEqual(len(set(mixed[2:])), 22)
+        self.assertEqual(C.check(dict(_live(), countersignature=mixed))[0], "valid")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
