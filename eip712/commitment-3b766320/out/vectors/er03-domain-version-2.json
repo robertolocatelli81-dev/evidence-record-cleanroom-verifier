@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er03-domain-version-2",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0xe61df6cbfa4592dad5a2b485b68aa241a922a5f3e250b0416652fbff1064a81f5f46917cab1e96b84d668f82332d9792d0636c82d7cc69cce6cf2fb8f20cea6d1c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "domain version \"2\"",
+ "reject_reason": "signer_mismatch"
+}

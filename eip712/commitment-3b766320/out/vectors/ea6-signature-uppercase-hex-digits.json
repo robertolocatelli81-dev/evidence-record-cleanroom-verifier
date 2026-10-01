@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "valid",
+ "id": "ea6-signature-uppercase-hex-digits",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x402AD9A1396E84544E0F088ABF83669E1CBEB919203836676E377424129F6BB8001C3A40465481EBC72C4E9F73B96E0B6D40F0E4063F82DC1212244D4F2E59591C"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "the same 65 bytes with upper-case hex digits (the 0x prefix stays lower-case)",
+ "reject_reason": null
+}

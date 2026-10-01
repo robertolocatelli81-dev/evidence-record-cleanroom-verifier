@@ -1,0 +1,56 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er38-artifact-carries-domain-and-types",
+ "input": {
+  "artifact": {
+   "domain": {
+    "chainId": 8453,
+    "name": "x402 receipt",
+    "version": "1"
+   },
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x402ad9a1396e84544e0f088abf83669e1cbeb919203836676e377424129f6bb8001c3a40465481ebc72c4e9f73b96e0b6d40f0e4063f82dc1212244d4f2e59591c",
+   "types": {
+    "Receipt": [
+     {
+      "name": "version",
+      "type": "uint256"
+     },
+     {
+      "name": "network",
+      "type": "string"
+     },
+     {
+      "name": "resourceUrl",
+      "type": "string"
+     },
+     {
+      "name": "payer",
+      "type": "string"
+     },
+     {
+      "name": "issuedAt",
+      "type": "uint256"
+     },
+     {
+      "name": "transaction",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "x402: domain and types MUST NOT be transmitted on the wire; a carried domain is refused, never used",
+ "reject_reason": "malformed_input"
+}

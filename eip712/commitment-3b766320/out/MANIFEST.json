@@ -1,0 +1,343 @@
+{
+ "counts": {
+  "accept": 6,
+  "reject": 46
+ },
+ "domain": {
+  "chainId": 1,
+  "name": "x402 receipt",
+  "version": "1"
+ },
+ "primaryType": "Receipt",
+ "profile": "x402 receipt payload signature (format eip712), independent set",
+ "reasons": [
+  "malformed_input",
+  "unsupported_format",
+  "malformed_payload",
+  "unsupported_version",
+  "malformed_signature",
+  "non_canonical_s",
+  "unrecoverable",
+  "signer_mismatch"
+ ],
+ "test_key": {
+  "address": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa",
+  "derivation": "keccak256('evidence-record-conformance eip712 independent set test key v1') mod n",
+  "nonce": "keccak256(b'eip712 independent set nonce v1' || priv32 || digest) mod n"
+ },
+ "type_string": "Receipt(uint256 version,string network,string resourceUrl,string payer,uint256 issuedAt,string transaction)",
+ "vectors": [
+  {
+   "expect": "valid",
+   "file": "ea1-live-p1-payload-signature.json",
+   "kind": "live-ledger",
+   "reject_reason": null
+  },
+  {
+   "expect": "valid",
+   "file": "ea2-test-key-receipt.json",
+   "kind": "contributed",
+   "reject_reason": null
+  },
+  {
+   "expect": "valid",
+   "file": "ea3-transaction-absent-equals-empty.json",
+   "kind": "contributed",
+   "reject_reason": null
+  },
+  {
+   "expect": "valid",
+   "file": "ea4-transaction-present.json",
+   "kind": "contributed",
+   "reject_reason": null
+  },
+  {
+   "expect": "valid",
+   "file": "ea5-expected-signer-checksum-case.json",
+   "kind": "contributed",
+   "reject_reason": null
+  },
+  {
+   "expect": "reject",
+   "file": "er01-domain-chainid-8453.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er02-domain-name-letters-transposed.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er03-domain-version-2.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er04-type-fields-reordered.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er05-type-without-transaction.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er06-personal-sign-over-typed-digest.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er07-live-value-drift-issuedAt.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er08-live-value-drift-network.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er09-live-value-drift-resourceUrl.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er10-live-payer-recased.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er11-transaction-drift.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er12-ledger-key-as-payload-signer.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er13-live-high-s.json",
+   "kind": "contributed",
+   "reject_reason": "non_canonical_s"
+  },
+  {
+   "expect": "reject",
+   "file": "er14-s-at-half-n.json",
+   "kind": "contributed",
+   "reject_reason": "signer_mismatch"
+  },
+  {
+   "expect": "reject",
+   "file": "er15-s-at-half-n-plus-one.json",
+   "kind": "contributed",
+   "reject_reason": "non_canonical_s"
+  },
+  {
+   "expect": "reject",
+   "file": "er16-v-zero.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er17-v-one.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er18-v-29.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er19-signature-64-bytes.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er20-signature-66-bytes.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er21-signature-0X-prefix.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er22-signature-trailing-newline.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er23-r-zero.json",
+   "kind": "contributed",
+   "reject_reason": "unrecoverable"
+  },
+  {
+   "expect": "reject",
+   "file": "er24-s-zero.json",
+   "kind": "contributed",
+   "reject_reason": "unrecoverable"
+  },
+  {
+   "expect": "reject",
+   "file": "er25-r-x-not-on-curve.json",
+   "kind": "contributed",
+   "reject_reason": "unrecoverable"
+  },
+  {
+   "expect": "reject",
+   "file": "er26-payload-extra-field.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er27-payload-payer-missing.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er28-issuedat-as-string.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er29-issuedat-as-float.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er30-issuedat-negative.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er31-issuedat-2-256.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er32-version-bool-true.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er33-payer-not-a-string.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er34-version-2.json",
+   "kind": "contributed",
+   "reject_reason": "unsupported_version"
+  },
+  {
+   "expect": "reject",
+   "file": "er35-format-jws.json",
+   "kind": "contributed",
+   "reject_reason": "unsupported_format"
+  },
+  {
+   "expect": "reject",
+   "file": "er36-expected-signer-malformed.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_input"
+  },
+  {
+   "expect": "reject",
+   "file": "er37-payer-lone-surrogate.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "valid",
+   "file": "ea6-signature-uppercase-hex-digits.json",
+   "kind": "contributed",
+   "reject_reason": null
+  },
+  {
+   "expect": "reject",
+   "file": "er38-artifact-carries-domain-and-types.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_input"
+  },
+  {
+   "expect": "reject",
+   "file": "er39-signature-absent.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er40-payload-absent.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_payload"
+  },
+  {
+   "expect": "reject",
+   "file": "er41-format-absent.json",
+   "kind": "contributed",
+   "reject_reason": "unsupported_format"
+  },
+  {
+   "expect": "reject",
+   "file": "er42-s-equals-n.json",
+   "kind": "contributed",
+   "reject_reason": "non_canonical_s"
+  },
+  {
+   "expect": "reject",
+   "file": "er43-r-equals-n.json",
+   "kind": "contributed",
+   "reject_reason": "unrecoverable"
+  },
+  {
+   "expect": "reject",
+   "file": "er44-signature-leading-space.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_signature"
+  },
+  {
+   "expect": "reject",
+   "file": "er45-issuedat-nan-token.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_input"
+  },
+  {
+   "expect": "reject",
+   "file": "er46-duplicate-payer-key.json",
+   "kind": "contributed",
+   "reject_reason": "malformed_input"
+  }
+ ]
+}

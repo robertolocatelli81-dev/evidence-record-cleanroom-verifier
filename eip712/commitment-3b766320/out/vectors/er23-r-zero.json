@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er23-r-zero",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x0000000000000000000000000000000000000000000000000000000000000000001c3a40465481ebc72c4e9f73b96e0b6d40f0e4063f82dc1212244d4f2e59591c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "r = 0",
+ "reject_reason": "unrecoverable"
+}

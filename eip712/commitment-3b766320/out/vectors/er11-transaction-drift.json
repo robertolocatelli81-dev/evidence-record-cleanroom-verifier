@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea4",
+ "expect": "reject",
+ "id": "er11-transaction-drift",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "0xabababababababababababababababababababababababababababababababac",
+    "version": 1
+   },
+   "signature": "0xb18c83894fe5d7e83755cf6700e62691714e35383731ec86c21d3e2b10a8671e14d023283a56b171a9353df1281286eda9da38d3bd5c31764767b3aa290687bd1b"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "transaction changed after signing",
+ "reject_reason": "signer_mismatch"
+}

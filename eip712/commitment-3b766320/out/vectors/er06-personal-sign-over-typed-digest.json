@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er06-personal-sign-over-typed-digest",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x4e6cd3847657753315931e27174bd351112b827555a3a0d342cbd3633b13bb4c4e6b40fdf2b35c77c6538f0a791f67ad33868d02fe0390de8194b7f5388c31ad1b"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "EIP-191 personal_sign over the EIP-712 digest",
+ "reject_reason": "signer_mismatch"
+}

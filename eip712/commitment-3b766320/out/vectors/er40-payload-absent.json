@@ -1,0 +1,15 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er40-payload-absent",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "signature": "0x402ad9a1396e84544e0f088abf83669e1cbeb919203836676e377424129f6bb8001c3a40465481ebc72c4e9f73b96e0b6d40f0e4063f82dc1212244d4f2e59591c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "no payload key",
+ "reject_reason": "malformed_payload"
+}

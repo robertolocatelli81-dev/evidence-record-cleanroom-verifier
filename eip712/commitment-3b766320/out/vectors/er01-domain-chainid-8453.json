@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er01-domain-chainid-8453",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x7666f5df123203345ef6e235f279a3084b8afadcaec49a333e418c4722c28edf2b3113be8d1d81a278fc39eb9a0d6f977fa51ef8d3f10c4130812418e48366621c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "signed with chainId 8453; x402 fixes chainId 1",
+ "reject_reason": "signer_mismatch"
+}

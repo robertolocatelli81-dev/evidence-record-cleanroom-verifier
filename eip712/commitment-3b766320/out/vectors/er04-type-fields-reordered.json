@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er04-type-fields-reordered",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0xace7d0375423f43fb3e99ea0c99507f974bdb458a4a6cb689af5de7f099b47614e4d078dfb90d4cd1edfc795affe659ffe4096bf0eab1c028aa745262b8238721b"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "Receipt type string with version and network swapped",
+ "reject_reason": "signer_mismatch"
+}

@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er34-version-2",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 2
+   },
+   "signature": "0x43373c0082ad6e28bd13551bf7bb9a5c51abef29415d00df623e54121616a8123a9515a80d8666df1fa4f69765994a805a974ad927cc66fb3393f8a7e3ce6a351b"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "x402 5.5 step 2: only version 1 is defined (signed by the test key, still refused)",
+ "reject_reason": "unsupported_version"
+}

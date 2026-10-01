@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er42-s-equals-n",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x402ad9a1396e84544e0f088abf83669e1cbeb919203836676e377424129f6bb8fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd03641411c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "s = n is above n/2: refused by the low-s step, which precedes recovery",
+ "reject_reason": "non_canonical_s"
+}

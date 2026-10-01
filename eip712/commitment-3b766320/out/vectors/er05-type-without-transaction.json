@@ -1,0 +1,23 @@
+{
+ "derived_from": "ea2",
+ "expect": "reject",
+ "id": "er05-type-without-transaction",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "transaction": "",
+    "version": 1
+   },
+   "signature": "0x52ab4c9aeecc47f9aead6026e1589e9dfa750c58e4f8885ea2365b26612349295ac132817d28806e543dabf43093e2b4a0762cc317ab4acd39bdbb53133b3dbf1c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "signed over a five-field type that drops transaction",
+ "reject_reason": "signer_mismatch"
+}

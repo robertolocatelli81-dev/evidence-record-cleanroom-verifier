@@ -1,0 +1,22 @@
+{
+ "derived_from": "ea2",
+ "expect": "valid",
+ "id": "ea3-transaction-absent-equals-empty",
+ "input": {
+  "artifact": {
+   "format": "eip712",
+   "payload": {
+    "issuedAt": 1790000000,
+    "network": "eip155:8453",
+    "payer": "0x00000000000000000000000000000000000000Aa",
+    "resourceUrl": "https://example.test/eip712-independent-set",
+    "version": 1
+   },
+   "signature": "0x402ad9a1396e84544e0f088abf83669e1cbeb919203836676e377424129f6bb8001c3a40465481ebc72c4e9f73b96e0b6d40f0e4063f82dc1212244d4f2e59591c"
+  },
+  "expected_signer": "0xe8b6e0eafda52683ea02696cad5b1bfd12cb20fa"
+ },
+ "kind": "contributed",
+ "note": "x402 5.3: verifiers MUST treat empty-string optional fields as equivalent to absence; same signature as ea2",
+ "reject_reason": null
+}
