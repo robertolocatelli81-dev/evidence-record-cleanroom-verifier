@@ -377,6 +377,68 @@ class TestCountersignature(unittest.TestCase):
         self.assertEqual(len(set(mixed[2:])), 22)
         self.assertEqual(C.check(dict(_live(), countersignature=mixed))[0], "valid")
 
+    # 01/10 mutation survivors (473 mutants of ccc1bfc): each test below kills at least one non-equivalent survivor
+    def test_signature_space_right_after_0x(self):
+        # bytes.fromhex skips spaces: only the full-string hex check refuses "0x " + 130 digits (survivor m439)
+        sig = _live()["countersignature"]
+        self.assertEqual(C.check(dict(_live(), countersignature="0x " + sig[2:]))[1], C.MALFORMED)
+
+    def test_identifier_non_hex_right_after_0x(self):
+        # "0xg…" must be malformed_input, never internal_error (survivor m457)
+        for bad in ("0xg" + "0" * 63, "0x " + "0" * 63):
+            self.assertEqual(C.check(dict(_live(), artifact_digest=bad))[1], C.MALFORMED_INPUT, bad[:4])
+
+    def test_r_equal_one_recovers_a_point(self):
+        # x = 1 has a curve point, so r = 1 recovers some key: signer_mismatch, not unrecoverable (survivor m347)
+        r, s, v = _parts(_live()["countersignature"])
+        self.assertEqual(C.check(dict(_live(), countersignature=_hex(1, s, v)))[1], C.MISMATCH)
+
+    def test_depth_scan_with_siblings_before_the_deepest_point(self):
+        # closing brackets must lower the depth by exactly one (survivor m447)
+        live = json.dumps(_live())[1:-1]
+        deep = "[" * 947 + "]" * 947
+        body = '{"input": {' + live + ', "x_extra": [' + ",".join(["[]"] * 50) + ", " + deep + "]}}"
+        _, rows = C.run(self._run_one({"sib.json": body}))
+        self.assertEqual((rows[0]["verdict"], rows[0]["reason"]), ("reject", C.MALFORMED_INPUT))
+
+    def test_cli_usage_and_mutants_mode(self):
+        # usage exits 2 (survivors m098, m201, m202, m283, m284); --mutants reports each mutant and exits 0 only when all die
+        # (survivors m102, m103, m206, m407, m416, m459, m460)
+        import subprocess
+        tool = os.path.join(HERE, "crypto_profile", "verify_countersig.py")
+        for argv in ([], ["--help"], ["-x"]):
+            p = subprocess.run([sys.executable, "-B", tool, *argv], capture_output=True, text=True)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr), (2, False), argv)
+        r, s, v = _parts(_live()["countersignature"])
+        vecs = {"cp.json": json.dumps({"expect": "valid", "input": _live()}),
+                "hs.json": json.dumps({"expect": "reject", "reject_reason": C.NON_CANONICAL,
+                                       "input": dict(_live(), countersignature=_hex(r, C.N - s, 55 - v))})}
+        d = self._run_one(vecs)
+        p = subprocess.run([sys.executable, "-B", tool, d, "--mutants"], capture_output=True, text=True)
+        lines = [l for l in p.stdout.splitlines() if l.startswith("mutant ")]
+        got = {l.split()[1]: l.split(None, 2)[2] for l in lines}
+        self.assertEqual(got, {"no_low_s": "KILLED by hs.json", "no_eip191_prefix": "KILLED by cp.json",
+                               "v_normalised_not_refused": "SURVIVES", "hardcoded_ledger_signer": "SURVIVES",
+                               "link_ignores_seq": "SURVIVES"})     # the exact killer map pins each built-in mutant's definition
+        p0 = subprocess.run([sys.executable, "-B", tool, d], capture_output=True, text=True)
+        self.assertFalse(any(l.startswith("mutant ") for l in p0.stdout.splitlines()))   # no --mutants, no mutant lines
+        self.assertEqual((p.returncode, "concordant 2/2" in p.stdout), (0, True))    # exit code follows the vectors, not the mutants
+
+    def test_unexpected_exception_is_internal_error(self):
+        # the last-resort branch (survivors m167, m258): a runner bug is reported, never disguised as a verdict reason
+        def boom(inp):
+            raise KeyError("simulated runner bug")
+        for fn in (boom, lambda inp: 1 // 0):
+            self.assertEqual(C.check(_live(), link_fn=fn)[:2], ("reject", C.INTERNAL_ERROR))
+
+    def test_manifest_with_a_long_integer_elsewhere_still_runs(self):
+        # MANIFEST.json is parsed without the int-string limit too: a 5,000-digit integer in an unread key does not stop
+        # the run, on any interpreter or PYTHONINTMAXSTRDIGITS (survivor m336)
+        d = self._run_one({"v.json": json.dumps({"expect": "valid", "input": _live()})})
+        open(os.path.join(d, "MANIFEST.json"), "w").write('{"note": ' + "9" * 5000 + ', "vectors": [{"file": "v.json"}]}')
+        _, rows = C.run(d)
+        self.assertEqual([(r["verdict"], r["concordant"]) for r in rows], [("valid", True)])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
