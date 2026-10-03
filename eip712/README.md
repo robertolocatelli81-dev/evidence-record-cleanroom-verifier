@@ -19,14 +19,16 @@ unchanged: 52 vectors and their manifest (`out/`), the runner, its library (`lib
 ## Run the vectors
 
 ```
-python3 runner/verify_eip712.py commitment-3b766320/out              # concordant 52/52
-python3 runner/verify_eip712.py commitment-3b766320/out --mutants    # 11 built-in mutants, each killed by a named vector
-(cd runner && python3 -m unittest -v test_verify_eip712)             # 25 tests
+python3 runner/verify_eip712.py commitment-3b766320/out --errata ERRATA_EXPECT.json             # concordant 52/52
+python3 runner/verify_eip712.py commitment-3b766320/out --errata ERRATA_EXPECT.json --mutants   # 12 built-in mutants, each killed by a named vector
+python3 runner/verify_eip712.py commitment-3b766320/out          # concordant 51/52: ea3 differs from the committed expectation (E5)
+(cd runner && python3 -m unittest -v test_verify_eip712)             # 31 tests
 ```
 
-`runner/verify_eip712.py` is the committed runner with the input-handling corrections listed in `ERRATA.md`; on the 52
-committed vectors it returns the same verdict and reason as the committed runner, vector by vector. Stdlib only; measured
-on Python 3.9.25, 3.11.2 and 3.13.15. The vectors are 6 accept and 46 reject, over eight reasons: `malformed_input`,
+`runner/verify_eip712.py` is the committed runner with the corrections listed in `ERRATA.md`; on the 52 committed vectors
+it returns the same verdict and reason as the committed runner on 51, and on `ea3` it rejects where the committed runner
+accepts (E5). Stdlib only; measured on Python 3.9.25, 3.11.2 and 3.13.15. As committed, the vectors are 6 accept and 46
+reject; with E5, 5 accept and 47 reject, over eight reasons: `malformed_input`,
 `unsupported_format`, `malformed_payload`, `unsupported_version`, `malformed_signature`, `non_canonical_s`,
 `unrecoverable`, `signer_mismatch`. The test key and the nonce derivation are in `out/MANIFEST.json`.
 
@@ -42,5 +44,8 @@ crypto profile, `payer` hashed as written). Not checked: `network` against `eip1
 
 ## Errata
 
-`ERRATA.md` lists four input-handling defects of the committed runner found after the commitment (E1–E4), with the
-committed runner's measured behaviour and the corrected one. None changes a verdict on the committed vectors.
+`ERRATA.md` lists five defects of the committed runner found after the commitment, with the committed runner's measured
+behaviour and the corrected one. E1–E4 concern how the runner reads its MANIFEST and vector files and how it prints, and
+change no verdict on the committed vectors. E5 is a misreading of x402 (an omitted `transaction` filled in with `""`),
+pointed out in review on tersignhq/evidence-record-conformance PR #13: it changes the verdict on `ea3`, and
+`ERRATA_EXPECT.json` states the corrected expectation.

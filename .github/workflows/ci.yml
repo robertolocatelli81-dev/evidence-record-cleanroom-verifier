@@ -31,8 +31,8 @@ jobs:
         run: python -m unittest -v test_crypto_profile
       - name: EIP-712 reveal — commitment recomputes (exit 0 = MATCH, exit 1 = NO MATCH)
         run: cd eip712 && python verify_commitment.py
-      - name: EIP-712 — corrected runner on the 52 committed vectors (exit 0 = 52/52)
-        run: cd eip712 && python runner/verify_eip712.py commitment-3b766320/out
+      - name: EIP-712 — corrected runner on the 52 committed vectors with ERRATA_EXPECT.json (exit 0 = 52/52 and every built-in mutant killed)
+        run: cd eip712 && python runner/verify_eip712.py commitment-3b766320/out --errata ERRATA_EXPECT.json --mutants
       - name: EIP-712 — runner unit tests
         run: cd eip712/runner && python -m unittest -v test_verify_eip712
       - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)

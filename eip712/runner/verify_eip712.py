@@ -11,10 +11,11 @@ The check, in order (the first failing step decides the reason):
   1. input is an object with `artifact` (object whose keys are format, payload and signature only: x402 says domain and
      types "MUST NOT be transmitted on the wire") and `expected_signer` (0x + 40 hex, any case)  else malformed_input
   2. artifact.format == "eip712"                                                                    else unsupported_format
-  3. payload is an object whose keys are Receipt fields only; version, network, resourceUrl, payer and issuedAt are
-     present; version/issuedAt are JSON integers (not bool, not string, not float) in [0, 2^256 - 1]; the others are
-     strings that are valid Unicode (a lone surrogate has no UTF-8 bytes to hash); an absent `transaction` equals "" (x402: "MUST treat empty-string optional fields as equivalent to
-     absence")                                                                                       else malformed_payload
+  3. payload is an object whose keys are Receipt fields only; all six (version, network, resourceUrl, payer, issuedAt,
+     transaction) are present; version/issuedAt are JSON integers (not bool, not string, not float) in [0, 2^256 - 1];
+     the others are strings that are valid Unicode (a lone surrogate has no UTF-8 bytes to hash)     else malformed_payload
+     An omitted `transaction` is not filled in: x402 5.3 has the signer set an unused `transaction` to "" (and maps ""
+     to absence, not absence to ""), and 5.5 step 3 uses the payload "exactly as transmitted" (ERRATA E5).
   4. payload.version == 1                                                                           else unsupported_version
   5. signature: a string, "0x" + 130 hex digits, taken whole (no strip, no case-folding of the prefix); v in {27, 28}
                                                                                                     else malformed_signature
@@ -39,12 +40,16 @@ levels, no `vectors` list of objects with a string `file`, an empty list), when 
 inside vectors/ (a separator, "..", an absolute path, a NUL), or when a listed vector is not a readable regular file
 (missing, a directory, a FIFO, a device, a broken link); a symbolic link inside vectors/ is followed. Exit codes: 0 every
 vector concordant (and, with --mutants, every built-in mutant killed), 1 otherwise, 2 the run stopped or a usage error
-(no directory, --json without a writable path). Unknown options are ignored. A file name stdout cannot encode is printed
-with backslash escapes.
-Correction of the committed runner (commitment 3b766320...7f9e): see ERRATA.md, E1-E4; no verdict on the committed
-vectors changes.
+(no directory, --json without a writable path, --errata without a file, --json or --errata given more than once).
+Unknown options are ignored. A file name stdout cannot encode is printed with backslash escapes.
+--errata FILE replaces the MANIFEST expectation of the files it lists (same parser as MANIFEST.json; each listed file
+must appear exactly once in MANIFEST.json, else the run stops with exit code 2); such rows are marked with the erratum,
+a label of letters, digits, '.', '_' or '-'.
+Correction of the committed runner (commitment 3b766320...7f9e): see ERRATA.md. E1-E4 change no verdict on the committed
+vectors; E5 changes one (ea3), and ../ERRATA_EXPECT.json, passed with --errata, states its corrected expectation.
 
-Usage: python3 verify_eip712.py <dir with MANIFEST.json and vectors/> [--mutants] [--json out.json]      Stdlib only.
+Usage: python3 verify_eip712.py <dir with MANIFEST.json and vectors/> [--errata file] [--mutants] [--json out.json]
+Stdlib only.
 """
 from __future__ import annotations
 
@@ -64,7 +69,7 @@ DOMAIN = {"name": "x402 receipt", "version": "1", "chainId": 1}
 FIELDS = [("version", "uint256"), ("network", "string"), ("resourceUrl", "string"), ("payer", "string"),
           ("issuedAt", "uint256"), ("transaction", "string")]
 TYPES = {"Receipt": [{"name": n, "type": t} for n, t in FIELDS]}
-REQUIRED = [n for n, _ in FIELDS if n != "transaction"]
+REQUIRED = [n for n, _ in FIELDS]
 
 MALFORMED_INPUT, UNSUPPORTED_FORMAT, MALFORMED_PAYLOAD, UNSUPPORTED_VERSION = (
     "malformed_input", "unsupported_format", "malformed_payload", "unsupported_version")
@@ -88,15 +93,15 @@ def _uint256(v) -> bool:
     return type(v) is int and 0 <= v < 2 ** 256
 
 
-def payload_message(payload) -> dict:
-    """Step 3: the Receipt message exactly as transmitted, with an absent transaction as ""."""
+def payload_message(payload, fill_transaction=False) -> dict:
+    """Step 3: the Receipt message exactly as transmitted. fill_transaction exists only to build the E5 mutant."""
     if not isinstance(payload, dict):
         raise Reject(MALFORMED_PAYLOAD, "payload is not an object")
     extra = sorted(k for k in payload if k not in dict(FIELDS))
     if extra:
         raise Reject(MALFORMED_PAYLOAD, f"payload keys outside the Receipt type: {extra}")
     for name in REQUIRED:
-        if name not in payload:
+        if name not in payload and not (fill_transaction and name == "transaction"):
             raise Reject(MALFORMED_PAYLOAD, f"payload.{name} missing")
     for name, typ in FIELDS:
         if name not in payload:
@@ -112,7 +117,8 @@ def payload_message(payload) -> dict:
             except UnicodeEncodeError:   # a lone surrogate: no UTF-8 bytes exist to hash
                 raise Reject(MALFORMED_PAYLOAD, f"payload.{name} is not valid Unicode (lone surrogate)")
     msg = dict(payload)
-    msg.setdefault("transaction", "")
+    if fill_transaction:
+        msg.setdefault("transaction", "")
     return msg
 
 
@@ -121,7 +127,7 @@ def digest(msg: dict, domain: dict = DOMAIN, types: dict = TYPES) -> bytes:
 
 
 def check(inp, *, low_s=True, allow_v=(27, 28), digest_fn=digest, extra_ok=False, signer_case_sensitive=False,
-          artifact_extra_ok=False):
+          artifact_extra_ok=False, fill_transaction=False):
     """Returns (verdict, reason, detail). Keyword switches exist only to build mutants."""
     try:
         if not isinstance(inp, dict) or not isinstance(inp.get("artifact"), dict):
@@ -137,7 +143,7 @@ def check(inp, *, low_s=True, allow_v=(27, 28), digest_fn=digest, extra_ok=False
         payload = art.get("payload")
         if extra_ok and isinstance(payload, dict):
             payload = {k: v for k, v in payload.items() if k in dict(FIELDS)}
-        msg = payload_message(payload)
+        msg = payload_message(payload, fill_transaction)
         if msg["version"] != 1:
             raise Reject(UNSUPPORTED_VERSION, f"payload.version {msg['version']} is not 1")
         sig = art.get("signature")
@@ -262,7 +268,29 @@ def load_vector(path):
         return None, f"vector file not loadable as JSON: {type(e).__name__}: {e}"
 
 
-def run(spec_dir, **kw):
+def load_errata(path, entries):
+    """{"vectors": [{"file", "expect", "reject_reason"?, "erratum"}]} -> {file: entry}; every file listed once in MANIFEST."""
+    try:
+        er = _load_json(_read_regular(path, "errata file"), "errata file")["vectors"]
+    except (ValueError, KeyError, TypeError, RecursionError) as e:
+        raise RunStopped(f"errata file cannot be loaded: {type(e).__name__}: {e}")
+    if not isinstance(er, list) or not er or not all(
+            isinstance(e, dict) and isinstance(e.get("file"), str) and isinstance(e.get("erratum"), str)
+            and re.fullmatch(r"[A-Za-z0-9._-]+", e["erratum"]) and e.get("expect") in ("valid", "reject") for e in er):
+        raise RunStopped("errata file: vectors must be a non-empty list of objects with string file, erratum a label "
+                         "of letters, digits, '.', '_' or '-', expect valid or reject")
+    names = [e["file"] for e in entries]
+    out = {}
+    for e in er:
+        if e["file"] in out:
+            raise RunStopped(f"errata file: {e['file']!r} is listed twice")
+        if names.count(e["file"]) != 1:
+            raise RunStopped(f"errata file: {e['file']!r} is not listed exactly once in MANIFEST.json")
+        out[e["file"]] = e
+    return out
+
+
+def run(spec_dir, errata=None, **kw):
     try:
         man = _load_json(_read_regular(os.path.join(spec_dir, "MANIFEST.json"), "MANIFEST.json"), "MANIFEST.json")
         entries = man["vectors"]
@@ -272,6 +300,7 @@ def run(spec_dir, **kw):
         raise RunStopped("MANIFEST.json: vectors must be a list of objects with a string \"file\"")
     if not entries:
         raise RunStopped("MANIFEST.json lists no vectors: an empty set proves nothing")
+    fix = load_errata(errata, entries) if errata is not None else {}
     rows = []
     for ent in entries:
         vec, err = load_vector(_vector_path(spec_dir, ent["file"]))
@@ -279,11 +308,12 @@ def run(spec_dir, **kw):
             verdict, reason, detail = "reject", MALFORMED_INPUT, err
         else:
             verdict, reason, detail = check(vec.get("input") if isinstance(vec, dict) else None, **kw)
-        exp_v = ent.get("expect")
-        exp_r = ent.get("reject_reason")
+        src = fix.get(ent["file"], ent)
+        exp_v = src.get("expect")
+        exp_r = src.get("reject_reason")
         ok = verdict == exp_v and (exp_v != "reject" or reason == exp_r)
         rows.append({"file": ent["file"], "expect": exp_v, "expect_reason": exp_r, "verdict": verdict,
-                     "reason": reason, "detail": detail, "concordant": ok})
+                     "reason": reason, "detail": detail, "concordant": ok, "erratum": src.get("erratum")})
     return rows
 
 
@@ -300,6 +330,7 @@ MUTANTS = {
     "artifact_extra_keys_ignored": dict(artifact_extra_ok=True),
     "transaction_dropped_from_type": dict(digest_fn=lambda m: E.signing_digest(
         DOMAIN, "Receipt", {"Receipt": TYPES["Receipt"][:5]}, {k: v for k, v in m.items() if k != "transaction"})),
+    "transaction_filled_when_absent": dict(fill_transaction=True),   # the committed runner's reading (ERRATA E5)
 }
 
 
@@ -307,17 +338,22 @@ def main(argv):
     if not argv or argv[0].startswith("-"):
         print(__doc__)
         return 2
-    if "--json" in argv and (argv.index("--json") + 1 >= len(argv) or argv[argv.index("--json") + 1].startswith("-")):
-        print("usage error: --json needs an output path", file=sys.stderr)
-        return 2
+    for opt in ("--json", "--errata"):
+        if argv.count(opt) > 1:
+            print(f"usage error: {opt} given more than once", file=sys.stderr)
+            return 2
+        if opt in argv and (argv.index(opt) + 1 >= len(argv) or argv[argv.index(opt) + 1].startswith("-")):
+            print(f"usage error: {opt} needs {'an output path' if opt == '--json' else 'a file'}", file=sys.stderr)
+            return 2
+    errata = argv[argv.index("--errata") + 1] if "--errata" in argv else None
     sys.stdout.reconfigure(errors="backslashreplace")   # a file name stdout cannot encode is printed escaped, never a crash
     try:
-        rows = run(argv[0])
+        rows = run(argv[0], errata)
     except RunStopped as e:
         print(f"run stopped: {e}", file=sys.stderr)
         return 2
     for r in rows:
-        print(f"[{'OK' if r['concordant'] else 'DIFF'}] {r['file']:52s} -> {r['verdict']}"
+        print(f"[{'OK' if r['concordant'] else 'DIFF'}{' ' + r['erratum'] if r['erratum'] else ''}] {r['file']:52s} -> {r['verdict']}"
               f"{'/' + r['reason'] if r['reason'] else ''}  ({r['detail'][:70]})")
     ok = sum(r["concordant"] for r in rows)
     print(f"concordant {ok}/{len(rows)}")
@@ -325,7 +361,7 @@ def main(argv):
     if "--mutants" in argv:
         out["mutants"] = {}
         for name, kw in MUTANTS.items():
-            killers = [r["file"] for r in run(argv[0], **kw) if not r["concordant"]]
+            killers = [r["file"] for r in run(argv[0], errata, **kw) if not r["concordant"]]
             out["mutants"][name] = killers
             print(f"mutant {name:30s} {'KILLED by ' + ', '.join(killers[:4]) if killers else 'SURVIVES'}")
     if "--json" in argv:

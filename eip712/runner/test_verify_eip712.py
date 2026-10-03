@@ -2,6 +2,7 @@
 never modified; every case here is built in a temporary directory. Stdlib only: python3 -m unittest -v test_verify_eip712"""
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -9,6 +10,8 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SET = os.path.join(HERE, "..", "commitment-3b766320", "out")
+ERRATA = os.path.join(HERE, "..", "ERRATA_EXPECT.json")
+COMMITTED_TOOL = os.path.join(HERE, "..", "commitment-3b766320", "verify_eip712.py")
 sys.path.insert(0, HERE)
 import verify_eip712 as V  # noqa: E402
 
@@ -26,6 +29,7 @@ def manifest_entry(name):
 
 
 EA1 = "ea1-live-p1-payload-signature.json"
+EA3 = "ea3-transaction-absent-equals-empty.json"
 
 
 def tmpset(files, manifest=None):
@@ -48,13 +52,70 @@ def cli(*argv, env=None):
 
 class TestCommittedSet(unittest.TestCase):
     def test_committed_vectors_all_concordant_and_mutants_killed(self):
-        p = cli(SET, "--mutants")
+        p = cli(SET, "--errata", ERRATA, "--mutants")
         self.assertEqual((p.returncode, "concordant 52/52" in p.stdout, "SURVIVES" in p.stdout, "Traceback" in p.stderr),
                          (0, True, False, False))
         self.assertEqual(sum(l.startswith("mutant ") for l in p.stdout.splitlines()), len(V.MUTANTS))
 
     def test_live_p1_recovers_the_payer(self):
         self.assertEqual(V.check(vec(EA1)["input"])[:2], ("valid", None))
+
+    def test_e5_only_ea3_differs_from_the_committed_expectations(self):
+        p = cli(SET)
+        diff = [l for l in p.stdout.splitlines() if l.startswith("[DIFF]")]
+        self.assertEqual((p.returncode, "concordant 51/52" in p.stdout, len(diff), EA3 in diff[0]), (1, True, 1, True))
+        self.assertIn("[OK E5] " + EA3, cli(SET, "--errata", ERRATA).stdout)
+
+
+class TestErrataE5(unittest.TestCase):
+    """x402 5.5 step 3: the payload is used exactly as transmitted; an omitted transaction is not filled in with ""."""
+
+    def test_omitted_transaction_rejects_and_present_empty_string_verifies(self):
+        inp = vec(EA3)["input"]
+        self.assertEqual(V.check(inp)[:2], ("reject", "malformed_payload"))
+        filled = json.loads(json.dumps(inp))
+        filled["artifact"]["payload"]["transaction"] = ""
+        self.assertEqual(V.check(filled)[:2], ("valid", None))
+
+    def test_errata_file_listed_twice_in_manifest_stops(self):
+        d = tempfile.mkdtemp()
+        shutil.copytree(os.path.join(SET, "vectors"), os.path.join(d, "vectors"))
+        with open(os.path.join(SET, "MANIFEST.json"), encoding="utf-8") as fh:
+            man = json.load(fh)
+        man["vectors"].append(dict(manifest_entry(EA3)))
+        with open(os.path.join(d, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+            json.dump(man, fh)
+        p = cli(d, "--errata", ERRATA)
+        self.assertEqual((p.returncode, "Traceback" in p.stderr, "not listed exactly once" in p.stderr), (2, False, True))
+
+    def test_e5_mutant_is_the_committed_reading(self):
+        # killed by ea3 is not enough: the mutant must agree with the committed MANIFEST on all 52, ea3 included
+        rows = V.run(SET, None, **V.MUTANTS["transaction_filled_when_absent"])
+        self.assertEqual([r["file"] for r in rows if not r["concordant"]], [])
+
+    def test_committed_runner_accepts_it(self):
+        # the erratum as measured: the committed runner fills the omitted key with "" and verifies ea3
+        p = subprocess.run([sys.executable, "-B", COMMITTED_TOOL, SET], capture_output=True, text=True, timeout=120)
+        line = next(l for l in p.stdout.splitlines() if EA3 in l)
+        self.assertIn("-> valid", line)
+
+    def test_unusable_errata_files_stop_the_run(self):
+        ok = {"file": EA3, "expect": "reject", "reject_reason": "malformed_payload", "erratum": "E5"}
+        for body in ('{"vectors": []}', "not json", '{"vectors": [{"file": "nope.json", "expect": "reject", "erratum": "E5"}]}',
+                     json.dumps({"vectors": [dict(ok, expect="maybe")]}), json.dumps({"vectors": [ok, ok]}),
+                     json.dumps({"vectors": [{k: v for k, v in ok.items() if k != "erratum"}]}),
+                     '{"vectors": [{"file": "x", "file": "y"}]}', '{"vectors": ["x"]}', "[1]",
+                     json.dumps({"vectors": [dict(ok, erratum="")]}), json.dumps({"vectors": [dict(ok, erratum="E5]\n[OK] x")]})):
+            d = tempfile.mkdtemp()
+            path = os.path.join(d, "e.json")
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(body)
+            p = cli(SET, "--errata", path)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr, "run stopped" in p.stderr), (2, False, True), body)
+        for argv in ([SET, "--errata"], [SET, "--errata", "--mutants"], [SET, "--errata", "/nonexistent/e.json"], [SET, "--errata", ""],
+                     [SET, "--errata", ERRATA, "--errata", ERRATA], [SET, "--json", "a.json", "--json", "b.json"]):
+            p = cli(*argv)
+            self.assertEqual((p.returncode, "Traceback" in p.stderr), (2, False), argv)
 
 
 class TestExitCodesAndConcordance(unittest.TestCase):
@@ -192,7 +253,8 @@ class TestVectorFileContents(unittest.TestCase):
         self.assertIn("malformed_payload", outs[0])
 
 
-# Killer map of the 11 built-in mutants on the 52 committed vectors (measured 2026-10-01; pins each mutant's definition)
+# Killer map of the 12 built-in mutants on the 52 committed vectors with ERRATA_EXPECT.json (measured 2026-10-03; pins
+# each mutant's definition)
 KILLERS = {
  "no_low_s": [
   "er13-live-high-s.json",
@@ -213,7 +275,6 @@ KILLERS = {
  "chain_id_8453": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "er01-domain-chainid-8453.json",
@@ -222,7 +283,6 @@ KILLERS = {
  "domain_name_typo": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "er02-domain-name-letters-transposed.json",
@@ -231,7 +291,6 @@ KILLERS = {
  "payer_lowercased": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "ea6-signature-uppercase-hex-digits.json"
@@ -239,7 +298,6 @@ KILLERS = {
  "type_reordered": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "er04-type-fields-reordered.json",
@@ -248,7 +306,6 @@ KILLERS = {
  "personal_sign_over_digest": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "er06-personal-sign-over-typed-digest.json",
@@ -260,11 +317,13 @@ KILLERS = {
  "transaction_dropped_from_type": [
   "ea1-live-p1-payload-signature.json",
   "ea2-test-key-receipt.json",
-  "ea3-transaction-absent-equals-empty.json",
   "ea4-transaction-present.json",
   "ea5-expected-signer-checksum-case.json",
   "er05-type-without-transaction.json",
   "ea6-signature-uppercase-hex-digits.json"
+ ],
+ "transaction_filled_when_absent": [
+  "ea3-transaction-absent-equals-empty.json"
  ]
 }
 
@@ -290,7 +349,7 @@ class TestMutationSurvivors(unittest.TestCase):
     def test_killer_map_is_exact(self):
         d = tempfile.mkdtemp()
         out = os.path.join(d, "r.json")
-        p = cli(SET, "--mutants", "--json", out)
+        p = cli(SET, "--errata", ERRATA, "--mutants", "--json", out)
         self.assertEqual(p.returncode, 0)
         with open(out, encoding="utf-8") as fh:
             self.assertEqual(json.load(fh)["mutants"], KILLERS)

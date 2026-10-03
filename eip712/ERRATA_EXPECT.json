@@ -1,0 +1,3 @@
+{"vectors": [
+ {"file": "ea3-transaction-absent-equals-empty.json", "expect": "reject", "reject_reason": "malformed_payload", "erratum": "E5"}
+]}
