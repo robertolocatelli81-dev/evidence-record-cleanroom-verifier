@@ -88,6 +88,14 @@ audit (`docs/vector-audit/live_check.py`) rejects non-canonical ECDSA signatures
 EIP-2 low-s) before recovery; its check refuses the high-s twin of the published p1 counter-signature, and all
 14 published signatures it checks (13 ledger counter-signatures and one anchor signature) are canonical.
 
+## evidence-pinning rev 9 (x402-foundation/tsc#4)
+
+`evidence-pinning-rev9/` holds a second implementation of the evidence-set step of
+`draft-krausz-verification-state-03` (5.3, 5.4.1), run on the 47 vectors of TKCollective/tanilo-receipt-spec rev 9
+(corpus at `0dffb77`): 47/47 outcomes, 47/47 under the runner notes' rule, 44/47 when the reported set must equal the
+named condition, and the same output as babyblueviper1's transcript on all 47 lines. What was read before the run,
+the readings, the frozen hashes and the controls are in that folder's README; the CI job reruns it on every push.
+
 ## Readings where the manifest is silent (all declared, none chosen from a vector's outcome)
 
 - economic phase vocabulary: funding, delivery, settlement, refund, reversal — consistent with the draft Tersign

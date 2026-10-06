@@ -35,6 +35,18 @@ jobs:
         run: cd eip712 && python runner/verify_eip712.py commitment-3b766320/out --errata ERRATA_EXPECT.json --mutants
       - name: EIP-712 — runner unit tests
         run: cd eip712/runner && python -m unittest -v test_verify_eip712
+      - name: evidence-pinning rev 9 — corpus pinned by sha256, raw checker output equals the frozen one, 47/47 and 44/47
+        run: |
+          cd evidence-pinning-rev9
+          curl -sSfL -o "$RUNNER_TEMP/rev9.json" https://raw.githubusercontent.com/TKCollective/tanilo-receipt-spec/0dffb77fa117099438d5ec15fbb48b2311792d26/fixtures/evidence-pinning-fixtures-v2-rev9.json
+          echo "3c5f4bf42d5e60c4e424d9a301f1efbfdffba642f2f7b80b2cec1727e0873724  $RUNNER_TEMP/rev9.json" | sha256sum -c -
+          python harness.py "$RUNNER_TEMP/rev9.json" "$RUNNER_TEMP/raw.json"
+          echo "02726d0307825ba281a1f370cd5383318fd3bf992d38aaaf5c907d3313e0e772  $RUNNER_TEMP/raw.json" | sha256sum -c -
+          python confronto.py "$RUNNER_TEMP/rev9.json" "$RUNNER_TEMP/raw.json" "$RUNNER_TEMP/cmp.json"
+          python -c "import json,sys; s=json.load(open(sys.argv[1]))['summary']; c=(s['vectors'],s['verdict_agree'],s['harness_rule_agree'],s['strict_agree']); print(c); sys.exit(0 if c==(47,47,47,44) else 1)" "$RUNNER_TEMP/cmp.json"
+          python selftest_filed.py
+          python controlli.py "$RUNNER_TEMP/rev9.json" "$RUNNER_TEMP/ctl.json"
+          python -c "import json,sys; d=json.load(open(sys.argv[1])); ok=[x['pass'] for k,v in d.items() if k.startswith('P') for x in (v if isinstance(v,list) else [v])]; print(len(ok),'controls', ok); sys.exit(0 if ok and all(ok) else 1)" "$RUNNER_TEMP/ctl.json"
       - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)
         run: python verify_tersign.py spec/
       - name: held-out separators (5 vectors)

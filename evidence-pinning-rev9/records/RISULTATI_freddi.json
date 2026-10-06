@@ -1,0 +1,825 @@
+{
+ "corpus": {
+  "file": "rev9.json",
+  "sha256": "3c5f4bf42d5e60c4e424d9a301f1efbfdffba642f2f7b80b2cec1727e0873724"
+ },
+ "frozen_utc": "2026-10-06T17:45:27Z",
+ "identical_across_interpreters": true,
+ "interpreters": [
+  "3.9.25",
+  "3.11.2",
+  "3.13.15"
+ ],
+ "l2_alternative_reading_id": "identical inputs and results; only the harness log line of evi-empty-root-null differs",
+ "positive_controls": {
+  "P1": [
+   {
+    "alter": "condition of evi-duplicate-bound-tuple-rejects -> source_count_mismatch",
+    "harness_rule_disagree": [
+     "evi-duplicate-bound-tuple-rejects"
+    ],
+    "pass": true
+   },
+   {
+    "alter": "computed.root of evi-root-odd-promotion, last hex digit",
+    "pass": true,
+    "verdict_disagree": [
+     "evi-root-odd-promotion"
+    ]
+   }
+  ],
+  "P2": {
+   "h3_off": {
+    "harness_rule_agree": 38,
+    "strict_agree": 27,
+    "verdict_agree": 38
+   },
+   "pass": true,
+   "verdict_disagree": [
+    "evi-fully-pinned-fallback-derives-from-sources-accepted",
+    "evi-resolve-all-counts-absent-accepted",
+    "evi-partial-resolves-unknown",
+    "evi-declared-partial-is-not-invalid",
+    "evi-content-mismatch-unknown",
+    "evi-content-not-held-unknown",
+    "evi-step-resolves-affirmatively",
+    "evi-unpinned-members-absent-accepted",
+    "evi-set-retrieved-at-equals-unpinned-value"
+   ]
+  },
+  "P3": [
+   {
+    "caught": true,
+    "expected_caught": true,
+    "new": "https://example.org/c",
+    "old": "https://example.org/a",
+    "other_disagreements": [],
+    "pass": true,
+    "path": [
+     "evidence_set",
+     "sources",
+     "0",
+     "url"
+    ],
+    "vector": "evi-root-present-pinned-count-absent-accepted"
+   },
+   {
+    "caught": true,
+    "expected_caught": true,
+    "new": "2026-09-01T12:00:00.000Z",
+    "old": "2026-09-01T12:00:01.000Z",
+    "other_disagreements": [],
+    "pass": true,
+    "path": [
+     "evidence_set",
+     "sources",
+     "1",
+     "retrieved_at"
+    ],
+    "vector": "evi-pinned-unpinned-same-url-distinct-time-accepted"
+   },
+   {
+    "caught": true,
+    "expected_caught": true,
+    "new": "https://example.org/d",
+    "old": "https://example.org/b",
+    "other_disagreements": [],
+    "pass": true,
+    "path": [
+     "set_2",
+     "0",
+     "url"
+    ],
+    "vector": "evi-root-order-independent"
+   },
+   {
+    "caught": false,
+    "expected_caught": false,
+    "new": "9ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+    "old": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+    "other_disagreements": [],
+    "pass": true,
+    "path": [
+     "evidence_set",
+     "sources",
+     "0",
+     "snippet_sha256"
+    ],
+    "vector": "evi-step-resolves-affirmatively"
+   }
+  ],
+  "all_pass": true,
+  "base": {
+   "harness_rule_agree": 47,
+   "strict_agree": 44,
+   "verdict_agree": 47
+  }
+ },
+ "raw_outputs": {
+  "file": "OUTPUT_grezzi.json",
+  "frozen_utc": "2026-10-06T17:43:13Z",
+  "sha256": "02726d0307825ba281a1f370cd5383318fd3bf992d38aaaf5c907d3313e0e772"
+ },
+ "rev8_control": {
+  "disagree": [
+   "evi-fully-pinned-fallback-derives-from-sources-accepted",
+   "evi-root-present-pinned-count-absent-accepted",
+   "evi-unpinned-item-reason-content-not-held",
+   "evi-unpinned-members-absent-accepted"
+  ],
+  "halt_or_not_agree": 40,
+  "named_condition_not_reported_without_H5": [
+   [
+    "evi-content-kind-absent-when-pinned-rejects",
+    "content_kind_absent_when_pinned"
+   ],
+   [
+    "evi-resource-sha256-with-full-resource-rejects",
+    "snippet_digest_present_for_full_resource"
+   ],
+   [
+    "evi-full-resource-digest-on-unpinned-rejects",
+    "snippet_digest_present_for_full_resource"
+   ],
+   [
+    "evi-unpinned-reason-outside-domain-rejects",
+    "unpinned_reason_outside_domain"
+   ],
+   [
+    "evi-unpinned-without-reason-rejects",
+    "unpinned_without_reason"
+   ],
+   [
+    "evi-source-count-mismatch-rejects",
+    "source_count_disagrees_with_sources"
+   ],
+   [
+    "evi-count-inconsistency-rejects",
+    "pinned_count_disagrees_with_pinned_entries"
+   ],
+   [
+    "evi-root-with-zero-pinned-rejects",
+    "root_present_with_zero_pinned"
+   ],
+   [
+    "evi-nonzero-pinned-null-root-rejects",
+    "root_null_with_pinned_entries"
+   ]
+  ],
+  "note": "verdict = halt/non-halt per designation (MALFORMED vs other) plus root rubric; rev-8 expect prose not re-read per vector; H5 not applied (map not in our sources)",
+  "root_vectors": 11,
+  "root_vectors_agree": 11,
+  "sha256": "6ac833edc7e8b915f9962cbc86043f088a1e944c8092a0a494f805dd65bb62b5",
+  "vectors": 44
+ },
+ "rows": [
+  {
+   "designation": "CANONICAL ORDER",
+   "harness_ok": true,
+   "id": "evi-root-order-independent",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "identical roots == computed root_1/root_2",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ODD NODE",
+   "harness_ok": true,
+   "id": "evi-root-odd-promotion",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "== computed root",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "NODE PREIMAGE",
+   "harness_ok": true,
+   "id": "evi-node-child-encoding",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "== normative, != counter",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "LEAF PREIMAGE",
+   "harness_ok": true,
+   "id": "evi-leaf-member-encoding",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "== normative, != counter",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "BINDING",
+   "harness_ok": true,
+   "id": "evi-snippet-change-changes-root",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "roots differ, each == computed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "BINDING",
+   "harness_ok": true,
+   "id": "evi-url-normalization-changes-root",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "roots differ, each == computed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "CANONICAL ORDER",
+   "harness_ok": true,
+   "id": "evi-duplicate-url-distinct-digest",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "identical roots == computed root_1/root_2",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "LEAF PREIMAGE",
+   "harness_ok": true,
+   "id": "evi-leaf-binds-content-kind",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "roots differ, each == computed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "LEAF PREIMAGE",
+   "harness_ok": true,
+   "id": "evi-leaf-binds-retrieved-at",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "roots differ, each == computed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "CANONICAL ORDER",
+   "harness_ok": true,
+   "id": "evi-order-tiebreak-content-kind",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "identical roots == computed root_1/root_2",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "CANONICAL ORDER",
+   "harness_ok": true,
+   "id": "evi-order-tiebreak-retrieved-at",
+   "named_condition": null,
+   "outcome": null,
+   "reported": [],
+   "rubric": "identical roots == computed root_1/root_2",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-set-retrieved-at-not-earliest-rejects",
+   "named_condition": "set_retrieved_at_not_bytewise_least",
+   "outcome": "malformed",
+   "reported": [
+    "set_retrieved_at_not_bytewise_least"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-content-kind-absent-when-pinned-rejects",
+   "named_condition": "content_kind_absent_or_invalid_when_pinned",
+   "outcome": "malformed",
+   "reported": [
+    "content_kind_absent_or_invalid_when_pinned",
+    "evidence_root_absent_with_pinned_items"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [
+    "evidence_root_absent_with_pinned_items"
+   ],
+   "strict_ok": false,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-resource-sha256-with-full-resource-rejects",
+   "named_condition": "resource_sha256_present_for_full_resource",
+   "outcome": "malformed",
+   "reported": [
+    "resource_sha256_present_for_full_resource"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-full-resource-digest-on-unpinned-rejects",
+   "named_condition": "resource_sha256_present_for_full_resource",
+   "outcome": "malformed",
+   "reported": [
+    "content_kind_present_when_unpinned",
+    "resource_sha256_present_for_full_resource"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [
+    "content_kind_present_when_unpinned"
+   ],
+   "strict_ok": false,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-pinned-absent-rejects",
+   "named_condition": "pinned_absent_or_not_boolean",
+   "outcome": "malformed",
+   "reported": [
+    "pinned_absent_or_not_boolean"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-pinned-not-boolean-rejects",
+   "named_condition": "pinned_absent_or_not_boolean",
+   "outcome": "malformed",
+   "reported": [
+    "pinned_absent_or_not_boolean"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-snippet-sha256-absent-when-pinned-rejects",
+   "named_condition": "snippet_sha256_absent_when_pinned",
+   "outcome": "malformed",
+   "reported": [
+    "evidence_root_absent_with_pinned_items",
+    "snippet_sha256_absent_when_pinned"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [
+    "evidence_root_absent_with_pinned_items"
+   ],
+   "strict_ok": false,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-empty-set-rejects",
+   "named_condition": "evidence_set_names_no_sources",
+   "outcome": "malformed",
+   "reported": [
+    "evidence_set_names_no_sources"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-duplicate-bound-tuple-rejects",
+   "named_condition": "duplicate_bound_tuple",
+   "outcome": "malformed",
+   "reported": [
+    "duplicate_bound_tuple"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-unpinned-reason-outside-domain-rejects",
+   "named_condition": "unpinned_reason_absent_or_invalid",
+   "outcome": "malformed",
+   "reported": [
+    "unpinned_reason_absent_or_invalid"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-unpinned-without-reason-rejects",
+   "named_condition": "unpinned_reason_absent_or_invalid",
+   "outcome": "malformed",
+   "reported": [
+    "unpinned_reason_absent_or_invalid"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-source-count-mismatch-rejects",
+   "named_condition": "source_count_mismatch",
+   "outcome": "malformed",
+   "reported": [
+    "source_count_mismatch"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-count-inconsistency-rejects",
+   "named_condition": "pinned_count_mismatch",
+   "outcome": "malformed",
+   "reported": [
+    "pinned_count_mismatch"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-root-with-zero-pinned-rejects",
+   "named_condition": "evidence_root_present_with_no_pinned_items",
+   "outcome": "malformed",
+   "reported": [
+    "evidence_root_present_with_no_pinned_items"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-nonzero-pinned-null-root-rejects",
+   "named_condition": "evidence_root_absent_with_pinned_items",
+   "outcome": "malformed",
+   "reported": [
+    "evidence_root_absent_with_pinned_items"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ADDITIVE",
+   "harness_ok": true,
+   "id": "evi-fully-pinned-fallback-derives-from-sources-accepted",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "not malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ADDITIVE",
+   "harness_ok": true,
+   "id": "evi-root-present-pinned-count-absent-accepted",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "not malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "RESOLUTION",
+   "harness_ok": true,
+   "id": "evi-resolve-all-counts-absent-accepted",
+   "named_condition": null,
+   "outcome": "resolved",
+   "reported": [],
+   "rubric": "resolved",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-root-mismatch-rejects",
+   "named_condition": "root_not_recomputable_from_sources",
+   "outcome": "malformed",
+   "reported": [
+    "root_not_recomputable_from_sources"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "EMPTY",
+   "harness_ok": true,
+   "id": "evi-empty-root-null",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "evidence_root null; well-formed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ADDITIVE",
+   "harness_ok": true,
+   "id": "evi-absent-unknown",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "unknown; MUST NOT halt",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "COMPLETENESS",
+   "harness_ok": true,
+   "id": "evi-partial-resolves-unknown",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "unknown",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "COMPLETENESS",
+   "harness_ok": true,
+   "id": "evi-declared-partial-is-not-invalid",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "not malformed; MUST NOT halt",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "UNKNOWN",
+   "harness_ok": true,
+   "id": "evi-content-mismatch-unknown",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "unknown; per-item content_differs",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "UNKNOWN",
+   "harness_ok": true,
+   "id": "evi-content-not-held-unknown",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "unknown; per-item content_not_held",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "UNKNOWN",
+   "harness_ok": true,
+   "id": "evi-unpinned-item-reason-content-not-held",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "unknown; per-item content_not_held present for the unpinned entry",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "RESOLUTION",
+   "harness_ok": true,
+   "id": "evi-step-resolves-affirmatively",
+   "named_condition": null,
+   "outcome": "resolved",
+   "reported": [],
+   "rubric": "resolved, not unknown, not halt",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ADDITIVE",
+   "harness_ok": true,
+   "id": "evi-unpinned-members-absent-accepted",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "not malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-retrieved-at-noncanonical-rejects",
+   "named_condition": "retrieved_at_not_canonical_form",
+   "outcome": "malformed",
+   "reported": [
+    "retrieved_at_not_canonical_form"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-duplicate-unpinned-entries-rejects",
+   "named_condition": "duplicate_bound_tuple",
+   "outcome": "malformed",
+   "reported": [
+    "duplicate_bound_tuple"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-unpinned-retrieved-at-noncanonical-rejects",
+   "named_condition": "retrieved_at_not_canonical_form",
+   "outcome": "malformed",
+   "reported": [
+    "retrieved_at_not_canonical_form"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "SET SCOPE",
+   "harness_ok": true,
+   "id": "evi-set-retrieved-at-equals-unpinned-value",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "well-formed; MUST NOT halt",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-set-retrieved-at-above-unpinned-value-rejects",
+   "named_condition": "set_retrieved_at_not_bytewise_least",
+   "outcome": "malformed",
+   "reported": [
+    "set_retrieved_at_not_bytewise_least"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-snippet-sha256-member-absent-on-unpinned-rejects",
+   "named_condition": "snippet_sha256_member_absent",
+   "outcome": "malformed",
+   "reported": [
+    "snippet_sha256_member_absent"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "MALFORMED",
+   "harness_ok": true,
+   "id": "evi-duplicate-pinned-unpinned-pair-rejects",
+   "named_condition": "duplicate_bound_tuple",
+   "outcome": "malformed",
+   "reported": [
+    "duplicate_bound_tuple"
+   ],
+   "rubric": "halt, malformed",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  },
+  {
+   "designation": "ADDITIVE",
+   "harness_ok": true,
+   "id": "evi-pinned-unpinned-same-url-distinct-time-accepted",
+   "named_condition": null,
+   "outcome": "unknown",
+   "reported": [],
+   "rubric": "not malformed; unknown",
+   "second_conditions": [],
+   "strict_ok": true,
+   "verdict_ok": true
+  }
+ ],
+ "summary": {
+  "disagreements_harness_rule": [],
+  "disagreements_verdict": [],
+  "harness_rule_agree": 47,
+  "strict_agree": 44,
+  "vectors": 47,
+  "verdict_agree": 47,
+  "with_second_condition": [
+   {
+    "also": [
+     "evidence_root_absent_with_pinned_items"
+    ],
+    "id": "evi-content-kind-absent-when-pinned-rejects",
+    "named": "content_kind_absent_or_invalid_when_pinned"
+   },
+   {
+    "also": [
+     "content_kind_present_when_unpinned"
+    ],
+    "id": "evi-full-resource-digest-on-unpinned-rejects",
+    "named": "resource_sha256_present_for_full_resource"
+   },
+   {
+    "also": [
+     "evidence_root_absent_with_pinned_items"
+    ],
+    "id": "evi-snippet-sha256-absent-when-pinned-rejects",
+    "named": "snippet_sha256_absent_when_pinned"
+   }
+  ]
+ }
+}

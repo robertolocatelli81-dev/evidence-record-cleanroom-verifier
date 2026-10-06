@@ -1,0 +1,1420 @@
+{
+ "corpus_vectors": 47,
+ "results": [
+  {
+   "id": "evi-root-order-independent",
+   "kind": "root",
+   "result": {
+    "equal": true,
+    "root_1": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+    "root_2": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960"
+   }
+  },
+  {
+   "id": "evi-root-odd-promotion",
+   "kind": "root",
+   "result": {
+    "root": "d0cacaa281b5b0a46f8c2eb73c3100a15e5490d2c77ca542c4f9475886887bfd"
+   }
+  },
+  {
+   "id": "evi-node-child-encoding",
+   "kind": "root",
+   "result": {
+    "root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960"
+   }
+  },
+  {
+   "id": "evi-leaf-member-encoding",
+   "kind": "root",
+   "result": {
+    "root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3"
+   }
+  },
+  {
+   "id": "evi-snippet-change-changes-root",
+   "kind": "root",
+   "result": {
+    "equal": false,
+    "root_1": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+    "root_2": "365973a6cd59577830d4340b3bbb22e2852f92734e2d74b52311a5790e6dad69"
+   }
+  },
+  {
+   "id": "evi-url-normalization-changes-root",
+   "kind": "root",
+   "result": {
+    "equal": false,
+    "root_1": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+    "root_2": "14adb6a20e3e205bfa4ab3dbbb1db2b133c55341117df91fcbba15664561bfd0"
+   }
+  },
+  {
+   "id": "evi-duplicate-url-distinct-digest",
+   "kind": "root",
+   "result": {
+    "equal": true,
+    "root_1": "b563b47601d6cd2b75fe01b9047001e5ce6cd42039f5e95c96d7942a13cc7512",
+    "root_2": "b563b47601d6cd2b75fe01b9047001e5ce6cd42039f5e95c96d7942a13cc7512"
+   }
+  },
+  {
+   "id": "evi-leaf-binds-content-kind",
+   "kind": "root",
+   "result": {
+    "equal": false,
+    "root_1": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+    "root_2": "7125a9d8aff13aca214b2f8c3ac70412610164a108cebb502ca7f37644c40af2"
+   }
+  },
+  {
+   "id": "evi-leaf-binds-retrieved-at",
+   "kind": "root",
+   "result": {
+    "equal": false,
+    "root_1": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+    "root_2": "5e085fc1bf9069bd8c344f44722827c9ed69d33866eda7ae16ba42cdf41a2e0e"
+   }
+  },
+  {
+   "id": "evi-order-tiebreak-content-kind",
+   "kind": "root",
+   "result": {
+    "equal": true,
+    "root_1": "2b778cd5517219e86a10d4f8da3bd327c37982fbcd6aad32ad542bdb704d586c",
+    "root_2": "2b778cd5517219e86a10d4f8da3bd327c37982fbcd6aad32ad542bdb704d586c"
+   }
+  },
+  {
+   "id": "evi-order-tiebreak-retrieved-at",
+   "kind": "root",
+   "result": {
+    "equal": true,
+    "root_1": "ef067e8708b9b3fee310feab4dea16e5f20056aecf5362329ed8b449d635e4f3",
+    "root_2": "ef067e8708b9b3fee310feab4dea16e5f20056aecf5362329ed8b449d635e4f3"
+   }
+  },
+  {
+   "harness": [
+    "H2:sources",
+    "H4",
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-set-retrieved-at-not-earliest-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "f3f174c8e5aded524c86ed130c2ddf385774228564e9eb3fb527e0a02ef35018",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "retrieved_at": "2026-09-02T12:00:00.000Z",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-02T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "set_retrieved_at_not_bytewise_least"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-content-kind-absent-when-pinned-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "content_kind_absent_or_invalid_when_pinned",
+     "evidence_root_absent_with_pinned_items"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-resource-sha256-with-full-resource-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7125a9d8aff13aca214b2f8c3ac70412610164a108cebb502ca7f37644c40af2",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "full_resource",
+       "pinned": true,
+       "resource_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "resource_sha256_present_for_full_resource"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-full-resource-digest-on-unpinned-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "full_resource",
+       "pinned": false,
+       "resource_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "content_kind_present_when_unpinned",
+     "resource_sha256_present_for_full_resource"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-pinned-absent-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "pinned_absent_or_not_boolean"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-pinned-not-boolean-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": "true",
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "pinned_absent_or_not_boolean"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-snippet-sha256-absent-when-pinned-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "evidence_root_absent_with_pinned_items",
+     "snippet_sha256_absent_when_pinned"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-empty-set-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "source_count": 0,
+     "sources": []
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "evidence_set_names_no_sources"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:sources",
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-duplicate-bound-tuple-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "9e08e770dc934c3c1bae69226c63849cb162d0dd589a10f2ca19d5fd2bf0d26c",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "duplicate_bound_tuple"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-unpinned-reason-outside-domain-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "content_not_retained",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "unpinned_reason_absent_or_invalid"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-unpinned-without-reason-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "unpinned_reason_absent_or_invalid"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-source-count-mismatch-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "source_count": 3,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "source_count_mismatch"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-count-inconsistency-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 2,
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "pinned_count_mismatch"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1"
+   ],
+   "id": "evi-root-with-zero-pinned-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "0000000000000000000000000000000000000000000000000000000000000000",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 0,
+     "sources": [
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "evidence_root_present_with_no_pinned_items"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1"
+   ],
+   "id": "evi-nonzero-pinned-null-root-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": null,
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 1,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "evidence_root_absent_with_pinned_items"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-fully-pinned-fallback-derives-from-sources-accepted",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/c"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1"
+   ],
+   "id": "evi-root-present-pinned-count-absent-accepted",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected",
+    "L5:held=2"
+   ],
+   "id": "evi-resolve-all-counts-absent-accepted",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "resolved",
+    "per_item": [
+     "content_matches",
+     "content_matches"
+    ],
+    "reason": null,
+    "token": "resolved"
+   }
+  },
+  {
+   "harness": [
+    "H1"
+   ],
+   "id": "evi-root-mismatch-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 1,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "root_not_recomputable_from_sources"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-empty-root-null",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 0,
+     "source_count": 1,
+     "sources": [
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "L6:no_evidence_set"
+   ],
+   "id": "evi-absent-unknown",
+   "input_sent": {},
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": null,
+    "reason": "no_evidence_set",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-partial-resolves-unknown",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 2,
+     "source_count": 3,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      },
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/c"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-declared-partial-is-not-invalid",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 2,
+     "source_count": 3,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      },
+      {
+       "content_kind": null,
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/c"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:injected",
+    "L5:held=1"
+   ],
+   "id": "evi-content-mismatch-unknown",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_differs"
+    ],
+    "reason": "content_not_recomputed",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-content-not-held-unknown",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held"
+    ],
+    "reason": "content_not_recomputed",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-unpinned-item-reason-content-not-held",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected",
+    "L5:held=2"
+   ],
+   "id": "evi-step-resolves-affirmatively",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 2,
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "resolved",
+    "per_item": [
+     "content_matches",
+     "content_matches"
+    ],
+    "reason": null,
+    "token": "resolved"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-unpinned-members-absent-accepted",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "pinned_count": 1,
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-retrieved-at-noncanonical-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "fa0d995c6fbd3c8fe2720c73b8485fc7b6e94ef5ec2b00fe00fc523f853119af",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "retrieved_at_not_canonical_form"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1"
+   ],
+   "id": "evi-duplicate-unpinned-entries-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": null,
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 0,
+     "retrieved_at": "2026-09-01T12:00:00.000Z",
+     "source_count": 2,
+     "sources": [
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "provider_metadata_only",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "duplicate_bound_tuple"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-unpinned-retrieved-at-noncanonical-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 1,
+     "retrieved_at": "2026-09-01T12:00:00.000Z",
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "retrieved_at_not_canonical_form"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-set-retrieved-at-equals-unpinned-value",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 1,
+     "retrieved_at": "2026-08-31T12:00:00.000Z",
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-08-31T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  },
+  {
+   "harness": [
+    "H1",
+    "H3:injected"
+   ],
+   "id": "evi-set-retrieved-at-above-unpinned-value-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "fully_pinned": false,
+     "pinned_count": 1,
+     "retrieved_at": "2026-09-01T12:00:00.000Z",
+     "source_count": 2,
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-08-31T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/b"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "set_retrieved_at_not_bytewise_least"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [
+    "H2:entry",
+    "H1",
+    "H3:not_computable"
+   ],
+   "id": "evi-snippet-sha256-member-absent-on-unpinned-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "snippet_sha256_member_absent"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [],
+   "id": "evi-duplicate-pinned-unpinned-pair-rejects",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [
+     "duplicate_bound_tuple"
+    ],
+    "outcome": "malformed",
+    "per_item": null,
+    "reason": null,
+    "token": null
+   }
+  },
+  {
+   "harness": [],
+   "id": "evi-pinned-unpinned-same-url-distinct-time-accepted",
+   "input_sent": {
+    "evidence_set": {
+     "evidence_root": "35bc8fb1c853c3de6fa2a4fcacaa7223202fafa7bb5411595f167f21834160c3",
+     "evidence_set_version": "ao-evidence-set-v1",
+     "sources": [
+      {
+       "content_kind": "snippet",
+       "pinned": true,
+       "retrieved_at": "2026-09-01T12:00:00.000Z",
+       "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+       "url": "https://example.org/a"
+      },
+      {
+       "pinned": false,
+       "retrieved_at": "2026-09-01T12:00:01.000Z",
+       "snippet_sha256": null,
+       "unpinned_reason": "no_content_returned",
+       "url": "https://example.org/a"
+      }
+     ]
+    }
+   },
+   "kind": "resolve",
+   "result": {
+    "conditions": [],
+    "outcome": "unknown",
+    "per_item": [
+     "content_not_held",
+     "content_not_held"
+    ],
+    "reason": "not_fully_pinned",
+    "token": "unknown"
+   }
+  }
+ ]
+}
