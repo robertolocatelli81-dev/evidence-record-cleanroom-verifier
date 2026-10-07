@@ -47,12 +47,22 @@ jobs:
           python selftest_filed.py
           python controlli.py "$RUNNER_TEMP/rev9.json" "$RUNNER_TEMP/ctl.json"
           python -c "import json,sys; d=json.load(open(sys.argv[1])); ok=[x['pass'] for k,v in d.items() if k.startswith('P') for x in (v if isinstance(v,list) else [v])]; print(len(ok),'controls', ok); sys.exit(0 if ok and all(ok) else 1)" "$RUNNER_TEMP/ctl.json"
-      - name: evidence-pinning rev 10 proposed vectors — byte-identical rebuild, 6/6 on our checker and on babyblueviper1's at 5c72428
+      - name: evidence-pinning rev 10 proposed vectors — byte-identical rebuild, 8/8 on our checker and on babyblueviper1's at bcf6592; positive control, at 5c72428 exactly vectors 7 and 8 fail
         run: |
           python evidence-pinning-rev10-proposed/build.py --check
           git clone -q https://github.com/babyblueviper1/preaction-governance-conformance.git "$RUNNER_TEMP/bbv"
-          git -C "$RUNNER_TEMP/bbv" checkout -q 5c72428
+          # bcf6592 anchors babyblueviper1's form checks with \Z (babyblueviper1/preaction-governance-conformance#12):
+          # before it, ^...$ with re.match accepted one trailing "\n" on snippet_sha256 and retrieved_at, the two cases
+          # vectors 7 and 8 encode; 5c72428 is the commit before the fix
+          git -C "$RUNNER_TEMP/bbv" checkout -q bcf6592
           python evidence-pinning-rev10-proposed/run_vectors.py --ours evidence-pinning-rev9/es_check_filed.py --bbv "$RUNNER_TEMP/bbv/tools/evidence_set_check.py"
+          git -C "$RUNNER_TEMP/bbv" checkout -q 5c72428
+          set +e
+          python evidence-pinning-rev10-proposed/run_vectors.py --bbv "$RUNNER_TEMP/bbv/tools/evidence_set_check.py" --json > "$RUNNER_TEMP/pc.json"; rc=$?
+          set -e
+          # the two must fail for the pre-fix reason (the form check lets the value through and the run goes on), not for a
+          # root mismatch: vector 7 ends unknown, vector 8 resolved
+          python -c "import json,sys; d=json.load(open(sys.argv[1])); f=sorted((r['id'], r['bbv']['outcome']) for r in d['rows'] if not r['bbv_pass']); print('rc', sys.argv[2], 'failing', f); sys.exit(0 if sys.argv[2] == '1' and f == [('evi-retrieved-at-trailing-newline-rejects', 'resolved'), ('evi-snippet-sha256-trailing-newline-rejects', 'unknown')] else 1)" "$RUNNER_TEMP/pc.json" "$rc"
       - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)
         run: python verify_tersign.py spec/
       - name: held-out separators (5 vectors)

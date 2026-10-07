@@ -237,5 +237,109 @@
         "https://example.org/b": "62657461"
       }
     }
+  },
+  {
+    "basis": "-03 Section 5.3.2 (snippet_sha256): \"a non-null value that is not exactly 64 lowercase hexadecimal characters\"; a trailing \"\\n\" is not a lowercase hexadecimal character (65 characters). Case from babyblueviper1/preaction-governance-conformance#12 and babyblueviper1's proposal on x402-foundation/tsc#4 (issuecomment-6034322483)",
+    "computed": {
+      "changed_member": {
+        "appended": "\n",
+        "member": "snippet_sha256",
+        "url": "https://example.org/a"
+      },
+      "evidence_root": "3a91c9b64e8612fcdb6221e4d2c6742a98b1ddc28b4bc5f0ceb86a5da3f241e5"
+    },
+    "condition": "snippet_sha256_not_lowercase_hex64",
+    "designation": "MALFORMED",
+    "expect": "halt, malformed; reported conditions exactly {snippet_sha256_not_lowercase_hex64}: the snippet_sha256 of item a carries one trailing \"\\n\"; the root is recomputed over the members as carried, so a checker that accepts the value recomputes it and does not halt (the same set without the newline is that of evi-candidate-bytes-match-resolves, which resolves `resolved`)",
+    "expected_conditions": [
+      "snippet_sha256_not_lowercase_hex64"
+    ],
+    "id": "evi-snippet-sha256-trailing-newline-rejects",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "3a91c9b64e8612fcdb6221e4d2c6742a98b1ddc28b4bc5f0ceb86a5da3f241e5",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 2,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 2,
+        "sources": [
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8\n",
+            "url": "https://example.org/a"
+          },
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+            "url": "https://example.org/b"
+          }
+        ]
+      },
+      "verifier_holds_bytes_for": [
+        "https://example.org/a",
+        "https://example.org/b"
+      ],
+      "verifier_holds_bytes_hex": {
+        "https://example.org/a": "616c706861",
+        "https://example.org/b": "62657461"
+      }
+    }
+  },
+  {
+    "basis": "-03 Section 5.3.2 (retrieved_at): \"MUST be in UTC with the Z designator and exactly three fractional-second digits\"; a trailing \"\\n\" after the Z is outside that form. Case from babyblueviper1/preaction-governance-conformance#12 and babyblueviper1's proposal on x402-foundation/tsc#4 (issuecomment-6034322483)",
+    "computed": {
+      "changed_member": {
+        "appended": "\n",
+        "member": "retrieved_at",
+        "url": "https://example.org/a"
+      },
+      "evidence_root": "d50b4762c41dcaf09125bfc5a279a643729895566b8e14b5cccdcd1b51154f79"
+    },
+    "condition": "retrieved_at_not_canonical_form",
+    "designation": "MALFORMED",
+    "expect": "halt, malformed; reported conditions exactly {retrieved_at_not_canonical_form}: the retrieved_at of item a carries one trailing \"\\n\"; the root is recomputed over the members as carried, so a checker that accepts the value recomputes it and does not halt (the same set without the newline is that of evi-candidate-bytes-match-resolves, which resolves `resolved`)",
+    "expected_conditions": [
+      "retrieved_at_not_canonical_form"
+    ],
+    "id": "evi-retrieved-at-trailing-newline-rejects",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "d50b4762c41dcaf09125bfc5a279a643729895566b8e14b5cccdcd1b51154f79",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 2,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 2,
+        "sources": [
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z\n",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          },
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+            "url": "https://example.org/b"
+          }
+        ]
+      },
+      "verifier_holds_bytes_for": [
+        "https://example.org/a",
+        "https://example.org/b"
+      ],
+      "verifier_holds_bytes_hex": {
+        "https://example.org/a": "616c706861",
+        "https://example.org/b": "62657461"
+      }
+    }
   }
 ]

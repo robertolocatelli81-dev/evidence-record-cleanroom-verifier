@@ -182,6 +182,37 @@ def build():
                      "candidate_sha256": {URL_A: sha256_hex(BYTES_A_CHANGED), URL_B: sha256_hex(BYTES_B)},
                      "changed_byte": {"url": URL_A, "offset": 4, "from": "0x61", "to": "0x41"}},
     })
+    # 7., 8. vector 5 with ONE member of item a given a trailing "\n", root recomputed over the members as carried,
+    # so a checker that skips the form check reaches (b), recomputes the root and does not halt
+    for member, cond, vid, why in (
+            ("snippet_sha256", "snippet_sha256_not_lowercase_hex64",
+             "evi-snippet-sha256-trailing-newline-rejects",
+             "\"a non-null value that is not exactly 64 lowercase hexadecimal characters\"; a trailing \"\\n\" is "
+             "not a lowercase hexadecimal character (65 characters)"),
+            ("retrieved_at", "retrieved_at_not_canonical_form",
+             "evi-retrieved-at-trailing-newline-rejects",
+             "\"MUST be in UTC with the Z designator and exactly three fractional-second digits\"; a trailing \"\\n\" "
+             "after the Z is outside that form")):
+        a = entry(URL_A, D_ALPHA, "snippet")
+        a[member] = a[member] + "\n"
+        es = evidence_set([a, entry(URL_B, D_BETA, "snippet")])
+        v.append({
+            "id": vid,
+            "designation": "MALFORMED",
+            "condition": cond,
+            "expected_conditions": [cond],
+            "expect": "halt, malformed; reported conditions exactly {%s}: the %s of item a carries one trailing "
+                      "\"\\n\"; the root is recomputed over the members as carried, so a checker that accepts the "
+                      "value recomputes it and does not halt (the same set without the newline is that of "
+                      "evi-candidate-bytes-match-resolves, which resolves `resolved`)" % (cond, member),
+            "basis": "-03 Section 5.3.2 (%s): %s. Case from babyblueviper1/preaction-governance-conformance#12 and "
+                     "babyblueviper1's proposal on x402-foundation/tsc#4 (issuecomment-6034322483)" % (member, why),
+            "input": {"evidence_set": es,
+                      "verifier_holds_bytes_for": [URL_A, URL_B],
+                      "verifier_holds_bytes_hex": {URL_A: BYTES_A.hex(), URL_B: BYTES_B.hex()}},
+            "computed": {"evidence_root": es["evidence_root"], "changed_member": {"url": URL_A, "member": member,
+                                                                                 "appended": "\n"}},
+        })
     return v
 
 
