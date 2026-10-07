@@ -163,6 +163,8 @@ with no network; a separate job runs gitleaks (pinned release, default rules).
 
 Apache-2.0 (`LICENSE`, `NOTICE`). The upstream vectors are redistributed unmodified under their Apache-2.0 license
 with attribution to their authors (Tersign (@wowlegend), @Rul1an, @0rkz, @mohammedmessaoudene-cmd, @navigatorbuilds).
+One folder is not under Apache-2.0: `evidence-pinning-rev10-proposed/` is dedicated to the public domain under CC0 1.0
+(its `NOTICE.md`), so that the proposed vectors can be copied into another corpus without a licence condition.
 
 ## Authorship
 

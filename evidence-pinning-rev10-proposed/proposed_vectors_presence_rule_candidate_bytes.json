@@ -1,0 +1,241 @@
+[
+  {
+    "basis": "-03 Sections 5.3.2 and 5.4.1(a) with the presence-rule clarification proposed on x402-foundation/tsc#4 (issuecomment-6024083056, 2026-10-06, for review). The filed -03 wording does not settle this case: read literally, the general suppression rule of 5.4.1(a) would leave only resource_sha256_not_lowercase_hex64.",
+    "condition": "resource_sha256_present_for_full_resource",
+    "designation": "MALFORMED",
+    "expect": "halt, malformed; reported conditions exactly {resource_sha256_present_for_full_resource, resource_sha256_not_lowercase_hex64}: the presence condition tests non-null presence, independently of the digest's form",
+    "expected_conditions": [
+      "resource_sha256_not_lowercase_hex64",
+      "resource_sha256_present_for_full_resource"
+    ],
+    "id": "evi-resource-sha256-malformed-with-full-resource-reports-both-rejects",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "7125a9d8aff13aca214b2f8c3ac70412610164a108cebb502ca7f37644c40af2",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 1,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 1,
+        "sources": [
+          {
+            "content_kind": "full_resource",
+            "pinned": true,
+            "resource_sha256": "8ED3F6AD685B959EAD7022518E1AF76CD816F8E8EC7CCDDA1ED4018E8F2223F8",
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "basis": "-03 Sections 5.3.2 (content_kind, resource_sha256) and 5.4.1(a) (a condition is not evaluated if a member it takes as input failed its own form check); content_kind \"Full_Resource\" is outside the three-value domain",
+    "condition": "content_kind_absent_or_invalid_when_pinned",
+    "designation": "MALFORMED",
+    "expect": "halt, malformed; reported conditions exactly {content_kind_absent_or_invalid_when_pinned}; resource_sha256 is well-formed, so the only other candidate, resource_sha256_present_for_full_resource, is the dependent check a malformed content_kind suppresses",
+    "expected_conditions": [
+      "content_kind_absent_or_invalid_when_pinned"
+    ],
+    "id": "evi-content-kind-invalid-suppresses-full-resource-check-rejects",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "79fc919dc7bc1f41ebd2fe27e4aec4882711e72348286dd9c81704c0c3d2869c",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 1,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 1,
+        "sources": [
+          {
+            "content_kind": "Full_Resource",
+            "pinned": true,
+            "resource_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "basis": "-03 Sections 5.3.2 and 5.4.1(a); the second half of the proposed clarification (\"A malformed content_kind would still suppress the dependent check\")",
+    "condition": "content_kind_absent_or_invalid_when_pinned",
+    "designation": "MALFORMED",
+    "expect": "halt, malformed; reported conditions exactly {content_kind_absent_or_invalid_when_pinned, resource_sha256_not_lowercase_hex64}; resource_sha256_present_for_full_resource stays suppressed by the malformed content_kind",
+    "expected_conditions": [
+      "content_kind_absent_or_invalid_when_pinned",
+      "resource_sha256_not_lowercase_hex64"
+    ],
+    "id": "evi-content-kind-invalid-resource-sha256-malformed-rejects",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "79fc919dc7bc1f41ebd2fe27e4aec4882711e72348286dd9c81704c0c3d2869c",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 1,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 1,
+        "sources": [
+          {
+            "content_kind": "Full_Resource",
+            "pinned": true,
+            "resource_sha256": "8ED3F6AD685B959EAD7022518E1AF76CD816F8E8EC7CCDDA1ED4018E8F2223F8",
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "basis": "-03 Section 5.3.2 (\"MUST be absent or null when content_kind is full_resource\"; absent and null are equivalent) and 5.4.1(b), (d), (i)",
+    "computed": {
+      "evidence_root": "7125a9d8aff13aca214b2f8c3ac70412610164a108cebb502ca7f37644c40af2"
+    },
+    "designation": "ADDITIVE",
+    "expect": "accepted; NOT malformed; no condition (a null resource_sha256 is not a digest); the root recomputes under (b); no candidate content is held, so the per-item reason is content_not_held and the step resolves unknown",
+    "expected_conditions": [],
+    "expected_item_reasons": [
+      "content_not_held"
+    ],
+    "expected_token": "unknown",
+    "id": "evi-resource-sha256-null-with-full-resource-accepted",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "7125a9d8aff13aca214b2f8c3ac70412610164a108cebb502ca7f37644c40af2",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 1,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 1,
+        "sources": [
+          {
+            "content_kind": "full_resource",
+            "pinned": true,
+            "resource_sha256": null,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          }
+        ]
+      },
+      "verifier_holds_bytes_for": null
+    }
+  },
+  {
+    "basis": "-03 Section 5.4.1(d) and (i)",
+    "computed": {
+      "candidate_sha256": {
+        "https://example.org/a": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+        "https://example.org/b": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753"
+      },
+      "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960"
+    },
+    "designation": "RESOLUTION",
+    "expect": "step resolves `resolved`: the runner decodes verifier_holds_bytes_hex, computes SHA-256 over each item's bytes and finds it equal to snippet_sha256; per-item reasons content_matches, content_matches",
+    "expected_conditions": [],
+    "expected_item_reasons": [
+      "content_matches",
+      "content_matches"
+    ],
+    "expected_token": "resolved",
+    "id": "evi-candidate-bytes-match-resolves",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 2,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 2,
+        "sources": [
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          },
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+            "url": "https://example.org/b"
+          }
+        ]
+      },
+      "verifier_holds_bytes_for": [
+        "https://example.org/a",
+        "https://example.org/b"
+      ],
+      "verifier_holds_bytes_hex": {
+        "https://example.org/a": "616c706861",
+        "https://example.org/b": "62657461"
+      }
+    }
+  },
+  {
+    "basis": "-03 Section 5.4.1(d) (\"A mismatch resolves unknown for that item and MUST NOT halt\") and (i) (conjunction)",
+    "computed": {
+      "candidate_sha256": {
+        "https://example.org/a": "8d643ce4e296934ce21ff9f8247046ff8324103951e805afb0f889c13440da24",
+        "https://example.org/b": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753"
+      },
+      "changed_byte": {
+        "from": "0x61",
+        "offset": 4,
+        "to": "0x41",
+        "url": "https://example.org/a"
+      },
+      "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960"
+    },
+    "designation": "UNKNOWN",
+    "expect": "unknown; MUST NOT halt; per-item reasons content_differs (item a: one byte of the held bytes differs from those of evi-candidate-bytes-match-resolves) and content_matches (item b)",
+    "expected_conditions": [],
+    "expected_item_reasons": [
+      "content_differs",
+      "content_matches"
+    ],
+    "expected_token": "unknown",
+    "id": "evi-candidate-bytes-one-byte-changed-unknown",
+    "input": {
+      "evidence_set": {
+        "evidence_root": "7f6addf189cd884e3be1919e470daeba0628bd7f84afefe1492f3fdcd86e4960",
+        "evidence_set_version": "ao-evidence-set-v1",
+        "fully_pinned": true,
+        "pinned_count": 2,
+        "retrieved_at": "2026-09-01T12:00:00.000Z",
+        "source_count": 2,
+        "sources": [
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+            "url": "https://example.org/a"
+          },
+          {
+            "content_kind": "snippet",
+            "pinned": true,
+            "retrieved_at": "2026-09-01T12:00:00.000Z",
+            "snippet_sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+            "url": "https://example.org/b"
+          }
+        ]
+      },
+      "verifier_holds_bytes_for": [
+        "https://example.org/a",
+        "https://example.org/b"
+      ],
+      "verifier_holds_bytes_hex": {
+        "https://example.org/a": "616c706841",
+        "https://example.org/b": "62657461"
+      }
+    }
+  }
+]
