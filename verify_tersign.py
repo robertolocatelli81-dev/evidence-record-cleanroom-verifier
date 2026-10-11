@@ -753,46 +753,131 @@ KINDS = {
 # ════════════════════════════════════════════════════════════════════════════════════════
 # 6. Verdict for one vector.
 # ════════════════════════════════════════════════════════════════════════════════════════
-# `input` members a kind is KNOWN to use (2026-10-10): derived from the suite itself — the union, per kind, of the `input`
-# members present in the manifest's vectors. The suite's manifest does not say what a verifier does with an `input` member
-# it does not define, so this verifier keeps the manifest's verdict (unknown members are ignored by the kind functions)
-# and REPORTS them beside the row (`unknown_input_members`) — never a reject: the specification is Tersign's, not ours.
-_INPUT_MEMBERS: Dict[str, Set[str]] = {}
+# `input` members — CLOSED, FIXED lists (input schema 1, 2026-10-11; replaces the 2026-10-10 version that LEARNED the
+# known members from the suite under verification, so a member planted in that suite's vectors became "known" and was
+# never named). Nothing here is learned at run time; nothing here changes a verdict.
+#
+# The suite's manifest does not say what a verifier does with an `input` member it does not define. This verifier keeps
+# the manifest's verdict (the kind functions ignore members they do not read) and REPORTS, per vector, two lists:
+#   * `input_members_not_read`  — every member present that is NOT in _INPUT_READ[kind], the members this verifier's
+#     kind function for `kind` actually reads (written from the functions above; a test checks it against the reads
+#     the functions make on every suite vector and against the source). Includes members the 0.5.3 vectors carry and
+#     the manifest permits without reading them (chain_set `witness`, `attestations`).
+#   * `unknown_input_members`   — the subset that is ALSO absent from _INPUT_SUITE_053_NOT_READ[kind], the members the
+#     69 vectors of suite 0.5.3 (upstream 0eda3038) carry and this verifier does not read, frozen here on 2026-10-11.
+#     "Unknown" therefore means: neither read by this verifier nor present in the suite version it was written against.
+# Paths are RFC 6901 JSON Pointers, relative to `input` for the two input lists ("/witness", "/records/1/x") and relative
+# to the vector for `unknown_vector_members` ("/extra"); only the TOPMOST member outside a list
+# is named (nothing below it is walked). Members under a CONTENT position (payload, offer, decision_evidence, prefix,
+# payload_text) are hashed or parsed content, not input members, and are never walked. A LEAF is a member read as one
+# value; whatever it holds is the verdict's business. A one-element Python list [S] means "a JSON array whose object
+# elements follow S". An unknown `kind` has no list: the vector rejects as input_reject and its two input lists are empty
+# (`unknown_vector_members` does not depend on the kind and is still reported).
+INPUT_SCHEMA_VERSION = "1"
+LEAF = "leaf"
+CONTENT = "content"
+_CHAIN_RECORD = {"seq": LEAF, "artifact_digest": LEAF, "prev_digest": LEAF, "link": LEAF}
+_INPUT_READ: Dict[str, Dict[str, Any]] = {
+    "digest_recompute": {"payload": CONTENT, "expected_digest": LEAF},
+    "canonical_bytes": {"payload_text": CONTENT, "payload": CONTENT, "claimed_canonical": LEAF},
+    "chain_link": {"artifact_digest": LEAF, "prev_digest": LEAF, "seq": LEAF, "expected_link": LEAF},
+    "anchor_relation": {"subject_digest": LEAF, "anchored_digest": LEAF},
+    "chain_set": {"head": {"seq": LEAF, "digest": LEAF}, "records": [_CHAIN_RECORD]},
+    "chain_commitment": {"head": {"seq": LEAF, "digest": LEAF, "acc": LEAF}, "records": [_CHAIN_RECORD]},
+    "phase_claim": {"record": {"economic_phase": LEAF}, "presented_as": LEAF},
+    "independence_claim": {"claimed": LEAF, "record_commits": LEAF, "parties": LEAF, "attestations": [{"by": LEAF}],
+                           "covers": LEAF, "settlement_result": {"success": LEAF, "transaction": LEAF, "network": LEAF},
+                           "deliverable_bytes": LEAF, "deliverable_digest": LEAF},
+    "offer_binding": {"offer": CONTENT, "receipt": {"offerDigest": LEAF}},
+    "decision_evidence_binding": {"record": {"decisionEvidenceDigest": LEAF}, "decision_evidence": CONTENT},
+    "boundary_binding": {"prefix": CONTENT, "covered_through": LEAF,
+                         "boundary_event": {"event": LEAF, "ruleVersion": LEAF, "fromSuite": LEAF, "toSuite": LEAF,
+                                            "prefixDigest": LEAF, "position": LEAF, "attestedPrefixLength": LEAF}},
+}
+_INPUT_SUITE_053_NOT_READ: Dict[str, Dict[str, Any]] = {
+    # MANIFEST "witnessed_inclusion": witness material "is permitted and NOT load-bearing" (p24, n34);
+    # MANIFEST "duplicate_sequence": "the issuer's `attestations` are permitted and not read" (p28, n39).
+    "chain_set": {"witness": {"checkpoint": {"origin": LEAF, "tree_size": LEAF, "cosignatures": LEAF, "quorum": LEAF},
+                              "inclusion": [{"seq": LEAF, "leaf_index": LEAF}]},
+                  "attestations": [{"by": LEAF, "role": LEAF}]},
+    # MANIFEST "commitment_derivation": "Who delivered is not read by the derivation"; `payTo` is named in "field_naming".
+    "independence_claim": {"attestations": [{"role": LEAF}], "deliverable_signer": LEAF, "payTo": LEAF},
+    "decision_evidence_binding": {"record": {"outcome": LEAF}},
+    "phase_claim": {"record": {"amount": LEAF, "asset": LEAF, "deliverable_digest": LEAF}},
+}
+# Top-level vector members: the verifier reads `kind` and `input`; the 0.5.3 vectors also carry these (metadata).
+_VECTOR_READ = ("kind", "input")
+_VECTOR_SUITE_053_NOT_READ = ("id", "expect", "reason", "description", "provenance")
 
 
-def learn_input_members(spec_dir: str) -> Dict[str, Set[str]]:
-    """Per kind, every `input` member that appears in at least one vector of the manifest (valid or reject)."""
-    out: Dict[str, Set[str]] = {}
-    with open(os.path.join(spec_dir, "MANIFEST.json"), "r", encoding="utf-8") as fh:
-        manifest = load_json(fh.read())
-    for entry in manifest.get("vectors", []):
-        try:
-            with open(os.path.join(spec_dir, "vectors", entry["file"]), "r", encoding="utf-8") as fh:
-                vec = load_json(fh.read())
-        except Exception:  # noqa: BLE001 — unreadable vectors have their own row in the harness
-            continue
-        kind = entry.get("kind") or (vec.get("kind") if isinstance(vec, dict) else None)
-        inp = vec.get("input") if isinstance(vec, dict) else None
-        if isinstance(kind, str) and isinstance(inp, dict):
-            out.setdefault(kind, set()).update(inp.keys())
-    _INPUT_MEMBERS.clear(); _INPUT_MEMBERS.update(out)
+def _merge_schema(a: Any, b: Any) -> Any:
+    if isinstance(a, dict) and isinstance(b, dict):
+        out = dict(a)
+        for k, v in b.items():
+            out[k] = _merge_schema(out[k], v) if k in out else v
+        return out
+    if isinstance(a, list) and isinstance(b, list):
+        return [_merge_schema(a[0], b[0])]
+    return a          # LEAF/CONTENT on either side: the read schema wins (nothing below it is walked)
+
+
+_INPUT_DEFINED_053: Dict[str, Dict[str, Any]] = {k: _merge_schema(v, _INPUT_SUITE_053_NOT_READ.get(k, {}))
+                                                 for k, v in _INPUT_READ.items()}
+
+
+def _pointer(path: List[Any]) -> str:
+    return "".join("/" + (str(p) if isinstance(p, int) else p.replace("~", "~0").replace("/", "~1")) for p in path)
+
+
+def _outside(value: Any, schema: Any, path: List[Any], out: List[str]) -> None:
+    """Appends the pointer of every member of `value` not in `schema` (topmost only)."""
+    if isinstance(schema, dict) and isinstance(value, dict):
+        for k in value:
+            if k not in schema:
+                out.append(_pointer(path + [k]))
+            else:
+                _outside(value[k], schema[k], path + [k], out)
+    elif isinstance(schema, list) and isinstance(value, list):
+        for i, v in enumerate(value):
+            _outside(v, schema[0], path + [i], out)
+
+
+def input_member_report(vec: Any, kind: Optional[str] = None) -> Dict[str, List[str]]:
+    """Single-vector path: the three lists, never a verdict. All three empty when `vec` is not an object; the two input
+    lists empty when `input` is not an object or `kind` has no list (those vectors reject on their own), while
+    `unknown_vector_members` is still filled from the vector's top-level members."""
+    out: Dict[str, List[str]] = {"unknown_input_members": [], "input_members_not_read": [], "unknown_vector_members": []}
+    if not isinstance(vec, dict):
+        return out
+    out["unknown_vector_members"] = sorted(_pointer([k]) for k in vec
+                                           if k not in _VECTOR_READ and k not in _VECTOR_SUITE_053_NOT_READ)
+    kind = kind or vec.get("kind")
+    inp = vec.get("input")
+    if not isinstance(kind, str) or kind not in _INPUT_READ or not isinstance(inp, dict):
+        return out
+    nr: List[str] = []
+    _outside(inp, _INPUT_READ[kind], [], nr)
+    un: List[str] = []
+    _outside(inp, _INPUT_DEFINED_053[kind], [], un)
+    out["input_members_not_read"] = nr
+    out["unknown_input_members"] = un
     return out
 
 
-def unknown_input_members(vec: Dict[str, Any], kind: Optional[str] = None, known: Optional[Dict[str, Set[str]]] = None) -> List[str]:
-    """`input` members outside the set the suite itself uses for `kind` (see learn_input_members): reported, not judged."""
-    known = known if known is not None else _INPUT_MEMBERS
-    kind = kind or vec.get("kind")
-    inp = vec.get("input")
-    if not isinstance(inp, dict) or kind not in known:
-        return []
-    return sorted(k for k in inp if k not in known[kind])
+def unknown_input_members(vec: Any, kind: Optional[str] = None) -> List[str]:
+    """`input` members neither read by this verifier nor present in suite 0.5.3 for `kind`: reported, never judged."""
+    return input_member_report(vec, kind)["unknown_input_members"]
+
+
+def input_members_not_read(vec: Any, kind: Optional[str] = None) -> List[str]:
+    """`input` members this verifier does not read for `kind` (superset of unknown_input_members): reported, never judged."""
+    return input_member_report(vec, kind)["input_members_not_read"]
 
 
 def verify_vector(vec: Dict[str, Any], kind: Optional[str] = None) -> Tuple[str, Optional[str], str]:
     """Returns (verdict, reason, detail); verdict in {"valid", "reject"}; reason None when valid."""
     kind = kind or vec.get("kind")
-    fn = KINDS.get(kind)
+    fn = KINDS.get(kind) if isinstance(kind, str) else None   # 2026-10-11: a list/object `kind` raised TypeError (no verdict)
     if fn is None:
         return "reject", R_INPUT, f"unknown kind {kind!r}"
     inp = vec.get("input")
@@ -826,15 +911,14 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
     with open(os.path.join(spec_dir, "MANIFEST.json"), "r", encoding="utf-8") as fh:
         manifest = load_json(fh.read())
     rows = []
-    known = learn_input_members(spec_dir)
     for entry in manifest["vectors"]:
         path = os.path.join(spec_dir, "vectors", entry["file"])
         verdict, reason, detail = verify_file(path, entry.get("kind"))
         try:
             with open(path, "r", encoding="utf-8") as fh:
-                _unknown = unknown_input_members(load_json(fh.read()), entry.get("kind"), known)
-        except Exception:  # noqa: BLE001 — a vector that does not even load has its own row above
-            _unknown = []
+                members = input_member_report(load_json(fh.read()), entry.get("kind"))
+        except Exception:  # noqa: BLE001 — a vector that does not even load has its own row above (a reject)
+            members = input_member_report(None)
         expect = entry.get("expect")                  # REVIEW FIX F5: a manifest entry without `expect` is discordant, not a KeyError
         if flip_expect:
             expect = "reject" if expect == "valid" else "valid"
@@ -845,7 +929,7 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
                      "verdict": verdict, "reason": reason, "detail": detail,
                      "verdict_ok": verdict_ok, "reason_ok": reason_ok,
                      "concordant": verdict_ok and (reason_ok is not False),
-                     "unknown_input_members": _unknown})   # reported, never judged (2026-10-10)
+                     **members})   # reported, never judged (input schema 1, 2026-10-11)
     n = len(rows)
     import datetime
     return {"suite": manifest.get("suite"), "version": manifest.get("version"), "verifier": __version__,
@@ -854,13 +938,19 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
             "argv": [os.path.basename(sys.argv[0])] + [os.path.relpath(a) if os.path.exists(a) else a for a in sys.argv[1:]],
             "run_at": datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec="seconds"),
             "spec_dir": os.path.relpath(spec_dir),
-            "ablations": sorted(_ABLATE), "flip_expect": flip_expect,
+            "ablations": sorted(_ABLATE), "flip_expect": flip_expect, "input_schema": INPUT_SCHEMA_VERSION,
             "n": n,
             "verdict_concordant": sum(r["verdict_ok"] for r in rows),
             "reason_named": sum(r["expect_reason"] is not None for r in rows),
             "reason_concordant": sum(bool(r["reason_ok"]) for r in rows),
             "concordant": sum(r["concordant"] for r in rows),
             "rows": rows}
+
+
+def _shown(pointers: List[str]) -> str:
+    """Member pointers as JSON strings, ASCII-escaped: a member name taken from the vector cannot add a line to the
+    report (\\n), and a lone surrogate cannot make the print raise (review 2026-10-11)."""
+    return ", ".join(json.dumps(p) for p in pointers)
 
 
 def print_report(res: Dict[str, Any]) -> None:
@@ -872,7 +962,9 @@ def print_report(res: Dict[str, Any]) -> None:
         exp = str(r["expect"]) + (f"/{r['expect_reason']}" if r["expect_reason"] else "")   # REVIEW FIX F5: expect may be None
         got = r["verdict"] + (f"/{r['reason']}" if r["reason"] else "")
         print(f"{mark} {r['file']:<56} {str(r['kind']):<26} expect={exp:<34} got={got:<34} {r['detail']}"
-              + (f"  [input members not read by this verifier: {', '.join(r['unknown_input_members'])}]" if r.get("unknown_input_members") else ""))   # REVIEW FIX F3: kind may be None
+              + (f"  [input members not read: {_shown(r['input_members_not_read'])}]" if r.get("input_members_not_read") else "")
+              + (f"  [UNKNOWN input members (not read, not in suite 0.5.3): {_shown(r['unknown_input_members'])}]" if r.get("unknown_input_members") else "")
+              + (f"  [UNKNOWN vector members: {_shown(r['unknown_vector_members'])}]" if r.get("unknown_vector_members") else ""))   # REVIEW FIX F3: kind may be None
     print(f"verdict concordant {res['verdict_concordant']}/{res['n']}; "
           f"reason concordant {res['reason_concordant']}/{res['reason_named']} (where the manifest names one); "
           f"fully concordant {res['concordant']}/{res['n']}")
@@ -971,8 +1063,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         print_report(res)
     else:
         print(f"fully concordant {res['concordant']}/{res['n']}")
-    if args.json:
-        with open(args.json, "w", encoding="utf-8") as fh:
+    if args.json:   # errors=backslashreplace: a lone surrogate (only possible inside a JSON string) is written as \uXXXX
+        with open(args.json, "w", encoding="utf-8", errors="backslashreplace") as fh:
             json.dump(res, fh, indent=1, ensure_ascii=False)
     return 0 if res["concordant"] == res["n"] else 1
 

@@ -53,7 +53,7 @@ All numbers below were produced on Python 3.9.25, 3.11.2 and 3.13.15 with identi
 |---|---|---|
 | suite: verdicts / named reasons | **69/69**, **40/40** | `python3 verify_tersign.py spec/` |
 | held-out separator vectors (ours, 5) | 5/5 | `python3 verify_tersign.py heldout/` |
-| unit tests | 57/57 | `python3 -m unittest -v test_verify_tersign` |
+| unit tests | 67/67 | `python3 -m unittest -v test_verify_tersign` |
 | positive control: every `expect` flipped | 0/69 concordant, exit 1 | `python3 verify_tersign.py spec/ --flip-expect` |
 | positive control: mutations of the 29 valid vectors | 66/66 become reject | `python3 verify_tersign.py spec/ --mutate` |
 | positive controls on live-ledger values, independent of `expect` | 11/11 | `python3 positive_controls.py spec/` |
@@ -119,7 +119,8 @@ the readings, the frozen hashes and the controls are in that folder's README; th
   reject it before computing");
 - inputs the manifest's reason vocabulary does not cover (unreadable file, JSON nesting deeper than the parser
   allows, lone surrogates in a string field, an unknown `kind`) reject with the extra reason `input_reject`: a
-  reject, never a crash.
+  reject, never a crash (until 2026-10-11 a `kind` that was a JSON array or object raised `TypeError` with no verdict;
+  fixed, with a test).
 
 K1–K3 were applied on 2026-09-29 after the out-of-suite differential exposed them; each is motivated by the
 clause quoted in the code, has positive and negative unit tests, and a held-out vector in `heldout/`. Two
@@ -170,12 +171,55 @@ One folder is not under Apache-2.0: `evidence-pinning-rev10-proposed/` is dedica
 
 Noûs, AI agent operating under a revocable mandate from Roberto Locatelli, who reviews and is accountable.
 
-## Members not read (added 2026-10-10)
+## Members not read (added 2026-10-10, corrected 2026-10-11)
 
 The suite's manifest does not say what a verifier does with an `input` member it does not define. This verifier keeps
-the manifest's verdict (such members are ignored by the kind functions) and REPORTS them: `learn_input_members()` takes,
-per kind, the union of the `input` members present in the suite's own vectors, `unknown_input_members()` lists what a
-vector carries beyond that, and the harness prints it beside the row (`unknown_input_members` in `run_suite` rows). On
-the 69 vectors of 0.5.3 the list is empty for every row (`TestUnknownInputMembers`); a vector with a member nobody defined is named, never judged —
-the specification is Tersign's. Measured on afbd40a (2026-10-10): `input.x_unknown_2026` on a valid vector stayed `valid`
-with nothing in the output.
+the manifest's verdict (the kind functions ignore members they do not read) and REPORTS such members beside the row;
+a report never changes a verdict.
+
+The 2026-10-10 version learned the "known" members per kind from the suite it was verifying (`learn_input_members`).
+A member planted in that suite's own vectors therefore became known and was never named: measured on bd0cd8c with
+`x_injected_2026` planted at the top of `input`, 0/1 rows named it with one vector changed, 0/56 with 56, 0/69 with
+all 69; `unknown_input_members(vec)` on a single vector named nothing unless a suite had been run before in the same
+process (0/206 planted object positions in a fresh process, 69/206 after a suite run: the 69 top-level ones, none
+nested); and members this verifier does not read, such as chain_set
+`witness`, were never listed.
+
+Since 2026-10-11 (input schema 1, `INPUT_SCHEMA_VERSION`) the lists are FIXED in `verify_tersign.py` and nothing is
+learned at run time:
+
+- `_INPUT_READ[kind]` — the members the kind function for `kind` reads (on some path), nested where it reads inside
+  an object or an array of objects. A unit test checks it three ways: every member the functions touch on the 69
+  vectors, the 5 held-out vectors and the `--mutate` mutants is in it; every path in it is touched on at least one of
+  those inputs (the list is not padded); and every quoted name the functions read with `.get("x")`, `["x"]` or
+  `"x" in` is a name in it (a static check of the source, which also covers branches no vector reaches).
+- `_INPUT_SUITE_053_NOT_READ[kind]` — the members the 69 vectors of suite 0.5.3 carry and this verifier does not read,
+  frozen on 2026-10-11 (chain_set `witness` and `attestations`, which the manifest permits without reading them;
+  independence_claim `attestations[].role`, `deliverable_signer`, `payTo`; decision_evidence_binding `record.outcome`;
+  phase_claim `record.amount`, `record.asset`, `record.deliverable_digest`). A unit test checks it equals what the
+  0.5.3 vectors carry beyond the read list, no more and no less.
+
+Each row of `run_suite`, and `input_member_report(vec, kind)` for a single vector, carries three lists of RFC 6901
+pointers, the first two relative to `input` and the third relative to the vector (the topmost member only; members
+inside `payload`, `payload_text`, `offer`, `decision_evidence` and `prefix` are content, not walked):
+
+- `input_members_not_read` — present, not in `_INPUT_READ[kind]`;
+- `unknown_input_members` — present, in neither list: not read by this verifier and not in suite 0.5.3;
+- `unknown_vector_members` — top-level vector members other than `kind`, `input` and the metadata the 0.5.3 vectors
+  carry (`id`, `expect`, `reason`, `description`, `provenance`).
+
+`run_suite` uses the manifest's `kind`, the one the verdict uses. A vector whose `kind` has no list (an unknown kind)
+rejects as `input_reject` with both `input` lists empty; `unknown_vector_members` does not depend on the kind and is
+still filled. The text report prints the lists beside the row, each pointer as a JSON string (`json.dumps`, ASCII
+escapes), so a member name cannot add a line to the report or make the print raise; `--json` writes a lone surrogate
+in a member name as its `\uXXXX` escape. Measured on the fixed version (2026-10-11, Python 3.9.25 / 3.11.2 /
+3.13.15): on the 69 vectors `unknown_input_members` and `unknown_vector_members` are empty on every row and
+`input_members_not_read` is non-empty on 30 rows (on the 5 held-out vectors the three counts are 0, 0 and 2 rows);
+a member planted at each of the 206 object positions of the 69 vectors is named in 206/206,
+in a fresh process and after a suite run, with verdict, reason and detail unchanged; in `run_suite` it is named
+whether one vector or all 69 carry it (`TestClosedInputMembers`, generative over every position, 13 key spellings
+and 11 value types; a duplicate member is a `canonicalization_reject` with nothing reported). The 11 tests of the
+class run against bd0cd8c give 4 failures and 7 errors: the two `run_suite` tests fail on the defect itself (no row
+names the planted member), the single-vector test on the first planted member (bare name instead of a pointer, after
+the suite run an earlier test made), the report-output test because no list is printed, the other seven on the new
+fields and functions.

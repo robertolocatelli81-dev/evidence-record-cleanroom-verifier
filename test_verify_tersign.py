@@ -411,20 +411,379 @@ class TestHarness(unittest.TestCase):
             V._ABLATE.clear()
 
 
-class TestUnknownInputMembers(unittest.TestCase):
-    """2026-10-10: `input` members a kind never uses in the suite are REPORTED beside the row, never judged (review 2026-10-11:
-    the reporting had no test — a copy without it kept every test green)."""
+# ── closed input members (input schema 1, 2026-10-11) ───────────────────────────────────────────────────────────────
+# Test-side helpers, written independently of the verifier's own lists: CONTENT names are hashed/parsed content, never walked.
+_CONTENT = ("payload", "payload_text", "offer", "decision_evidence", "prefix")
+_KEYS = ["x_new_2026", "", "~0", "a/b", "ünï", "Head", "seq ", "records[0]", "link\n", "witness", "seq", "kind", "input"]
+_VALUES = [1, None, True, -1, 2 ** 70, "s", [], {}, [{"a": 1}], {"b": {"c": []}}, "0x" + "11" * 32]
+
+
+def _defined_here(kind, pos, key):
+    """The one collision in _KEYS: `witness` is a 0.5.3 chain_set member (MANIFEST witnessed_inclusion), so it is not new there."""
+    return kind == "chain_set" and pos == () and key == "witness"
+
+
+def _ptr(path):
+    return "".join("/" + (str(x) if isinstance(x, int) else x.replace("~", "~0").replace("/", "~1")) for x in path)
+
+
+def _positions(inp, path=()):
+    """Every JSON object reachable inside `input` (input itself included), outside CONTENT members."""
+    out = [path]
+    for k, v in inp.items():
+        if not path and k in _CONTENT:
+            continue
+        if isinstance(v, dict):
+            out += _positions(v, path + (k,))
+        elif isinstance(v, list):
+            for i, e in enumerate(v):
+                if isinstance(e, dict):
+                    out += _positions(e, path + (k, i))
+    return out
+
+
+def _at(obj, path):
+    for x in path:
+        obj = obj[x]
+    return obj
+
+
+def _suite_vectors():
+    import json
+    with open(os.path.join(SPEC, "MANIFEST.json"), encoding="utf-8") as fh:
+        m = json.load(fh)
+    for e in m["vectors"]:
+        with open(os.path.join(SPEC, "vectors", e["file"]), encoding="utf-8") as fh:
+            yield e, json.load(fh)
+
+
+class TestClosedInputMembers(unittest.TestCase):
+    """Review 2026-10-11: the 2026-10-10 version LEARNED the known members from the suite under verification, so a member
+    planted in that suite's vectors was never named (0/1 and 0/56 rows), the single-vector path named nothing unless a
+    suite had been run before, and members the verifier does not read (chain_set `witness`) were never listed. The lists
+    are now fixed in the code; these tests are generative over every object position of every suite vector and must fail
+    on bd0cd8c (positive control, RAPPORTO.md)."""
 
     @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
-    def test_suite_rows_report_nothing_and_a_planted_member_is_named(self):
-        res = V.run_suite(SPEC)
-        self.assertEqual([r["file"] for r in res["rows"] if r["unknown_input_members"]], [])
-        known = V.learn_input_members(SPEC)
-        self.assertIn("witness", known["chain_set"])   # p24: the suite's own extra member is known, not reported
-        vec = {"kind": "chain_set", "input": {"head": {}, "records": [], "x_unknown_2026": 1}}
-        self.assertEqual(V.unknown_input_members(vec, known=known), ["x_unknown_2026"])
-        self.assertEqual(V.unknown_input_members({"kind": "nope", "input": {"a": 1}}, known=known), [])   # unknown kind: rejected elsewhere
-        self.assertEqual(V.unknown_input_members({"kind": "chain_set", "input": None}, known=known), [])
+    def test_run_suite_names_members_planted_in_the_suite_itself(self):
+        """Every object position of every vector gets a new member, all in ONE suite: every row names all of them."""
+        import copy, json, shutil, tempfile
+        V._ABLATE.clear()
+        base = {r["file"]: r for r in V.run_suite(SPEC)["rows"]}
+        d = tempfile.mkdtemp(); shutil.copytree(SPEC, os.path.join(d, "s")); s = os.path.join(d, "s")
+        expected = {}
+        for e, vec in _suite_vectors():
+            v = copy.deepcopy(vec); planted = []
+            for n, pos in enumerate(_positions(vec["input"])):
+                key = _KEYS[n % len(_KEYS)]
+                if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key):
+                    key = "x_new_2026_%d" % n
+                _at(v["input"], pos)[key] = _VALUES[n % len(_VALUES)]
+                planted.append(_ptr(pos + (key,)))
+            expected[e["file"]] = sorted(planted)
+            with open(os.path.join(s, "vectors", e["file"]), "w", encoding="utf-8") as fh:
+                json.dump(v, fh)
+        res = V.run_suite(s)
+        self.assertEqual(res["n"], 69)
+        n_planted = 0
+        for r in res["rows"]:
+            self.assertEqual(sorted(r["unknown_input_members"]), expected[r["file"]], r["file"])
+            self.assertEqual((r["verdict"], r["reason"], r["detail"]), (base[r["file"]]["verdict"], base[r["file"]]["reason"], base[r["file"]]["detail"]), r["file"])
+            n_planted += len(expected[r["file"]])
+        self.assertEqual(res["concordant"], 69)
+        self.assertGreater(n_planted, 69)
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_run_suite_one_planted_vector(self):
+        """A member planted in ONE vector of the suite is named on that row (bd0cd8c: 0/1)."""
+        import json, shutil, tempfile
+        d = tempfile.mkdtemp(); shutil.copytree(SPEC, os.path.join(d, "s")); s = os.path.join(d, "s")
+        p = os.path.join(s, "vectors", "p1-live-genesis-receipt.json")
+        with open(p, encoding="utf-8") as fh:
+            v = json.load(fh)
+        v["input"]["x_unknown_2026"] = 1
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump(v, fh)
+        rows = {r["file"]: r["unknown_input_members"] for r in V.run_suite(s)["rows"]}
+        self.assertEqual(rows.pop("p1-live-genesis-receipt.json"), ["/x_unknown_2026"])
+        self.assertEqual([f for f, u in rows.items() if u], [])
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_single_vector_path_every_position_every_key(self):
+        """verify_vector + unknown_input_members on one vector, no suite run before: one planted member at each position,
+        each key in _KEYS, each value in _VALUES -> exactly that pointer, verdict/reason/detail unchanged."""
+        import copy
+        V._ABLATE.clear()
+        checked = 0
+        for e, vec in _suite_vectors():
+            base = V.verify_vector(vec, e["kind"])
+            self.assertEqual(V.unknown_input_members(vec, e["kind"]), [], e["file"])
+            for pos in _positions(vec["input"]):
+                for j, key in enumerate(_KEYS):
+                    if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key):
+                        continue
+                    v = copy.deepcopy(vec)
+                    _at(v["input"], pos)[key] = _VALUES[j % len(_VALUES)]
+                    self.assertEqual(V.unknown_input_members(v, e["kind"]), [_ptr(pos + (key,))], (e["file"], pos, key))
+                    self.assertEqual(V.unknown_input_members(v), [_ptr(pos + (key,))], (e["file"], pos, key))   # kind from the vector
+                    self.assertEqual(V.verify_vector(v, e["kind"]), base, (e["file"], pos, key))
+                    checked += 1
+        self.assertGreater(checked, 1000)
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_members_not_read_are_listed(self):
+        """`input_members_not_read` names what the verifier does not read, also when the suite carries it (witness)."""
+        import copy
+        rows = {r["file"]: r for r in V.run_suite(SPEC)["rows"]}
+        self.assertEqual(rows["p24-witnessed-complete-set.json"]["input_members_not_read"], ["/witness"])
+        self.assertEqual(rows["n34-witnessed-inclusion-not-completeness.json"]["input_members_not_read"], ["/witness"])
+        self.assertEqual(rows["p28-issuer-sequence-distinct-seq.json"]["input_members_not_read"], ["/attestations"])
+        self.assertEqual(rows["n28-authority-reduction-substitution.json"]["input_members_not_read"], ["/record/outcome"])
+        self.assertEqual(sum(bool(r["input_members_not_read"]) for r in rows.values()), 30)
+        self.assertEqual(sum(bool(r["unknown_input_members"]) for r in rows.values()), 0)
+        self.assertEqual(sum(bool(r["unknown_vector_members"]) for r in rows.values()), 0)
+        for e, vec in _suite_vectors():                      # a planted member is also "not read"; below a not-read member, nothing new
+            base_nr = V.input_members_not_read(vec, e["kind"])
+            for pos in _positions(vec["input"]):
+                v = copy.deepcopy(vec); _at(v["input"], pos)["x_new_2026"] = 1
+                under = any(_ptr(pos).startswith(b + "/") or _ptr(pos) == b for b in base_nr)
+                want = base_nr if under else sorted(base_nr + [_ptr(pos + ("x_new_2026",))])
+                self.assertEqual(sorted(V.input_members_not_read(v, e["kind"])), sorted(want), (e["file"], pos))
+                self.assertEqual(set(V.unknown_input_members(v, e["kind"])) - set(V.input_members_not_read(v, e["kind"]) + [_ptr(pos + ("x_new_2026",))]), set())
+
+    def test_odd_shapes_never_raise_and_name_nothing_spurious(self):
+        for vec in (None, [], "x", 1, {}, {"kind": "chain_set"}, {"kind": "chain_set", "input": None}, {"kind": "chain_set", "input": []},
+                    {"kind": [], "input": {"a": 1}}, {"kind": {"k": 1}, "input": {"a": 1}}, {"kind": "nope", "input": {"a": 1}},
+                    {"kind": "chain_set", "input": {"head": [], "records": {"seq": 1}}},
+                    {"kind": "chain_set", "input": {"head": {"seq": {"deep": 1}}, "records": [1, "x", None, [], {"seq": 1, "z": 2}]}}):
+            r = V.input_member_report(vec)
+            self.assertEqual(set(r), {"unknown_input_members", "input_members_not_read", "unknown_vector_members"})
+            if isinstance(vec, dict) and isinstance(vec.get("input"), (dict, type(None), list)):
+                self.assertEqual(V.verify_vector(vec)[0] if isinstance(vec, dict) and vec else "reject", "reject")
+        r = V.input_member_report({"kind": "chain_set", "input": {"head": {"seq": {"deep": 1}}, "records": [1, "x", None, [], {"seq": 1, "z": 2}]}})
+        self.assertEqual(r["unknown_input_members"], ["/records/4/z"])            # a LEAF holding an object is not walked
+        self.assertEqual(V.input_member_report({"kind": "nope", "input": {"a": 1}})["unknown_input_members"], [])   # unknown kind: rejects
+        self.assertEqual(V.input_member_report({"kind": "chain_set", "input": {}, "extra": 1})["unknown_vector_members"], ["/extra"])
+        v = {"kind": "digest_recompute", "input": {"head": {"seq": 1}, "records": [], "witness": {}}}   # the kind the VERDICT uses wins
+        self.assertEqual(V.unknown_input_members(v, "chain_set"), [])
+        self.assertEqual(V.unknown_input_members(v), ["/head", "/records", "/witness"])
+        for k in ([], {}, [1], {"a": 1}):                                              # was: TypeError, no verdict
+            self.assertEqual(V.verify_vector({"kind": k, "input": {}})[:2], ("reject", V.R_INPUT))
+
+    def test_duplicate_member_rejects_and_reports_nothing(self):
+        import json, tempfile
+        d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "vectors"))
+        texts = {"top.json": '{"kind":"chain_link","input":{"seq":1,"seq":2}}',
+                 "nested.json": '{"kind":"chain_set","input":{"head":{"seq":1,"seq":1,"digest":"0x%s"},"records":[]}}' % ("11" * 32),
+                 "vec.json": '{"kind":"chain_link","kind":"chain_link","input":{}}'}
+        for n, t in texts.items():
+            with open(os.path.join(d, "vectors", n), "w", encoding="utf-8") as fh:
+                fh.write(t)
+        with open(os.path.join(d, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+            json.dump({"vectors": [{"file": n, "expect": "reject"} for n in texts]}, fh)
+        for r in V.run_suite(d)["rows"]:
+            self.assertEqual((r["verdict"], r["reason"]), ("reject", V.R_CANON), r["file"])
+            self.assertEqual((r["unknown_input_members"], r["input_members_not_read"], r["unknown_vector_members"]), ([], [], []))
+
+    def test_read_list_matches_what_the_functions_read(self):
+        """_INPUT_READ is checked two ways: (1) every member the kind functions touch (get / [] / in) on every suite and
+        held-out vector and every --mutate mutant is in the list; (2) every name in the list is a quoted literal in the
+        source of the function (or its helpers)."""
+        import inspect, json
+
+        class T(dict):
+            def __init__(self, d, path, seen):
+                super().__init__(d); self._p = path; self._s = seen
+            def _w(self, k, v):
+                self._s.add(self._p + (k,))
+                if isinstance(v, dict):
+                    return T(v, self._p + (k,), self._s)
+                if isinstance(v, list):
+                    return [T(x, self._p + (k, "[]"), self._s) if isinstance(x, dict) else x for x in v]
+                return v
+            def __getitem__(self, k):
+                return self._w(k, dict.__getitem__(self, k))
+            def get(self, k, default=None):
+                self._s.add(self._p + (k,))
+                return self._w(k, dict.__getitem__(self, k)) if dict.__contains__(self, k) else default
+            def __contains__(self, k):
+                self._s.add(self._p + (k,)); return dict.__contains__(self, k)
+
+        def allowed(schema, path):
+            for x in path:
+                if x == "[]":
+                    if not isinstance(schema, list):
+                        return False
+                    schema = schema[0]; continue
+                if not isinstance(schema, dict) or x not in schema:
+                    return False
+                schema = schema[x]
+                if schema in (V.LEAF, V.CONTENT):
+                    return True
+            return True
+
+        vecs = []
+        for d in (SPEC, os.path.join(HERE, "heldout")):
+            with open(os.path.join(d, "MANIFEST.json"), encoding="utf-8") as fh:
+                for e in json.load(fh)["vectors"]:
+                    with open(os.path.join(d, "vectors", e["file"]), encoding="utf-8") as fh2:
+                        vec = json.load(fh2)
+                    vecs.append((e["kind"], vec))
+                    if e["expect"] == "valid":
+                        vecs += [(e["kind"], m) for _, m in V.mutations_for(vec)]
+        V._ABLATE.clear()
+        touched = {}
+        for kind, vec in vecs:
+            seen = set()
+            try:
+                V.KINDS[kind](T(vec["input"], (), seen))
+            except V.Reject:
+                pass
+            bad = [p for p in seen if not allowed(V._INPUT_READ[kind], p)]
+            self.assertEqual(bad, [], kind)
+            touched.setdefault(kind, set()).update(seen)
+
+        def spaths(sc, pre=()):
+            out = set()
+            if isinstance(sc, list):
+                return spaths(sc[0], pre + ("[]",))
+            if isinstance(sc, dict):
+                for k, v in sc.items():
+                    out.add(pre + (k,)); out |= spaths(v, pre + (k,))
+            return out
+        for kind, schema in V._INPUT_READ.items():   # review 2026-10-11: not padded — every listed path is read somewhere
+            self.assertEqual(sorted(spaths(schema) - touched.get(kind, set())), [], kind)
+        helpers = {"chain_set": [V._chain_set_links], "chain_commitment": [V._chain_set_links], "independence_claim": [V.derive_commitments]}
+        for kind, schema in V._INPUT_READ.items():
+            src = "".join(inspect.getsource(f) for f in [V.KINDS[kind]] + helpers.get(kind, []))
+            def names(sc):
+                if isinstance(sc, list):
+                    return names(sc[0])
+                return [n for k, v in sc.items() for n in [k] + (names(v) if isinstance(v, (dict, list)) else [])] if isinstance(sc, dict) else []
+            for n in names(schema):
+                self.assertTrue('"%s"' % n in src, (kind, n))
+            # review 2026-10-11, static: every quoted name the functions read with .get("x"), ["x"] or "x" in is a name in
+            # the list — also on branches no vector reaches (a read added there without updating the list fails here)
+            import ast, textwrap
+            lits = set()
+            for f in [V.KINDS[kind]] + helpers.get(kind, []):
+                for nd in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(f)))):
+                    if (isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute) and nd.func.attr == "get"
+                            and nd.args and isinstance(nd.args[0], ast.Constant) and isinstance(nd.args[0].value, str)):
+                        lits.add(nd.args[0].value)
+                    elif isinstance(nd, ast.Subscript):
+                        sl = nd.slice.value if isinstance(nd.slice, getattr(ast, "Index", ())) else nd.slice
+                        if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+                            lits.add(sl.value)
+                    elif (isinstance(nd, ast.Compare) and isinstance(nd.left, ast.Constant) and isinstance(nd.left.value, str)
+                          and any(isinstance(o, (ast.In, ast.NotIn)) for o in nd.ops)):
+                        lits.add(nd.left.value)
+            self.assertEqual(sorted(lits - set(names(schema))), [], kind)
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_frozen_suite_list_is_exactly_the_0_5_3_members(self):
+        """The frozen list is not padded and not short: the members the 0.5.3 vectors carry beyond what is read are
+        exactly _INPUT_SUITE_053_NOT_READ (this reads the suite only to CHECK the fixed list; nothing is learned)."""
+        import json
+        with open(os.path.join(SPEC, "MANIFEST.json"), encoding="utf-8") as fh:
+            self.assertEqual(json.load(fh)["version"], "0.5.3")
+
+        def paths(sc, pre=()):
+            out = set()
+            if isinstance(sc, list):
+                return paths(sc[0], pre + ("[]",))
+            if isinstance(sc, dict):
+                for k, v in sc.items():
+                    out.add(pre + (k,)); out |= paths(v, pre + (k,))
+            return out
+
+        def walk(v, pre, out):
+            if isinstance(v, dict):
+                for k, x in v.items():
+                    out.add(pre + (k,))
+                    if not (len(pre) == 0 and k in _CONTENT):
+                        walk(x, pre + (k,), out)
+            elif isinstance(v, list):
+                for x in v:
+                    if isinstance(x, dict):
+                        walk(x, pre + ("[]",), out)
+
+        measured = {}
+        for e, vec in _suite_vectors():
+            walk(vec["input"], (), measured.setdefault(e["kind"], set()))
+        for kind in V._INPUT_READ:
+            read = paths(V._INPUT_READ[kind]); frozen = paths(V._INPUT_SUITE_053_NOT_READ.get(kind, {}))
+            leaf_under = {p for p in measured.get(kind, set()) if any(p[:len(r)] == r and len(p) > len(r) and
+                          not isinstance(self._node(V._INPUT_READ[kind], r), (dict, list)) for r in read)}
+            self.assertEqual(frozen, (measured.get(kind, set()) - read - leaf_under) | (frozen & read), kind)
+            self.assertTrue(frozen - read <= measured.get(kind, set()), kind)
+            self.assertTrue(measured.get(kind, set()) - leaf_under <= read | frozen, kind)
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_vector_metadata_list_is_exactly_the_0_5_3_members(self):
+        """Review 2026-10-11: _VECTOR_SUITE_053_NOT_READ is the top-level members the 0.5.3 vectors carry besides kind/input."""
+        tops = set()
+        for _, vec in _suite_vectors():
+            tops |= set(vec)
+        self.assertEqual(sorted(tops - set(V._VECTOR_READ)), sorted(V._VECTOR_SUITE_053_NOT_READ))
+
+    def test_report_kind_and_vector_members(self):
+        """Review 2026-10-11: run_suite reports with the kind the VERDICT uses (the manifest's); an unknown kind leaves the
+        two input lists empty but still names top-level vector members (sorted); the run records the input schema."""
+        import json, tempfile
+        d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "vectors"))
+        texts = {"a.json": {"kind": "chain_set", "input": {"head": {"seq": 1}, "records": [], "witness": {}}},
+                 "b.json": {"kind": "nope", "input": {"q": 1}, "z_extra": 1, "a_extra": 2}}
+        for n, t in texts.items():
+            with open(os.path.join(d, "vectors", n), "w", encoding="utf-8") as fh:
+                json.dump(t, fh)
+        with open(os.path.join(d, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+            json.dump({"vectors": [{"file": "a.json", "kind": "digest_recompute", "expect": "reject"},
+                                   {"file": "b.json", "expect": "reject"}]}, fh)
+        res = V.run_suite(d)
+        self.assertEqual(res["input_schema"], "1")
+        rows = {r["file"]: r for r in res["rows"]}
+        self.assertEqual(rows["a.json"]["unknown_input_members"], ["/head", "/records", "/witness"])
+        b = rows["b.json"]
+        self.assertEqual((b["verdict"], b["reason"]), ("reject", V.R_INPUT))
+        self.assertEqual((b["unknown_input_members"], b["input_members_not_read"], b["unknown_vector_members"]),
+                         ([], [], ["/a_extra", "/z_extra"]))
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_cli_prints_members_escaped_and_never_crashes_on_them(self):
+        """Review 2026-10-11: the text report prints the three lists beside the row, each pointer as an escaped JSON string;
+        a member name with a newline cannot add a line, a lone surrogate cannot crash the print or --json (was: rc 1)."""
+        import json, shutil, subprocess, sys, tempfile
+        d = tempfile.mkdtemp(); s = os.path.join(d, "s"); shutil.copytree(SPEC, s)
+        p = os.path.join(s, "vectors", "p1-live-genesis-receipt.json")
+        with open(p, encoding="utf-8") as fh:
+            v = json.load(fh)
+        v["input"]["x\nOK forged-row"] = 1
+        v["input"]["\ud800y"] = 2
+        v["x_top"] = 3
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump(v, fh)                         # ensure_ascii: the surrogate is an escape in the file
+        out = os.path.join(d, "o.json")
+        env = dict(os.environ, PYTHONIOENCODING="utf-8")
+        r = subprocess.run([sys.executable, os.path.join(HERE, "verify_tersign.py"), s, "--json", out],
+                           capture_output=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr.decode("utf-8", "replace")[-300:])
+        text = r.stdout.decode("utf-8")
+        self.assertEqual([l for l in text.splitlines() if l.startswith("OK forged")], [])
+        row = [l for l in text.splitlines() if "p1-live-genesis-receipt.json" in l][0]
+        both = '"/x\\nOK forged-row", "/\\ud800y"'   # the input lists follow the file's member order
+        self.assertIn('[input members not read: %s]' % both, row)
+        self.assertIn('[UNKNOWN input members (not read, not in suite 0.5.3): %s]' % both, row)
+        self.assertIn('[UNKNOWN vector members: "/x_top"]', row)
+        with open(out, encoding="utf-8") as fh:
+            rows = {x["file"]: x for x in json.load(fh)["rows"]}
+        self.assertEqual(rows["p1-live-genesis-receipt.json"]["unknown_input_members"], ["/x\nOK forged-row", "/\ud800y"])
+
+    @staticmethod
+    def _node(sc, path):
+        for x in path:
+            sc = sc[0] if x == "[]" else sc[x]
+        return sc
 
 
 class TestReviewAdditions(unittest.TestCase):
