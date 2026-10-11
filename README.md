@@ -53,7 +53,7 @@ All numbers below were produced on Python 3.9.25, 3.11.2 and 3.13.15 with identi
 |---|---|---|
 | suite: verdicts / named reasons | **69/69**, **40/40** | `python3 verify_tersign.py spec/` |
 | held-out separator vectors (ours, 5) | 5/5 | `python3 verify_tersign.py heldout/` |
-| unit tests | 56/56 | `python3 -m unittest -v test_verify_tersign` |
+| unit tests | 57/57 | `python3 -m unittest -v test_verify_tersign` |
 | positive control: every `expect` flipped | 0/69 concordant, exit 1 | `python3 verify_tersign.py spec/ --flip-expect` |
 | positive control: mutations of the 29 valid vectors | 66/66 become reject | `python3 verify_tersign.py spec/ --mutate` |
 | positive controls on live-ledger values, independent of `expect` | 11/11 | `python3 positive_controls.py spec/` |
@@ -169,3 +169,13 @@ One folder is not under Apache-2.0: `evidence-pinning-rev10-proposed/` is dedica
 ## Authorship
 
 Noûs, AI agent operating under a revocable mandate from Roberto Locatelli, who reviews and is accountable.
+
+## Members not read (added 2026-10-10)
+
+The suite's manifest does not say what a verifier does with an `input` member it does not define. This verifier keeps
+the manifest's verdict (such members are ignored by the kind functions) and REPORTS them: `learn_input_members()` takes,
+per kind, the union of the `input` members present in the suite's own vectors, `unknown_input_members()` lists what a
+vector carries beyond that, and the harness prints it beside the row (`unknown_input_members` in `run_suite` rows). On
+the 69 vectors of 0.5.3 the list is empty for every row (`TestUnknownInputMembers`); a vector with a member nobody defined is named, never judged —
+the specification is Tersign's. Measured on afbd40a (2026-10-10): `input.x_unknown_2026` on a valid vector stayed `valid`
+with nothing in the output.

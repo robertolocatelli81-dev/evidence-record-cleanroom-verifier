@@ -753,6 +753,42 @@ KINDS = {
 # ════════════════════════════════════════════════════════════════════════════════════════
 # 6. Verdict for one vector.
 # ════════════════════════════════════════════════════════════════════════════════════════
+# `input` members a kind is KNOWN to use (2026-10-10): derived from the suite itself — the union, per kind, of the `input`
+# members present in the manifest's vectors. The suite's manifest does not say what a verifier does with an `input` member
+# it does not define, so this verifier keeps the manifest's verdict (unknown members are ignored by the kind functions)
+# and REPORTS them beside the row (`unknown_input_members`) — never a reject: the specification is Tersign's, not ours.
+_INPUT_MEMBERS: Dict[str, Set[str]] = {}
+
+
+def learn_input_members(spec_dir: str) -> Dict[str, Set[str]]:
+    """Per kind, every `input` member that appears in at least one vector of the manifest (valid or reject)."""
+    out: Dict[str, Set[str]] = {}
+    with open(os.path.join(spec_dir, "MANIFEST.json"), "r", encoding="utf-8") as fh:
+        manifest = load_json(fh.read())
+    for entry in manifest.get("vectors", []):
+        try:
+            with open(os.path.join(spec_dir, "vectors", entry["file"]), "r", encoding="utf-8") as fh:
+                vec = load_json(fh.read())
+        except Exception:  # noqa: BLE001 — unreadable vectors have their own row in the harness
+            continue
+        kind = entry.get("kind") or (vec.get("kind") if isinstance(vec, dict) else None)
+        inp = vec.get("input") if isinstance(vec, dict) else None
+        if isinstance(kind, str) and isinstance(inp, dict):
+            out.setdefault(kind, set()).update(inp.keys())
+    _INPUT_MEMBERS.clear(); _INPUT_MEMBERS.update(out)
+    return out
+
+
+def unknown_input_members(vec: Dict[str, Any], kind: Optional[str] = None, known: Optional[Dict[str, Set[str]]] = None) -> List[str]:
+    """`input` members outside the set the suite itself uses for `kind` (see learn_input_members): reported, not judged."""
+    known = known if known is not None else _INPUT_MEMBERS
+    kind = kind or vec.get("kind")
+    inp = vec.get("input")
+    if not isinstance(inp, dict) or kind not in known:
+        return []
+    return sorted(k for k in inp if k not in known[kind])
+
+
 def verify_vector(vec: Dict[str, Any], kind: Optional[str] = None) -> Tuple[str, Optional[str], str]:
     """Returns (verdict, reason, detail); verdict in {"valid", "reject"}; reason None when valid."""
     kind = kind or vec.get("kind")
@@ -790,9 +826,15 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
     with open(os.path.join(spec_dir, "MANIFEST.json"), "r", encoding="utf-8") as fh:
         manifest = load_json(fh.read())
     rows = []
+    known = learn_input_members(spec_dir)
     for entry in manifest["vectors"]:
         path = os.path.join(spec_dir, "vectors", entry["file"])
         verdict, reason, detail = verify_file(path, entry.get("kind"))
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                _unknown = unknown_input_members(load_json(fh.read()), entry.get("kind"), known)
+        except Exception:  # noqa: BLE001 — a vector that does not even load has its own row above
+            _unknown = []
         expect = entry.get("expect")                  # REVIEW FIX F5: a manifest entry without `expect` is discordant, not a KeyError
         if flip_expect:
             expect = "reject" if expect == "valid" else "valid"
@@ -802,7 +844,8 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
         rows.append({"file": entry["file"], "kind": entry.get("kind"), "expect": expect, "expect_reason": exp_reason,
                      "verdict": verdict, "reason": reason, "detail": detail,
                      "verdict_ok": verdict_ok, "reason_ok": reason_ok,
-                     "concordant": verdict_ok and (reason_ok is not False)})
+                     "concordant": verdict_ok and (reason_ok is not False),
+                     "unknown_input_members": _unknown})   # reported, never judged (2026-10-10)
     n = len(rows)
     import datetime
     return {"suite": manifest.get("suite"), "version": manifest.get("version"), "verifier": __version__,
@@ -828,7 +871,8 @@ def print_report(res: Dict[str, Any]) -> None:
         mark = "OK  " if r["concordant"] else "DISC"
         exp = str(r["expect"]) + (f"/{r['expect_reason']}" if r["expect_reason"] else "")   # REVIEW FIX F5: expect may be None
         got = r["verdict"] + (f"/{r['reason']}" if r["reason"] else "")
-        print(f"{mark} {r['file']:<56} {str(r['kind']):<26} expect={exp:<34} got={got:<34} {r['detail']}")   # REVIEW FIX F3: kind may be None
+        print(f"{mark} {r['file']:<56} {str(r['kind']):<26} expect={exp:<34} got={got:<34} {r['detail']}"
+              + (f"  [input members not read by this verifier: {', '.join(r['unknown_input_members'])}]" if r.get("unknown_input_members") else ""))   # REVIEW FIX F3: kind may be None
     print(f"verdict concordant {res['verdict_concordant']}/{res['n']}; "
           f"reason concordant {res['reason_concordant']}/{res['reason_named']} (where the manifest names one); "
           f"fully concordant {res['concordant']}/{res['n']}")

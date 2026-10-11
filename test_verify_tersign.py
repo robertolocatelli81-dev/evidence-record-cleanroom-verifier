@@ -411,6 +411,22 @@ class TestHarness(unittest.TestCase):
             V._ABLATE.clear()
 
 
+class TestUnknownInputMembers(unittest.TestCase):
+    """2026-10-10: `input` members a kind never uses in the suite are REPORTED beside the row, never judged (review 2026-10-11:
+    the reporting had no test — a copy without it kept every test green)."""
+
+    @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
+    def test_suite_rows_report_nothing_and_a_planted_member_is_named(self):
+        res = V.run_suite(SPEC)
+        self.assertEqual([r["file"] for r in res["rows"] if r["unknown_input_members"]], [])
+        known = V.learn_input_members(SPEC)
+        self.assertIn("witness", known["chain_set"])   # p24: the suite's own extra member is known, not reported
+        vec = {"kind": "chain_set", "input": {"head": {}, "records": [], "x_unknown_2026": 1}}
+        self.assertEqual(V.unknown_input_members(vec, known=known), ["x_unknown_2026"])
+        self.assertEqual(V.unknown_input_members({"kind": "nope", "input": {"a": 1}}, known=known), [])   # unknown kind: rejected elsewhere
+        self.assertEqual(V.unknown_input_members({"kind": "chain_set", "input": None}, known=known), [])
+
+
 class TestReviewAdditions(unittest.TestCase):
     """Added by the 2026-09-29 adversarial code review: each test kills a mutant that survived the shipped bench
     (M08 M12 M13 M14 M17 M25 M28 M37 M40 M41 M43 M50 M52 M54) or pins a review fix (F1-F5)."""
