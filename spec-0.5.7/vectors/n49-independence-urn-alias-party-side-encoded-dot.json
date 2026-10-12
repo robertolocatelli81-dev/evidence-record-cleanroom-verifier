@@ -1,0 +1,19 @@
+{
+  "id": "n49-independence-urn-alias-party-side-encoded-dot",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "The folds apply to the parties list as well as the attestors, and in order: decode, then fold case, then strip trailing punctuation. The party is written org:Caldera-Robotics%2e (an encoded trailing `.`), the attestor org:caldera-robotics. An engine that normalizes attestors only, or strips trailing punctuation before decoding, keeps the two distinct and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:Caldera-Robotics%2e",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:caldera-robotics"
+      }
+    ]
+  }
+}

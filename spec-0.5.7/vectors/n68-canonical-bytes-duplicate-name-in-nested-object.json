@@ -1,0 +1,11 @@
+{
+  "id": "n68-canonical-bytes-duplicate-name-in-nested-object",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "A duplicate name in an object nested inside an array inside an object: in {\"x\":[{\"a\":1,\"a\":2}]} the inner object repeats `a`. The names of every object must be unique, at any depth, so the text is not I-JSON and has no canonical form. A duplicate-name check that reads the outermost object only, or that opens no name scope for an object inside an array or inside another object, misses the duplicate and accepts the last-wins form {\"x\":[{\"a\":2}]}.",
+  "input": {
+    "payload_text": "{\"x\":[{\"a\":1,\"a\":2}]}",
+    "claimed_canonical": "{\"x\":[{\"a\":2}]}"
+  }
+}

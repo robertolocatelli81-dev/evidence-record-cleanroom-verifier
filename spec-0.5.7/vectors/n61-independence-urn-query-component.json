@@ -1,0 +1,19 @@
+{
+  "id": "n61-independence-urn-query-component",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "A `?` in an identifier. It begins a query component (RFC 3986 section 3.4), and whether a query changes which party an identifier names is the scheme's rule, which this verifier does not own: the identifier is not evaluable and the claim fails closed. This attestor is outside the parties with or without its query, so the reject comes from the identifier rule alone; an engine that compares the form as written, or drops the query, accepts. Under the same rule org:caldera-robotics? never counts as an attestor outside the transaction. The class has no accepting side: no identifier containing `?` is evaluable.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-west?role=witness"
+      }
+    ]
+  }
+}

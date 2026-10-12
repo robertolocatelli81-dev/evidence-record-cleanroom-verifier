@@ -1,0 +1,19 @@
+{
+  "id": "n59-independence-urn-alias-dot-segment",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by a dot-segment. agent:caldera/./ap-pilot resolves, by RFC 3986's remove_dot_segments (sections 5.2.4 and 6.2.2.3), to the party agent:caldera/ap-pilot. This verifier does not own a scheme's resolution rules, so a path with a `.` or `..` segment is not evaluable and the claim fails closed. An engine that compares the form as written counts it as an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "agent:caldera/./ap-pilot"
+      }
+    ]
+  }
+}

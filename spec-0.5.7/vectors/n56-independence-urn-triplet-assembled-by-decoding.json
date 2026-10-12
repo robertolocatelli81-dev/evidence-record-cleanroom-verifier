@@ -1,0 +1,19 @@
+{
+  "id": "n56-independence-urn-triplet-assembled-by-decoding",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Decoding runs once, in one left-to-right pass. The attestor ends in %%37%34: the first `%` begins no triplet, and %37 %34 decode to `7` and `4`, so one pass leaves %74 and the identifier is not evaluable. An engine that repeats the unreserved decode until nothing changes decodes the %74 it assembled into `t`, gets org:trustline-custody/eu-west, a party outside the transaction, and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-wes%%37%34"
+      }
+    ]
+  }
+}

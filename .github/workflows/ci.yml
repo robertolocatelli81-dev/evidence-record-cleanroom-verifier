@@ -25,6 +25,8 @@ jobs:
         run: python --version
       - name: spec integrity (hash-pinned upstream vectors, unmodified)
         run: cd spec && sha256sum -c ../SPEC_SHA256SUMS
+      - name: spec integrity v0.5.7 (hash-pinned upstream vectors, unmodified)
+        run: cd spec-0.5.7 && sha256sum -c ../SPEC_0.5.7_SHA256SUMS
       - name: unit tests
         run: python -m unittest -v test_verify_tersign
       - name: unit tests — crypto profile runner (PR #11)
@@ -63,7 +65,21 @@ jobs:
           # the two must fail for the pre-fix reason (the form check lets the value through and the run goes on), not for a
           # root mismatch: vector 7 ends unknown, vector 8 resolved
           python -c "import json,sys; d=json.load(open(sys.argv[1])); f=sorted((r['id'], r['bbv']['outcome']) for r in d['rows'] if not r['bbv_pass']); print('rc', sys.argv[2], 'failing', f); sys.exit(0 if sys.argv[2] == '1' and f == [('evi-retrieved-at-trailing-newline-rejects', 'resolved'), ('evi-snippet-sha256-trailing-newline-rejects', 'unknown')] else 1)" "$RUNNER_TEMP/pc.json" "$rc"
-      - name: suite (69 vectors, expect 69/69 verdict and 40/40 reason)
+      - name: suite v0.5.7 (162 vectors, expect 162/162 verdict and 106/106 reason)
+        run: python verify_tersign.py spec-0.5.7/
+      - name: positive control v0.5.7 — flipped expect must be 0/162 (exit 1)
+        run: |
+          set +e
+          out=$(python verify_tersign.py spec-0.5.7/ --flip-expect --quiet); rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ] || [ "$out" != "fully concordant 0/162" ]; then echo "flip-expect did NOT fail as required"; exit 1; fi
+      - name: positive control v0.5.7 — mutated valid vectors must all reject
+        run: python verify_tersign.py spec-0.5.7/ --mutate --quiet
+      - name: positive controls on live-ledger values v0.5.7
+        run: python positive_controls.py spec-0.5.7/
+      - name: ablations v0.5.7 (one rule off at a time)
+        run: python ablation_study.py spec-0.5.7/
+      - name: suite v0.5.3 (69 vectors, expect 69/69 verdict and 40/40 reason)
         run: python verify_tersign.py spec/
       - name: held-out separators (5 vectors)
         run: python verify_tersign.py heldout/

@@ -1,0 +1,15 @@
+{
+  "id": "n80-phase-claim-unrecognized-phase-presented-as-itself",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "n18's unrecognized phase token, presented as that same token. The phase vocabulary is closed (funding, delivery, settlement, refund, reversal): a record's phase must be one of them, and an uninterpretable phase does not verify as any phase, its own spelling included. n18 presents the token as delivery, so phase equality alone rejects it and the vocabulary clause stays unisolated; here only the vocabulary clause can reject. p7 is the accepting twin.",
+  "input": {
+    "record": {
+      "economic_phase": "settled_and_delivered",
+      "amount": "10",
+      "asset": "USDC"
+    },
+    "presented_as": "settled_and_delivered"
+  }
+}

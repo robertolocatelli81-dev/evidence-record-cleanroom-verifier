@@ -1,0 +1,104 @@
+=== run_logged header ===
+cmd      : python -m unittest -v test_verify_tersign
+cwd      : . (repository root)
+interp   : Python 3.9.25  (wrapper sys.version: 3.9.25)
+started  : 2026-10-12T14:27:28+02:00
+ended    : 2026-10-12T14:27:45+02:00
+exit     : 0
+=== stdout ===
+=== stderr ===
+test_decision_evidence (test_verify_tersign.TestBindings) ... ok
+test_digest_recompute_and_canonical (test_verify_tersign.TestBindings) ... ok
+test_k2_number_domain_before_claimed_canonical (test_verify_tersign.TestBindings) ... ok
+test_offer (test_verify_tersign.TestBindings) ... ok
+test_anchor (test_verify_tersign.TestChain) ... ok
+test_commitment (test_verify_tersign.TestChain) ... ok
+test_complete_set_valid (test_verify_tersign.TestChain) ... ok
+test_duplicate_seq_rejects_on_duplicate_not_continuity (test_verify_tersign.TestChain) ... ok
+test_genesis_prev_must_be_null (test_verify_tersign.TestChain) ... ok
+test_head_digest_mismatch (test_verify_tersign.TestChain) ... ok
+test_link_genesis_uses_32_zero_bytes (test_verify_tersign.TestChain) ... ok
+test_missing_seq (test_verify_tersign.TestChain) ... ok
+test_prev_mismatch_and_stale_link (test_verify_tersign.TestChain) ... ok
+test_seq_token_class (test_verify_tersign.TestChain) ... ok
+test_witness_and_attestations_not_read (test_verify_tersign.TestChain) ... ok
+test_cli_prints_members_escaped_and_never_crashes_on_them (test_verify_tersign.TestClosedInputMembers)
+Review 2026-10-11: the text report prints the three lists beside the row, each pointer as an escaped JSON string; ... ok
+test_duplicate_member_rejects_and_reports_nothing (test_verify_tersign.TestClosedInputMembers) ... ok
+test_frozen_suite_list_is_exactly_the_0_5_3_members (test_verify_tersign.TestClosedInputMembers)
+The frozen list is not padded and not short: the members the 0.5.3 vectors carry beyond what is read are ... ok
+test_members_not_read_are_listed (test_verify_tersign.TestClosedInputMembers)
+`input_members_not_read` names what the verifier does not read, also when the suite carries it (witness). ... ok
+test_odd_shapes_never_raise_and_name_nothing_spurious (test_verify_tersign.TestClosedInputMembers) ... ok
+test_read_list_matches_what_the_functions_read (test_verify_tersign.TestClosedInputMembers)
+_INPUT_READ is checked two ways: (1) every member the kind functions touch (get / [] / in) on every suite and ... ok
+test_report_kind_and_vector_members (test_verify_tersign.TestClosedInputMembers)
+Review 2026-10-11: run_suite reports with the kind the VERDICT uses (the manifest's); an unknown kind leaves the ... ok
+test_run_suite_names_members_planted_in_the_suite_itself (test_verify_tersign.TestClosedInputMembers)
+Every object position of every vector gets a new member, all in ONE suite: every row names all of them. ... ok
+test_run_suite_one_planted_vector (test_verify_tersign.TestClosedInputMembers)
+A member planted in ONE vector of the suite is named on that row (bd0cd8c: 0/1). ... ok
+test_single_vector_path_every_position_every_key (test_verify_tersign.TestClosedInputMembers)
+verify_vector + unknown_input_members on one vector, no suite run before: one planted member at each position, ... ok
+test_vector_metadata_list_is_exactly_the_0_5_3_members (test_verify_tersign.TestClosedInputMembers)
+Review 2026-10-11: _VECTOR_SUITE_053_NOT_READ is the top-level members the 0.5.3 vectors carry besides kind/input. ... ok
+test_ablation_changes_verdicts (test_verify_tersign.TestHarness) ... ok
+test_suite_concordant_and_flip_discordant (test_verify_tersign.TestHarness) ... ok
+test_unknown_kind_and_crash_are_rejects (test_verify_tersign.TestHarness) ... ok
+test_address_fold (test_verify_tersign.TestIdentity) ... ok
+test_scheme_fold (test_verify_tersign.TestIdentity) ... ok
+test_commitment_scope (test_verify_tersign.TestIndependence) ... ok
+test_delivery_derivation (test_verify_tersign.TestIndependence) ... ok
+test_k1_claimed_absent_is_silence (test_verify_tersign.TestIndependence) ... ok
+test_outside_attestor (test_verify_tersign.TestIndependence) ... ok
+test_silence (test_verify_tersign.TestIndependence) ... ok
+test_unknown_claim_fails_closed (test_verify_tersign.TestIndependence) ... ok
+test_bool_is_not_int (test_verify_tersign.TestJCS) ... ok
+test_control_chars (test_verify_tersign.TestJCS) ... ok
+test_duplicate_names_rejected (test_verify_tersign.TestJCS) ... ok
+test_ijson_integer_bounds (test_verify_tersign.TestJCS) ... ok
+test_integer_like_keys_are_strings (test_verify_tersign.TestJCS) ... ok
+test_lone_surrogate_rejected (test_verify_tersign.TestJCS) ... ok
+test_nan_infinity_rejected (test_verify_tersign.TestJCS) ... ok
+test_no_whitespace_nested (test_verify_tersign.TestJCS) ... ok
+test_number_token_class (test_verify_tersign.TestJCS) ... ok
+test_rfc8785_key_order_alphabetical (test_verify_tersign.TestJCS) ... ok
+test_rfc8785_string_escaping_example (test_verify_tersign.TestJCS) ... ok
+test_utf16_order_beats_codepoint (test_verify_tersign.TestJCS) ... ok
+test_multiblock (test_verify_tersign.TestKeccak) ... ok
+test_not_sha3 (test_verify_tersign.TestKeccak) ... ok
+test_public_vectors (test_verify_tersign.TestKeccak) ... ok
+test_boundary (test_verify_tersign.TestPhaseBoundary) ... ok
+test_k3_no_coverage_claimed (test_verify_tersign.TestPhaseBoundary) ... ok
+test_phase (test_verify_tersign.TestPhaseBoundary) ... ok
+test_address_exact_length (test_verify_tersign.TestReviewAdditions) ... ok
+test_boundary_attested_length_within_prefix (test_verify_tersign.TestReviewAdditions) ... ok
+test_chain_link_seq_bounds_reason (test_verify_tersign.TestReviewAdditions) ... ok
+test_crash_paths_are_rejects (test_verify_tersign.TestReviewAdditions) ... ok
+test_digest_strip_whitespace (test_verify_tersign.TestReviewAdditions) ... ok
+test_harness_reason_counts_and_can_fail (test_verify_tersign.TestReviewAdditions) ... ok
+test_huge_head_seq_rejects_fast (test_verify_tersign.TestReviewAdditions) ... ok
+test_phase_vocabulary_refund_reversal (test_verify_tersign.TestReviewAdditions) ... ok
+test_records_beyond_head_rejected (test_verify_tersign.TestReviewAdditions) ... ok
+test_rfc8785_key_order_example_utf16_units (test_verify_tersign.TestReviewAdditions) ... ok
+test_short_escapes_b_f (test_verify_tersign.TestReviewAdditions) ... ok
+test_verify_file_never_raises (test_verify_tersign.TestReviewAdditions) ... ok
+test_053_vectors_are_byte_identical_in_057 (test_verify_tersign.TestSuite057) ... ok
+test_057_vectors_carry_no_member_outside_the_053_lists (test_verify_tersign.TestSuite057) ... ok
+test_address_alias_any_scheme_any_reference (test_verify_tersign.TestSuite057) ... ok
+test_bound_object_without_canonical_form_takes_the_criterion_reason (test_verify_tersign.TestSuite057) ... ok
+test_chain_link_seq_domain (test_verify_tersign.TestSuite057) ... ok
+test_digest_lowercase_never_admits_non_ascii (test_verify_tersign.TestSuite057) ... ok
+test_dot_segments_and_query (test_verify_tersign.TestSuite057) ... ok
+test_generative_identifiers_against_the_oracle (test_verify_tersign.TestSuite057) ... ok
+test_half_raw_pair_is_the_same_name (test_verify_tersign.TestSuite057) ... ok
+test_payload_text_surrogate_before_number_any_order (test_verify_tersign.TestSuite057) ... ok
+test_percent_triplets_every_byte_both_cases (test_verify_tersign.TestSuite057) ... ok
+test_suite_057_concordant_flip_mutate (test_verify_tersign.TestSuite057) ... ok
+test_transaction_blank_after_strip_commits_to_no_settlement (test_verify_tersign.TestSuite057) ... ok
+test_whitespace_strip_every_code_point (test_verify_tersign.TestSuite057) ... ok
+
+----------------------------------------------------------------------
+Ran 81 tests in 16.467s
+
+OK

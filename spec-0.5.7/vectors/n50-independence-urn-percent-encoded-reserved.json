@@ -1,0 +1,19 @@
+{
+  "id": "n50-independence-urn-percent-encoded-reserved",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "A percent-encoding of a character that is not unreserved. RFC 3986 does not make %2F equivalent to `/`, and some schemes decode it anyway, so a verifier that owns no scheme's rules cannot decide which party the identifier names: it is not evaluable, and the claim fails closed as n14's does. This attestor is outside the parties under either reading, so the reject comes from the identifier rule alone; an engine that leaves the triplet in place, or decodes it, accepts. The same rule stops org:caldera-robotics%2F from counting as an attestor outside the transaction.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody%2Feu-west"
+      }
+    ]
+  }
+}

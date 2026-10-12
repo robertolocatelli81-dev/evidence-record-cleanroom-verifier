@@ -12,6 +12,7 @@ import verify_tersign as V
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SPEC = os.path.join(HERE, "spec")
+SPEC057 = os.path.join(HERE, "spec-0.5.7")
 
 
 def verdict(kind, inp):
@@ -215,10 +216,12 @@ class TestIdentity(unittest.TestCase):
     def test_scheme_fold(self):
         self.assertEqual(V.normalize_identity("org:caldera-robotics/"), V.normalize_identity("org:caldera-robotics"))
         self.assertEqual(V.normalize_identity("org:caldera-robotics.#"), V.normalize_identity("org:caldera-robotics"))
-        self.assertNotEqual(V.normalize_identity("org:Caldera-Robotics"), V.normalize_identity("org:caldera-robotics"))  # manifest: case-significant
-        self.assertIsNone(V.normalize_identity("Org:caldera"))       # scheme must be lowercase alnum
+        # v0.5.7 (n45/n58/p31): "The result is lowercased, the scheme included" (v0.5.3 read it case-significant)
+        self.assertEqual(V.normalize_identity("org:Caldera-Robotics"), V.normalize_identity("org:caldera-robotics"))
+        self.assertEqual(V.normalize_identity("Org:caldera"), V.normalize_identity("org:caldera"))
+        self.assertIsNone(V.normalize_identity("1org:caldera"))      # scheme starts with a letter
         self.assertIsNone(V.normalize_identity("org:cal dera"))      # non-space path
-        self.assertIsNone(V.normalize_identity("org:a:b"))           # one colon (strict reading)
+        self.assertEqual(V.normalize_identity("org:a:b"), "uri:org:a:b")   # v0.5.7: colons in the path (CAIP-10, p37)
         self.assertIsNone(V.normalize_identity("org:/"))             # empty path after fold
         self.assertIsNone(V.normalize_identity("org:café"))     # ASCII path only
         self.assertNotEqual(V.normalize_identity("org:x"), V.normalize_identity("agent:x"))
@@ -894,6 +897,274 @@ class TestReviewAdditions(unittest.TestCase):
             self.assertGreater(m["n"], 0); self.assertEqual(m["flipped"], 0)        # M43
         finally:
             del V.KINDS["always_valid"]
+
+
+# ── v0.5.7 (2026-10-12) ─────────────────────────────────────────────────────────────────────────────────────────────
+# Generative tests for the rules the v0.5.7 MANIFEST added or rewrote. The oracle helpers below are written from the
+# manifest text in a different style from the verifier (character loops, no regular expressions), so that a shared
+# regular-expression slip does not pass both. Every test here fails on 1a9146d (positive control, RAPPORTO.md).
+_WS = {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0x85, 0xA0, 0x1680, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000} | set(range(0x2000, 0x200B))
+_UNRES = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+_HEX = "0123456789abcdefABCDEF"
+
+
+def _oracle_identity(v):
+    """manifest v0.5.7 identifier_normalization, steps (1)-(5), as a key or None"""
+    if not isinstance(v, str):
+        return None
+    i, j = 0, len(v)
+    while i < j and ord(v[i]) in _WS:
+        i += 1
+    while j > i and ord(v[j - 1]) in _WS:
+        j -= 1
+    t = v[i:j]
+    if len(t) == 42 and t[0] == "0" and t[1] in "xX" and all(c in _HEX for c in t[2:]):
+        return "addr:" + t.lower()
+    if not t or not ("a" <= t[0].lower() <= "z") or ":" not in t:
+        return None
+    scheme, rest = t.split(":", 1)
+    if not all(c.isascii() and (c.isalnum() or c in "+.-") for c in scheme) or not rest:
+        return None
+    if not all(0x21 <= ord(c) <= 0x7E for c in rest):
+        return None
+    out, k = [], 0
+    while k < len(t):
+        if t[k] == "%" and k + 2 < len(t) + 0 and t[k + 1] in _HEX and t[k + 2] in _HEX and chr(int(t[k + 1:k + 3], 16)) in _UNRES:
+            out.append(chr(int(t[k + 1:k + 3], 16))); k += 3
+        else:
+            out.append(t[k]); k += 1
+    t = "".join(out)
+    if "%" in t or "?" in t:
+        return None
+    path = t[t.index(":") + 1:]
+    if "#" in path:
+        path = path[:path.index("#")]
+    if any(seg == "." or seg == ".." for seg in path.split("/")):
+        return None
+    t = t.lower()
+    while t and t[-1] in "/.#":
+        t = t[:-1]
+    if "#" in t or ":" not in t:
+        return None
+    scheme, rest = t.split(":", 1)
+    if not rest or not scheme or not ("a" <= scheme[0] <= "z"):
+        return None
+    last = t.split(":")[-1]
+    if len(last) == 42 and last.startswith("0x") and all(c in "0123456789abcdef" for c in last[2:]):
+        return "addr:" + last
+    return "uri:" + t
+
+
+class TestSuite057(unittest.TestCase):
+    @unittest.skipUnless(os.path.isdir(SPEC057), "spec-0.5.7/ not present")
+    def test_suite_057_concordant_flip_mutate(self):
+        V._ABLATE.clear()
+        res = V.run_suite(SPEC057)
+        self.assertEqual((res["version"], res["n"], res["concordant"], res["reason_named"], res["reason_concordant"]),
+                         ("0.5.7", 162, 162, 106, 106))
+        self.assertEqual(V.run_suite(SPEC057, flip_expect=True)["concordant"], 0)
+        m = V.run_mutations(SPEC057)
+        self.assertEqual(m["flipped"], m["n"])
+        self.assertGreater(m["n"], 0)
+
+    @unittest.skipUnless(os.path.isdir(SPEC057), "spec-0.5.7/ not present")
+    def test_057_vectors_carry_no_member_outside_the_053_lists(self):
+        for e, vec in _suite_vectors_in(SPEC057):
+            rep = V.input_member_report(vec, e["kind"])
+            self.assertEqual((rep["unknown_input_members"], rep["unknown_vector_members"]), ([], []), e["file"])
+
+    @unittest.skipUnless(os.path.isdir(SPEC057) and os.path.isdir(SPEC), "spec dirs not present")
+    def test_053_vectors_are_byte_identical_in_057(self):
+        for name in os.listdir(os.path.join(SPEC, "vectors")):
+            with open(os.path.join(SPEC, "vectors", name), "rb") as a, open(os.path.join(SPEC057, "vectors", name), "rb") as b:
+                self.assertEqual(a.read(), b.read(), name)
+
+    def test_whitespace_strip_every_code_point(self):
+        base = V.normalize_identity("org:a")
+        for cp in range(0x110000):
+            if 0xD800 <= cp <= 0xDFFF:
+                continue
+            c = chr(cp)
+            got = V.normalize_identity(c + "org:a" + c)
+            if cp in _WS:
+                self.assertEqual(got, base, hex(cp))
+            else:
+                self.assertNotEqual(got, base, hex(cp))
+            d = V.parse_digest(c + "0x" + "ab" * 32 + c)
+            self.assertEqual(d is not None, cp in _WS, hex(cp))
+        # the same strip where a criterion reads a digest field (hex32), not only in parse_digest (review 2026-10-12)
+        good = "0x" + V.content_address({"a": 1}).hex()
+        for cp in sorted(_WS) + [0x1C, 0x1D, 0x1E, 0x1F, 0xFEFF]:
+            got = verdict("digest_recompute", {"payload": {"a": 1}, "expected_digest": chr(cp) + good + chr(cp)})
+            self.assertEqual(got[0], "valid" if cp in _WS else "reject", hex(cp))
+
+    def test_digest_lowercase_never_admits_non_ascii(self):
+        for cp in range(0x80, 0x110000):
+            if 0xD800 <= cp <= 0xDFFF:
+                continue
+            self.assertIsNone(V.parse_digest("0x" + "a" * 63 + chr(cp)), hex(cp))
+            self.assertIsNone(V.parse_digest(chr(cp) + "x" + "a" * 64), hex(cp))
+        self.assertEqual(V.parse_digest("0X" + "AB" * 32), bytes([0xAB]) * 32)     # declared reading: the 0X prefix lowercases
+
+    def test_percent_triplets_every_byte_both_cases(self):
+        for b in range(256):
+            for trip in ("%%%02x" % b, "%%%02X" % b):
+                ident = "org:a" + trip + "b"
+                exp = V.normalize_identity("org:a" + chr(b) + "b") if chr(b) in _UNRES else None
+                self.assertEqual(V.normalize_identity(ident), exp, ident)
+                self.assertEqual(V.normalize_identity(ident), _oracle_identity(ident), ident)
+        self.assertIsNone(V.normalize_identity("org:trustline-custody/eu-wes%2574"))   # n55: one pass, %25 stays
+        self.assertIsNone(V.normalize_identity("org:trustline-custody/eu-wes%%37%34"))  # n56: never rescanned
+        self.assertIsNone(V.normalize_identity("org:a%2"))                              # a bare % remains
+
+    def test_generative_identifiers_against_the_oracle(self):
+        import random
+        rng = random.Random(20261012)
+        atoms = ["a", "B", "z9", ".", "..", "/", "#", "?", ":", "%2E", "%2e", "%2D", "%41", "%25", "%2F", "%", "-", "_",
+                 "~", " ", " ", "\u001c", "﻿", "0x" + "Ab" * 20, "0X" + "cd" * 20, "eip155", "1", "+", "é"]
+        schemes = ["org", "ORG", "Org", "did", "a+b.c-d", "1x", "", "x y", "eip155", "acct"]
+        n_parse = n_none = 0
+        for _ in range(40000):
+            ident = rng.choice(schemes) + rng.choice([":", ":", "", "::"]) + "".join(rng.choice(atoms) for _ in range(rng.randint(0, 7)))
+            if rng.random() < 0.2:
+                ident = rng.choice([" ", "\t", "　", "\u001c", "﻿", ""]) + ident + rng.choice([" ", "\n", " ", ""])
+            got = V.normalize_identity(ident)
+            self.assertEqual(got, _oracle_identity(ident), repr(ident))
+            n_parse += got is not None
+            n_none += got is None
+        self.assertGreater(n_parse, 2000)   # the generator reaches both outcomes in volume
+        self.assertGreater(n_none, 2000)
+
+    def test_address_alias_any_scheme_any_reference(self):
+        import random
+        rng = random.Random(7)
+        for _ in range(2000):
+            h = "".join(rng.choice("0123456789abcdef") for _ in range(40))
+            mixed = "".join(c.upper() if rng.random() < 0.5 else c for c in h)
+            pre = rng.choice(["0x", "0X"])
+            ident = rng.choice(["eip155:8453:", "did:pkh:eip155:1:", "did:ethr:", "ethereum:", "acct:", "x:y:z:"]) + pre + mixed
+            self.assertEqual(V.normalize_identity(ident), "addr:0x" + h, ident)
+            self.assertEqual(V.normalize_identity(pre + mixed), "addr:0x" + h)
+            for bad in (pre + mixed[:-1], pre + mixed + "0", "0y" + mixed):
+                self.assertNotEqual(V.normalize_identity("eip155:1:" + bad), "addr:0x" + h)
+
+    def test_dot_segments_and_query(self):
+        for bad in ("org:.", "org:..", "org:./a", "org:../a", "org:a/./b", "org:a/../b", "org:a/.", "org:a/..",
+                    "org:a/%2E", "org:a/%2e%2E", "org:a?x", "org:a#b", "org:/", "org:#",
+                    "org:...",       # no dot-segment, but empty path once the trailing dots are removed (n51)
+                    "org:a/.#"):     # path is "a/." up to the first "#": a dot-segment
+            self.assertIsNone(V.normalize_identity(bad), bad)
+        for good in ("org:a/.well-known/.../..v2", "org:a.", "org:a/", "org:a#", "org:a...", "org:a/.b#"):
+            self.assertIsNotNone(V.normalize_identity(good), good)
+
+    def test_chain_link_seq_domain(self):
+        import random
+        art = "0x" + "11" * 32
+        def link(seq):
+            return "0x" + V.keccak256_pure(bytes.fromhex(art[2:]) + bytes(32) + (seq % 2 ** 64).to_bytes(8, "big")).hex()
+        rng = random.Random(3)
+        seqs = [0, 1, 2, -1, V.I_JSON_MAX, V.I_JSON_MAX + 1, 2 ** 63, 2 ** 64 - 1] + [rng.randint(-2 ** 60, 2 ** 64 - 1) for _ in range(300)]
+        for s in seqs:
+            got = verdict("chain_link", {"artifact_digest": art, "prev_digest": None, "seq": s, "expected_link": link(s)})
+            self.assertEqual(got[0], "valid" if 1 <= s <= V.I_JSON_MAX else "reject", s)
+            if got[0] == "reject":
+                self.assertEqual(got[1], V.R_CONTINUITY)
+        for s in (True, False, None, "1", V.NumberToken("1.0"), V.NumberToken("1e0"), [1], {"a": 1}):
+            self.assertEqual(verdict("chain_link", {"artifact_digest": art, "prev_digest": None, "seq": s, "expected_link": link(1)})[1], V.R_CONTINUITY, repr(s))
+
+    def test_payload_text_surrogate_before_number_any_order(self):
+        import random
+        rng = random.Random(11)
+        for _ in range(500):
+            sur = "\\u%04x" % rng.randint(0xD800, 0xDFFF)
+            num = rng.choice(["2.0", "1e2", "0.5", "-1E-3"])
+            members = ['"n":' + num, '"s":"' + sur + '"'] if rng.random() < 0.5 else ['"s":"x' + sur + '"', '"n":[' + num + ']']
+            if rng.random() < 0.5:
+                members.reverse()
+            text = "{" + ",".join(members) + "}"
+            got = verdict("canonical_bytes", {"payload_text": V.load_json('"' + text.replace('"', '\\"') + '"'), "claimed_canonical": ""})
+            self.assertEqual(got[1], V.R_CANON, text)
+        # a surrogate inside an array, before or after a number token (review 2026-10-12)
+        for text in ('["\\ud800",1.5]', '[1.5,"\\udc00"]', '{"a":[["\\ud800"]],"n":1e2}'):
+            self.assertEqual(verdict("canonical_bytes", {"payload_text": text, "claimed_canonical": ""})[1], V.R_CANON, text)
+        # a payload_text that is a JSON number is not a string holding JSON text (n43/n44), whatever its token class
+        self.assertEqual(verdict("canonical_bytes", {"payload_text": V.NumberToken("2.0"), "claimed_canonical": "2"})[1], V.R_CANON)
+        # a number alone stays number_domain_reject; a surrogate in a NAME is caught too
+        self.assertEqual(verdict("canonical_bytes", {"payload_text": '{"n":2.0}', "claimed_canonical": ""})[1], V.R_NUMBER)
+        self.assertEqual(verdict("canonical_bytes", {"payload_text": '{"\\udfb7":2.0}', "claimed_canonical": ""})[1], V.R_CANON)
+
+    def test_half_raw_pair_is_the_same_name(self):
+        for hi in (0xD800, 0xD842, 0xDBFF):
+            for lo in (0xDC00, 0xDFB7, 0xDFFF):
+                raw = chr(hi)                                  # the raw code unit, as the vector file delivers it
+                esc_pair = "\\u%04x\\u%04x" % (hi, lo)
+                cp = chr(0x10000 + ((hi - 0xD800) << 10) + (lo - 0xDC00))
+                dup = '{"' + raw + "\\u%04x" % lo + '":1,"' + esc_pair + '":2}'
+                self.assertEqual(verdict("canonical_bytes", {"payload_text": dup, "claimed_canonical": ""})[1], V.R_CANON, dup)
+                # alone it repeats no name: declared reading, the joined pair canonicalizes as the code point
+                one = '{"' + raw + "\\u%04x" % lo + '":"' + raw + "\\u%04x" % lo + '"}'
+                claimed = '{"' + cp + '":"' + cp + '"}'
+                self.assertEqual(verdict("canonical_bytes", {"payload_text": one, "claimed_canonical": claimed})[0], "valid", one)
+                # a half-raw pair nested in an object or an array is joined as well (review 2026-10-12)
+                half = raw + "\\u%04x" % lo
+                nested = '{"o":{"k":"' + half + '"},"l":[["' + half + '"]]}'
+                claimed_nested = '{"l":[["' + cp + '"]],"o":{"k":"' + cp + '"}}'
+                self.assertEqual(verdict("canonical_bytes", {"payload_text": nested, "claimed_canonical": claimed_nested})[0], "valid", nested)
+                # names repeated across two objects are two objects (p30)
+                two = '[{"' + raw + "\\u%04x" % lo + '":1},{"' + esc_pair + '":2}]'
+                claimed_two = '[{"' + cp + '":1},{"' + cp + '":2}]'
+                self.assertEqual(verdict("canonical_bytes", {"payload_text": two, "claimed_canonical": claimed_two})[0], "valid", two)
+
+    def test_bound_object_without_canonical_form_takes_the_criterion_reason(self):
+        import random
+        rng = random.Random(5)
+        d0 = "0x" + "00" * 32
+        prefix_ev = {"event": "witness_ref_introduced", "ruleVersion": "witness-ref-v1", "prefixDigest": d0, "position": 1, "attestedPrefixLength": 1}
+        for _ in range(300):
+            s = "x" + chr(rng.randint(0xD800, 0xDFFF))
+            obj = rng.choice([{"a": s}, {s: 1}, {"n": {"m": [1, {"k": s}]}}, {"l": [s]}])
+            self.assertEqual(verdict("offer_binding", {"offer": obj, "receipt": {"offerDigest": d0}})[1], V.R_BINDING)
+            self.assertEqual(verdict("decision_evidence_binding", {"decision_evidence": obj, "record": {"decisionEvidenceDigest": d0}})[1], V.R_BINDING)
+            self.assertEqual(verdict("boundary_binding", {"prefix": [obj], "boundary_event": dict(prefix_ev)})[1], V.R_BOUNDARY)
+            self.assertEqual(verdict("digest_recompute", {"payload": obj, "expected_digest": d0})[1], V.R_CANON)
+        # declared reading: a non-integer number token in a bound object keeps number_domain_reject
+        self.assertEqual(verdict("offer_binding", {"offer": {"a": V.NumberToken("1.5")}, "receipt": {"offerDigest": d0}})[1], V.R_NUMBER)
+
+    def test_transaction_blank_after_strip_commits_to_no_settlement(self):
+        P = ["0x" + "22" * 20, "0x" + "33" * 20]
+        base = {"claimed": "independent", "parties": P, "attestations": [{"by": "0x" + "44" * 20}], "covers": ["settlement"]}
+        for tx in ("", " ", "　\t", " "):
+            self.assertEqual(verdict("independence_claim", dict(base, settlement_result={"success": True, "transaction": tx}))[1], V.R_INDEPENDENCE, repr(tx))
+        for tx in ("0xabc", "\u001c", "﻿"):                     # not White_Space: not blank
+            self.assertEqual(verdict("independence_claim", dict(base, settlement_result={"success": True, "transaction": tx}))[0], "valid", repr(tx))
+        got = verdict("independence_claim", dict(base, covers=["delivery"], deliverable_bytes="\ud800", deliverable_digest="0x" + "00" * 32))
+        self.assertEqual(got[1], V.R_INDEPENDENCE)                     # was input_reject (UnicodeEncodeError) before 2026-10-12
+        # the same reject where the claim covers only settlement: the derivation reads every field it is given (review
+        # 2026-10-12; an overreach reject on `delivery` alone could not tell the two apart)
+        ok_sr = {"success": True, "transaction": "0xabc"}
+        got = verdict("independence_claim", dict(base, settlement_result=ok_sr, deliverable_bytes="\ud800", deliverable_digest="0x" + "00" * 32))
+        self.assertEqual(got[:2], ("reject", V.R_INDEPENDENCE), got)
+        # network: the same strip as transaction
+        for net, ok in (("\u3000", False), (" \t", False), ("\u001c", True), ("base", True)):
+            got = verdict("independence_claim", dict(base, covers=["network"], settlement_result=dict(ok_sr, network=net)))
+            self.assertEqual(got[0], "valid" if ok else "reject", repr(net))
+        # a JSON number is not a string: a non-integer token commits to nothing (review 2026-10-12: it did)
+        d15 = "0x" + V.keccak256(b"1.5").hex()
+        for extra in ({"covers": ["settlement"], "settlement_result": {"success": True, "transaction": V.NumberToken("1.5")}},
+                      {"covers": ["network"], "settlement_result": {"success": True, "transaction": "0xabc", "network": V.NumberToken("1e2")}},
+                      {"covers": ["delivery"], "deliverable_bytes": V.NumberToken("1.5"), "deliverable_digest": d15}):
+            got = verdict("independence_claim", dict(base, **extra))
+            self.assertEqual(got[1], V.R_INDEPENDENCE, extra)
+        self.assertEqual(verdict("independence_claim", dict(base, covers=["delivery"], deliverable_bytes="1.5", deliverable_digest=d15))[0], "valid")
+
+
+def _suite_vectors_in(spec):
+    import json
+    with open(os.path.join(spec, "MANIFEST.json"), encoding="utf-8") as fh:
+        m = json.load(fh)
+    for e in m["vectors"]:
+        with open(os.path.join(spec, "vectors", e["file"]), encoding="utf-8") as fh:
+            yield e, V.load_json(fh.read())
 
 
 if __name__ == "__main__":

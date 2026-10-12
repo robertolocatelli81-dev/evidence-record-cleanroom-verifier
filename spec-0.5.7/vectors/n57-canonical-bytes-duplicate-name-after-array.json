@@ -1,0 +1,11 @@
+{
+  "id": "n57-canonical-bytes-duplicate-name-after-array",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "A duplicate name that follows an array value: in {\"a\":[1,2],\"a\":3} the second `a` repeats a name of the same object. The comma inside the array separates elements, not names, and the object's names stay in scope across the array. A duplicate-name scanner that does not track arrays reads that comma as the object's and loses the object at the array's close, misses the duplicate, and accepts the last-wins form {\"a\":3}.",
+  "input": {
+    "payload_text": "{\"a\":[1,2],\"a\":3}",
+    "claimed_canonical": "{\"a\":3}"
+  }
+}

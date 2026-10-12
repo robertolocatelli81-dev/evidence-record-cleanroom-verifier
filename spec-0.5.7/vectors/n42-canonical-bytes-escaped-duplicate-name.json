@@ -1,0 +1,11 @@
+{
+  "id": "n42-canonical-bytes-escaped-duplicate-name",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "n41's duplicate with the second name written as a JSON escape (backslash-u0061 is \"a\"). Names compare after decoding, the form RFC 8785 sorts them in; a detector that compares raw key tokens misses the duplicate and fails here.",
+  "input": {
+    "payload_text": "{\"a\":1,\"\\u0061\":2}",
+    "claimed_canonical": "{\"a\":2}"
+  }
+}

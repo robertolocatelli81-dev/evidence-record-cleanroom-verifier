@@ -1,0 +1,12 @@
+{
+  "id": "p42-digest-non-ascii-decomposed-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "p39's value in decomposed form: e followed by U+0301 COMBINING ACUTE ACCENT (Unicode NFD), which renders as p39's \u00e9 and is a different code-point sequence. RFC 8785 applies no Unicode normalization: every component of a JCS scheme MUST preserve string data as is (section 3.1). The digest is therefore keccak256 over the UTF-8 bytes of these code points (65 cc 81 for the value), and it differs from p39's. Accepting twin of n74: an engine that normalizes strings to NFC before hashing computes p39's digest here and rejects.",
+  "input": {
+    "payload": {
+      "a": "e\u0301"
+    },
+    "expected_digest": "0xc54ffebe98ad5963d5140565711cb51ef51f71207f1e9b439bbf5af474c0b544"
+  }
+}

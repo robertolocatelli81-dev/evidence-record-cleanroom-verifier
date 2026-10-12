@@ -1,0 +1,31 @@
+{
+  "id": "n96-boundary-binding-lone-surrogate-in-prefix",
+  "kind": "boundary_binding",
+  "expect": "reject",
+  "reason": "boundary_reject",
+  "description": "p18 with a lone low surrogate, DC00, appended to the second prefix record event, and prefixDigest the digest a JSON.stringify-based canonicalizer computes for that prefix, with the code unit escaped; position, attested length and coverage as in p18. The prefix has no canonical form, so the boundary event cannot bind it, and the criterion rejects with boundary_reject. An engine that skips the well-formedness check when it digests the prefix recomputes the claimed digest and accepts. p18 is the accepting twin.",
+  "input": {
+    "prefix": [
+      {
+        "event": "record",
+        "seq": 1
+      },
+      {
+        "event": "record\udc00",
+        "seq": 2
+      },
+      {
+        "event": "record",
+        "seq": 3
+      }
+    ],
+    "boundary_event": {
+      "event": "witness_ref_introduced",
+      "ruleVersion": "witness-ref-v1",
+      "prefixDigest": "0x7ef61cbb186da93220de1dc3f4c77439d116c30c67504ac2ca7687a7f1e3fc17",
+      "position": 3,
+      "attestedPrefixLength": 3
+    },
+    "covered_through": 3
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "n74-digest-non-ascii-normalized-before-hashing",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p42: the same decomposed payload, with expected_digest computed over the canonical text normalized to NFC. That is p39's digest (asserted at generation), the value an engine that normalizes strings before hashing arrives at. Normalization changes the bytes a digest binds, and RFC 8785 section 3.1 requires string data to be preserved as is, so this digest does not commit to the presented payload. An engine that normalizes to NFC accepts this vector and rejects p42; one that accepts either form accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "e\u0301"
+    },
+    "expected_digest": "0x796ac49a14443d3a4803f234f3aef0378e6aa19e5c2489613a169dd8b5a3ae2f"
+  }
+}

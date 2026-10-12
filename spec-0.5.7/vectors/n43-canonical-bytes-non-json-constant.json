@@ -1,0 +1,11 @@
+{
+  "id": "n43-canonical-bytes-non-json-constant",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "A NaN token inside payload_text. RFC 8259 has no such token: Python's json accepts it by default and JSON.parse refuses it, so an engine that inherits either default returns number_domain_reject or no verdict at all. Text that is not JSON has no canonical form, in both engines.",
+  "input": {
+    "payload_text": "{\"amount\":NaN}",
+    "claimed_canonical": "{\"amount\":0}"
+  }
+}

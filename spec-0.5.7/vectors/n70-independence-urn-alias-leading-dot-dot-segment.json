@@ -1,0 +1,19 @@
+{
+  "id": "n70-independence-urn-alias-leading-dot-dot-segment",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "n67 with `..`: the path of org:../caldera-robotics starts with the segment `..`, and remove_dot_segments strips a leading `../` as it strips a leading `./` (RFC 3986 section 5.2.4, step A), reading the identifier as the party org:caldera-robotics. A path with a `.` or `..` segment is not evaluable, the first segment included, and the claim fails closed. An engine that catches a leading `./` but finds `..` only after a `/` accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:../caldera-robotics"
+      }
+    ]
+  }
+}

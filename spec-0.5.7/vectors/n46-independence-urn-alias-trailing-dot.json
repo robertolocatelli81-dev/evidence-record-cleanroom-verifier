@@ -1,0 +1,19 @@
+{
+  "id": "n46-independence-urn-alias-trailing-dot",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by a trailing `.`. Every trailing `/` `.` `#` is removed before comparison, so org:caldera-robotics. is the party org:caldera-robotics. n31 pins the trailing `/`; an engine that strips only `/` accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:caldera-robotics."
+      }
+    ]
+  }
+}

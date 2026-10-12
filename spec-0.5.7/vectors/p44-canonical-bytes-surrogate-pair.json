@@ -1,0 +1,10 @@
+{
+  "id": "p44-canonical-bytes-surrogate-pair",
+  "kind": "canonical_bytes",
+  "expect": "valid",
+  "description": "Accepting twin of n81 and n82: payload_text {\"\\ud842\\udfb7\":\"\\ud842\\udfb7\"}, U+20BB7 written as a surrogate-pair escape, as a name and as a value. A paired escape is one code point (RFC 7493 section 2.1: \"\\uD800\\uDEAD\" is legal), and the canonical form writes it as is: {\"\ud842\udfb7\":\"\ud842\udfb7\"}. An engine that rejects every surrogate escape, rather than an unpaired one, fails here.",
+  "input": {
+    "payload_text": "{\"\\ud842\\udfb7\":\"\\ud842\\udfb7\"}",
+    "claimed_canonical": "{\"\ud842\udfb7\":\"\ud842\udfb7\"}"
+  }
+}

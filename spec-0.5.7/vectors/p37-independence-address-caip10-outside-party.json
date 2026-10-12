@@ -1,0 +1,21 @@
+{
+  "id": "p37-independence-address-caip10-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Accepting side of n63/n64: an attestor written as a CAIP-10 account and one written as a did:pkh, both naming 0x4444...4444, an address that is not a party's. They are evaluable, outside the transaction, and the claim holds. An engine that refuses the CAIP-10 or did:pkh forms rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "0xca1de7a500000000000000000000000000000bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "eip155:8453:0x4444444444444444444444444444444444444444"
+      },
+      {
+        "by": "did:pkh:eip155:1:0x4444444444444444444444444444444444444444"
+      }
+    ]
+  }
+}

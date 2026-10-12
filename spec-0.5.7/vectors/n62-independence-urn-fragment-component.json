@@ -1,0 +1,19 @@
+{
+  "id": "n62-independence-urn-fragment-component",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "A non-empty fragment. After the trailing `/` `.` `#` are removed, a `#` that remains begins a fragment with content (RFC 3986 section 3.5), which may or may not name another party; the identifier is not evaluable and the claim fails closed. This attestor is outside the parties with or without its fragment, so the reject comes from the identifier rule alone; an engine that compares the form as written, or drops the fragment, accepts. Under the same rule org:caldera-robotics#witness never counts as an attestor outside the transaction. The class has no accepting twin; p31 is the near-miss that accepts, since a trailing `#` alone is removed.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-west#witness"
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "n93-canonical-bytes-duplicate-name-half-escaped-pair",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "payload_text names U+20BB7 twice: first with the high half of its surrogate pair, D842, as a raw code unit and the low half written \\udfb7, then as the two escapes \\ud842\\udfb7. Both decode to the same UTF-16 code units, D842 DFB7, so the text repeats a name and rejects with canonicalization_reject (RFC 7493 section 2.3). Python json joins only an escaped pair, so there the first name decodes to two code points and the second to one; an engine that compares decoded names as code points sees two names, and accepts. Names compare as UTF-16 code units, as JSON.parse holds them. claimed_canonical is the text such an engine emits. An engine that rejects the raw code unit in the text itself also rejects with canonicalization_reject. The vector file carries the raw code unit as the escape \\ud842 inside payload_text, so a loader has to keep it, as for n81.",
+  "input": {
+    "payload_text": "{\"\ud842\\udfb7\":1,\"\\ud842\\udfb7\":2}",
+    "claimed_canonical": "{\"\ud842\udfb7\":1,\"\ud842\udfb7\":2}"
+  }
+}

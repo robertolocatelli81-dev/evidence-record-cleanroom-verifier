@@ -1,0 +1,19 @@
+{
+  "id": "n65-independence-address-alias-did-ethr",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass in a namespace outside CAIP-10 and did:pkh. The party is a bare 0x-address and the attestor writes it as did:ethr:<address>, in mixed case. The rule keys every scheme-qualified identifier whose final colon-separated component is a 0x-address to that address, not a list of known namespaces, so the attestor is the party and the record is attested only by parties. An engine that derives the address only for the CAIP-10 and did:pkh forms counts an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "0xca1de7a500000000000000000000000000000bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "did:ethr:0xCa1De7A500000000000000000000000000000Bb0"
+      }
+    ]
+  }
+}

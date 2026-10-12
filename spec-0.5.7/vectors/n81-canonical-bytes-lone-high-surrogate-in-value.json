@@ -1,0 +1,11 @@
+{
+  "id": "n81-canonical-bytes-lone-high-surrogate-in-value",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "p44 with the value's second half dropped: payload_text {\"\\ud842\\udfb7\":\"\\ud842\"}, a lone high surrogate in a value. RFC 7493 section 2.1 forbids an unpaired surrogate (\"\\uDEAD\" is invalid), and RFC 8785 section 3.2.2.2 requires a canonicalizer to terminate on one, so the text has no canonical form. claimed_canonical carries the code unit as is, the text Python's json.dumps(value, ensure_ascii=False) emits for it, so an engine that skips the check compares equal and accepts. Measured on v0.5.4's engines: Python valid, TypeScript canonicalization_reject (JSON.stringify escapes the code unit, so the comparison failed).",
+  "input": {
+    "payload_text": "{\"\\ud842\\udfb7\":\"\\ud842\"}",
+    "claimed_canonical": "{\"\ud842\udfb7\":\"\ud842\"}"
+  }
+}

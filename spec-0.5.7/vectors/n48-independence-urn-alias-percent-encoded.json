@@ -1,0 +1,19 @@
+{
+  "id": "n48-independence-urn-alias-percent-encoded",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by percent-encoding. %2D encodes `-`, an unreserved character, and percent-encoded unreserved characters are decoded before comparison (RFC 3986 \u00a76.2.2.2), so the attestor org:caldera%2Drobotics is the party org:caldera-robotics. Without decoding, the alias counts as an outside attestor and the record verifies as independent. The attestor is @stillmarcus24's probe from issue #8, on n31's parties.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:caldera%2Drobotics"
+      }
+    ]
+  }
+}

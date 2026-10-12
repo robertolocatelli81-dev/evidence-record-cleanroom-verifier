@@ -1,0 +1,13 @@
+{
+  "id": "n75-chain-link-seq-zero",
+  "kind": "chain_link",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "p4's genesis link with seq 0, expected_link recomputed for seq 0, so the arithmetic holds and only the sequence domain can reject. A sequence number is an integer token in [1, 2^53-1]: seq 1 is the genesis link, as chain_set numbers its records 1..head.seq, so 0 is outside the domain. It is the link a zero-based numbering produces. p4 is the accepting twin at the lower bound. Without the lower bound this vector verifies; p4 with only seq changed rejects with or without it, because its link no longer matches. Input from @Rul1an's report (issue #1).",
+  "input": {
+    "artifact_digest": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+    "prev_digest": null,
+    "seq": 0,
+    "expected_link": "0xbc5008212584066f462aef3c2bea5ba75ac3e87185287bd1833fc42e26342ee0"
+  }
+}

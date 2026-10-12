@@ -1,0 +1,18 @@
+{
+  "id": "p34-independence-urn-percent-encoded-unreserved-set-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "The rest of the unreserved set (RFC 3986 section 2.3), percent-encoded on an attestor outside the parties: `_` (%5f), `~` (%7E), `-` (%2D), a digit (%32) and a letter (%41). Each triplet decodes, so the attestor is org:trustline_custody/eu~west-2a, which is not a party, and the claim holds. An engine whose unreserved set omits `_`, `~`, the digits or the letters leaves that triplet encoded, reads the identifier as not evaluable, and rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline%5fcustody/eu%7Ewest%2D%32%41"
+      }
+    ]
+  }
+}

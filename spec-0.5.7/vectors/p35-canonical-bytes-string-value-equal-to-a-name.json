@@ -1,0 +1,10 @@
+{
+  "id": "p35-canonical-bytes-string-value-equal-to-a-name",
+  "kind": "canonical_bytes",
+  "expect": "valid",
+  "description": "Accepting side of the duplicate-name rule: in {\"k\":\"v\",\"v\":1} the string value \"v\" equals the next name, and a value is not a name. Every object's names are unique, so the text is I-JSON and its canonical form compares. A scanner that reads a string value as a name finds a duplicate that is not there and rejects here.",
+  "input": {
+    "payload_text": "{\"k\":\"v\",\"v\":1}",
+    "claimed_canonical": "{\"k\":\"v\",\"v\":1}"
+  }
+}

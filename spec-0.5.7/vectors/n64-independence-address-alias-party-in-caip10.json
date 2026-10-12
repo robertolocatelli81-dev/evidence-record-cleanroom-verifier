@@ -1,0 +1,22 @@
+{
+  "id": "n64-independence-address-alias-party-in-caip10",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "n63 with the forms swapped: the party is listed as the CAIP-10 account eip155:8453:<address>, and the attestors are the bare address and a did:pkh on another chain. Addresses compare by the address they name, whichever side carries which form and whatever the chain reference, so both attestors are the party. An engine that applies the rule only when the parties list carries the bare address accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "eip155:8453:0xCa1De7A500000000000000000000000000000Bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "0xca1de7a500000000000000000000000000000bb0"
+      },
+      {
+        "by": "did:pkh:eip155:1:0xCa1De7A500000000000000000000000000000Bb0"
+      }
+    ]
+  }
+}

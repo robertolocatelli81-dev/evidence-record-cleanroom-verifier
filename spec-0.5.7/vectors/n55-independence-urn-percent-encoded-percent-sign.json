@@ -1,0 +1,19 @@
+{
+  "id": "n55-independence-urn-percent-encoded-percent-sign",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Decoding runs once. The attestor ends in %2574: %25 encodes `%` itself, which is not unreserved, so it stays encoded, a `%` remains, and the identifier is not evaluable. RFC 3986 section 2.4: implementations must not decode the same string more than once. An engine that decodes %25 and then decodes again reads %74 as `t`, gets org:trustline-custody/eu-west, a party outside the transaction, and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-wes%2574"
+      }
+    ]
+  }
+}

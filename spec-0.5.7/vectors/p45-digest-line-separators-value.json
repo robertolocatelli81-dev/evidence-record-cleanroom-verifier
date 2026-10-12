@@ -1,0 +1,12 @@
+{
+  "id": "p45-digest-line-separators-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR as a string value. RFC 8785 section 3.2.2.2 escapes only the control range U+0000-U+001F, the quotation mark and the backslash, and writes every other code point as is, these two included, so the digest is keccak256 over the UTF-8 bytes of the canonical text, with the value as e2 80 a8 e2 80 a9. Accepting twin of n85: an engine that escapes the two separators rejects here.",
+  "input": {
+    "payload": {
+      "a": "\u2028\u2029"
+    },
+    "expected_digest": "0x2c632cbbf07175ef70b49641beedeab7b0d5c5f5fb3fbee503ebd2e246e874ce"
+  }
+}

@@ -36,7 +36,13 @@ verdict the upstream verifier printed on the very same bytes.
 The step was run by the author of this repository in a session separate from the clean-room session that
 wrote the verifier; the clean-room session and this repository's code never opened `verify.py`.
 
-## Measured (identical on Python 3.9.25 / 3.11.2 / 3.13.15; logs `results/compare_py*.log`)
+## Measured with verifier 0.1.0 (2026-09-29; identical on Python 3.9.25 / 3.11.2 / 3.13.15; logs `results/compare_py*.log`)
+
+Verifier 0.2.0 (2026-10-12, aligned to suite v0.5.7), same recording: 511/524 accept / non-accept, 427/430 on the
+variants that change `input`, 487/492 verdict + reason; ours valid 122, reject 402; **1** case where upstream v0.5.3
+rejects and we accept: `mut0391`, p21 with its first party written `ORG:CALDERA-ROBOTICS`, unparseable under the v0.5.3
+rule and parsed (scheme lowercased) under the v0.5.7 rule. Per-variant rows in `../../results/v0.2.0/differential_compare_py*.json`.
+The rest of this section describes the 0.1.0 measurement.
 
 | set | n | accept / non-accept agree | verdict + reason agree (non-malformed) |
 |---|---|---|---|
@@ -63,8 +69,9 @@ The 12 residual disagreements, all read against the clauses:
 
 ## What this does and does not show
 
-It shows that on 430 input-changing variants the two implementations disagree on 2, both in a kind the
-manifest has no rule for, and that no variant is rejected upstream and accepted here. It does not show
+With verifier 0.1.0 it shows that on 430 input-changing variants the two implementations disagree on 2, both in a
+kind the manifest has no rule for, and that no variant is rejected upstream and accepted here (with 0.2.0: 3 and 1,
+the third being `mut0391` above, where the two disagree because the two suite versions do). It does not show
 conformance to any specification beyond the manifest: the variants are perturbations of the suite's own
 inputs, and `expect` is not an oracle for them.
 

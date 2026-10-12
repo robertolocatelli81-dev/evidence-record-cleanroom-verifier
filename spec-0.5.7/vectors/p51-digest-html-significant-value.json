@@ -1,0 +1,12 @@
+{
+  "id": "p51-digest-html-significant-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "A string value holding \"<\", \">\" and \"&\": {\"a\":\"<b>&\"}. RFC 8785 section 3.2.2.2 escapes only the control range, the quotation mark and the backslash, so the canonical text carries the three as is, and the digest is keccak256 over its UTF-8 bytes. Accepting twin of n98: an engine that escapes them for HTML safety rejects here.",
+  "input": {
+    "payload": {
+      "a": "<b>&"
+    },
+    "expected_digest": "0x32d266cab801461b6f0d78c161cb8b106626fdf98b53730d91f8587a656a5ea2"
+  }
+}

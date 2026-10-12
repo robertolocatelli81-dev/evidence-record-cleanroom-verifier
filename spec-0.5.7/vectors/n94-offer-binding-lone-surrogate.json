@@ -1,0 +1,16 @@
+{
+  "id": "n94-offer-binding-lone-surrogate",
+  "kind": "offer_binding",
+  "expect": "reject",
+  "reason": "binding_reject",
+  "description": "An offer holding a lone high surrogate, D800, in a string value, and a receipt committing to the digest of {\"a\":\"\\ud800\",\"resourceUrl\":\"https://api.example/x\"}, the text JSON.stringify emits for it. The offer has no canonical form (RFC 7493 section 2.1; RFC 8785 section 3.2.2.2), so no digest of it exists to bind, and the criterion rejects with its own reason, binding_reject. An engine that skips the well-formedness check when it digests the offer recomputes the committed digest and accepts. p15 is the accepting twin of the criterion.",
+  "input": {
+    "offer": {
+      "resourceUrl": "https://api.example/x",
+      "a": "\ud800"
+    },
+    "receipt": {
+      "offerDigest": "0x60ab95bee0288837118aaf3a1f42819ff61505fe509defb17adb5946841ac29a"
+    }
+  }
+}

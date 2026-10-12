@@ -1,0 +1,19 @@
+{
+  "id": "n67-independence-urn-alias-leading-dot-segment",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by a dot-segment at the start of the path. The path of org:./caldera-robotics runs from the scheme's colon, so its first segment is `.`, and RFC 3986's remove_dot_segments (section 5.2.4, step A) reads the identifier as the party org:caldera-robotics. A path with a `.` or `..` segment is not evaluable, the first segment included, and the claim fails closed. An engine that splits segments from the start of the whole identifier reads the first segment as `org:.`, finds no dot-segment, and accepts; so does one that skips the first segment.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:./caldera-robotics"
+      }
+    ]
+  }
+}

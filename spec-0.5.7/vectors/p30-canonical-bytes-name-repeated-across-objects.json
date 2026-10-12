@@ -1,0 +1,10 @@
+{
+  "id": "p30-canonical-bytes-name-repeated-across-objects",
+  "kind": "canonical_bytes",
+  "expect": "valid",
+  "description": "Accepting twin of n41/n42: one name repeated across DISTINCT objects is not a duplicate. In {\"a\":{\"a\":1},\"b\":[{\"a\":2},{\"a\":3}]} every object's own names are unique, so the text is I-JSON and its canonical form compares. A duplicate-name check whose key set spans more than one object rejects this and fails here, per the two-sided gate.",
+  "input": {
+    "payload_text": "{\"a\":{\"a\":1},\"b\":[{\"a\":2},{\"a\":3}]}",
+    "claimed_canonical": "{\"a\":{\"a\":1},\"b\":[{\"a\":2},{\"a\":3}]}"
+  }
+}

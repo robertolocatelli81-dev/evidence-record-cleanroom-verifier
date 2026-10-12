@@ -1,0 +1,11 @@
+{
+  "id": "n44-canonical-bytes-text-not-a-string",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "payload_text that is not a string. JSON.parse coerces the number 2 to the text \"2\", so an engine that passes the value straight to it reads a valid canonical form; Python's json raises on a non-string and returns no verdict. The raw-text pathway carries JSON TEXT, and any other value rejects.",
+  "input": {
+    "payload_text": 2,
+    "claimed_canonical": "2"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "p48-phase-claim-settlement-as-itself",
+  "kind": "phase_claim",
+  "expect": "valid",
+  "description": "A record whose economic_phase is settlement, presented as settlement: valid. The vocabulary is closed at five words; p7 accepts delivery, and p47 to p50 accept the other four, one each, so an engine whose vocabulary leaves one out rejects here.",
+  "input": {
+    "record": {
+      "economic_phase": "settlement"
+    },
+    "presented_as": "settlement"
+  }
+}

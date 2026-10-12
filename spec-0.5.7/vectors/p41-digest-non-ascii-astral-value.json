@@ -1,0 +1,12 @@
+{
+  "id": "p41-digest-non-ascii-astral-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "A supplementary-plane string value: {\"a\":\"\ud842\udfb7\"}, U+20BB7 (a CJK Extension B ideograph), one code point that UTF-16 holds as the surrogate pair D842 DFB7 and UTF-8 encodes in four bytes, f0 a0 ae b7. The digest is keccak256 over the UTF-8 bytes of the canonical form. Accepting twin of n73, and of n83, which drops the pair's second half.",
+  "input": {
+    "payload": {
+      "a": "\ud842\udfb7"
+    },
+    "expected_digest": "0x2aeb522e009275dd07ef9606a793011d4bfc2c9a9b356e7fb86bf8329ac918bc"
+  }
+}

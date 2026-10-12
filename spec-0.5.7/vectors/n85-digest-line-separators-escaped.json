@@ -1,0 +1,13 @@
+{
+  "id": "n85-digest-line-separators-escaped",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p45: the same payload, with expected_digest computed over {\"a\":\"\\u2028\\u2029\"}, both separators written as escapes. Go encoding/json emits that text for this payload, with or without SetEscapeHTML(false) (measured, go1.27.1), so it is the digest a canonicalizer built on it computes. RFC 8785 section 3.2.2.2 does not escape them: the escaped text is not the canonical form, and its digest does not commit to this payload. An engine that escapes them rejects p45 and accepts this vector; one that accepts either form accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "\u2028\u2029"
+    },
+    "expected_digest": "0x19737cb4f83ac2db50676aae550fa02fe6076dd74fc940c1ca659f256f2ccd90"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "n60-independence-urn-encoded-trailing-dot-segment",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "A `..` segment written as %2E%2E at the end of an attestor outside the parties. It decodes to `..`, a dot-segment, so the identifier is not evaluable, and the reject comes from the identifier rule alone. The check runs after decoding and before the trailing strip. An engine that looks for dot-segments before decoding, that looks only for `.`, or that strips the trailing `/..` first reads org:trustline-custody/eu-west/witness and accepts; so does one that resolves the segments. Under the same rule, agent:caldera/ap-pilot/witness/.. never counts as an attestor outside the transaction.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-west/witness/%2E%2E"
+      }
+    ]
+  }
+}

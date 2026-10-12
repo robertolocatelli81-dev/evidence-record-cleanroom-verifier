@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """verify_tersign.py — INDEPENDENT (clean-room) structural verifier for the Tersign
-`evidence-record-conformance` suite v0.5.3 (69 vectors, upstream commit 0eda3038).
+`evidence-record-conformance` suite v0.5.7 (162 vectors, upstream tag v0.5.7 = commit 112b3ed6; the same
+MANIFEST.json and vectors at 9be9eec9). Written first against v0.5.3 (69 vectors, upstream commit 0eda3038);
+aligned to v0.5.7 on 2026-10-12 from the v0.5.7 MANIFEST.json rule texts and vector files only.
 
 Written 2026-09-28 in a separate, isolated session (clean room) from ONLY:
   * spec/MANIFEST.json  (rule texts per kind, reject reasons, profile)
@@ -9,10 +11,12 @@ Written 2026-09-28 in a separate, isolated session (clean room) from ONLY:
   * public specifications read online: RFC 8785 (JCS), RFC 7493 (I-JSON),
     x402 PR #2853 `specs/extensions/compliance_fields.md` @ b8a81c0 (read via jsdelivr),
     MCP issue #3004 (comments read via api.github.com).
-NOT read: Tersign's verify.py / keccak.py / tools/ / README / TypeScript engine.
+NOT read: Tersign's verify.py / keccak.py / tools/ / crypto/ / README / CONTRIBUTORS / TypeScript engine
+(neither in the 2026-09-28 session nor in the 2026-10-12 alignment to v0.5.7).
 
 Usage:
-    python3 verify_tersign.py spec/                # run the 69 vectors, print verdict+reason, exit 1 on discord
+    python3 verify_tersign.py spec-0.5.7/          # run the 162 vectors of v0.5.7, print verdict+reason, exit 1 on discord
+    python3 verify_tersign.py spec/                # the 69 vectors of v0.5.3 (byte-identical to the same files in v0.5.7)
     python3 verify_tersign.py spec/ --json out.json
     python3 verify_tersign.py spec/ --ablate keccak_to_sha3     # disable one rule (ablation study)
     python3 verify_tersign.py spec/ --flip-expect               # positive control on the harness itself
@@ -36,8 +40,8 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-__version__ = "0.1.0"
-SUITE_VERSION = "0.5.3"
+__version__ = "0.2.0"
+SUITE_VERSION = "0.5.7"
 
 # ════════════════════════════════════════════════════════════════════════════════════════
 # 0. Reject reasons — the closed vocabulary used by MANIFEST.json `reason` fields.
@@ -80,6 +84,15 @@ ABLATIONS = {
     "no_coverage_bound": "boundary_binding does not compare covered_through with attestedPrefixLength",
     "phase_any": "phase_claim accepts any phase token (no vocabulary, no equality)",
     "no_unknown_claim_reject": "unknown independence claim tokens are ignored instead of rejected",
+    # added 2026-10-12 with the v0.5.7 rules (each one rule of the v0.5.7 MANIFEST, see the code that reads it)
+    "no_seq_domain": "chain_link accepts any uint64 seq instead of an integer token in [1, 2^53-1]",
+    "no_surrogate_first": "payload_text: number tokens are checked before an unpaired surrogate",
+    "no_own_reason": "offer/decision-evidence/boundary criteria name canonicalization_reject for an object with no canonical form",
+    "no_pair_join": "a surrogate pair written half raw, half escaped stays two code points (names compared as code points)",
+    "python_whitespace_strip": "identifiers and digests stripped with Python str.strip() (also strips U+001C-U+001F)",
+    "no_percent_rule": "percent-encoded triplets are neither decoded nor refused",
+    "no_dot_segment_rule": "`?` and dot-segments do not make an identifier unparseable",
+    "no_address_alias": "a scheme-qualified identifier ending in a 0x-address does not name that address",
 }
 _ABLATE: Set[str] = set()
 
@@ -180,10 +193,27 @@ class DuplicateName(ValueError):
     pass
 
 
+# MANIFEST v0.5.7 "canonicalization": duplicate names reject "where names compare after decoding, as UTF-16 code units,
+# and only within one object, so a surrogate pair written with one half raw and the other escaped repeats the same pair
+# written as two escapes (canonicalization_reject; p30/n41/n42/n93)". Python's json joins only an ESCAPED pair; a pair
+# whose high half is a raw code unit (possible only inside a str such as `payload_text`, which the vector file carries
+# as an escape) decodes to two code points. _join_pairs re-reads every string as UTF-16 code units, so both spellings
+# become the same code point. READING (declared, "no vector pins whether a pair written half raw accepts where it
+# repeats no name"): after the join such a pair is an ordinary paired code point, so it canonicalizes and accepts.
+_RE_SURROGATE = re.compile("[\ud800-\udfff]")
+
+
+def _join_pairs(t: str) -> str:
+    if not _on("no_pair_join") or not _RE_SURROGATE.search(t):
+        return t
+    return t.encode("utf-16-le", "surrogatepass").decode("utf-16-le", "surrogatepass")
+
+
 def _pairs_no_dup(pairs):
     seen = set()
     out = {}
     for k, v in pairs:
+        k = _join_pairs(k)
         if k in seen:
             raise DuplicateName(f"duplicate object name {k!r}")
         seen.add(k)
@@ -196,14 +226,66 @@ def _bad_constant(name):
     raise ValueError(f"non-JSON constant {name}")
 
 
+def _join_values(x: Any) -> Any:
+    """Iterative walk (no recursion limit beyond the parser's own): joins half-raw pairs in string VALUES."""
+    if isinstance(x, str):
+        return _join_pairs(x)
+    stack = [x]
+    while stack:
+        c = stack.pop()
+        if isinstance(c, dict):
+            for k, v in c.items():
+                if isinstance(v, str) and not isinstance(v, NumberToken):
+                    c[k] = _join_pairs(v)
+                elif isinstance(v, (dict, list)):
+                    stack.append(v)
+        elif isinstance(c, list):
+            for i, v in enumerate(c):
+                if isinstance(v, str) and not isinstance(v, NumberToken):
+                    c[i] = _join_pairs(v)
+                elif isinstance(v, (dict, list)):
+                    stack.append(v)
+    return x
+
+
 def load_json(text: str) -> Any:
-    return json.loads(text, parse_float=NumberToken, parse_constant=_bad_constant,
-                      object_pairs_hook=_pairs_no_dup)
+    v = json.loads(text, parse_float=NumberToken, parse_constant=_bad_constant,
+                   object_pairs_hook=_pairs_no_dup)
+    if _RE_SURROGATE.search(text):    # a split pair needs a raw surrogate code unit in the text itself
+        v = _join_values(v)
+    return v
+
+
+def lone_surrogate(x: Any) -> Optional[str]:
+    """The first string (name or value) holding a surrogate that is not half of a pair, or None. Iterative.
+    MANIFEST v0.5.7 "canonicalization": "a name or string value containing a surrogate that is not half of a pair is
+    outside I-JSON (RFC 7493 section 2.1) and has no canonical form (RFC 8785 section 3.2.2.2)"."""
+    stack = [x]
+    while stack:
+        c = stack.pop()
+        if isinstance(c, str) and not isinstance(c, NumberToken):
+            if _RE_SURROGATE.search(c):
+                return c
+        elif isinstance(c, dict):
+            for k, v in c.items():
+                if isinstance(k, str) and _RE_SURROGATE.search(k):
+                    return k
+                stack.append(v)
+        elif isinstance(c, list):
+            stack.extend(c)
+    return None
 
 
 def is_int(v: Any) -> bool:
     """An integer TOKEN: Python int that is neither bool nor a NumberToken."""
     return isinstance(v, int) and not isinstance(v, bool)
+
+
+def is_text(v: Any) -> bool:
+    """A JSON STRING. NumberToken subclasses str only to keep a non-integer number token's text; the JSON value 1.5 is
+    a number, not a string (until 2026-10-12, review: `transaction: 1.5` committed a settlement and `deliverable_bytes:
+    1.5` was hashed as the text "1.5")."""
+    return isinstance(v, str) and not isinstance(v, NumberToken)
 
 
 # ════════════════════════════════════════════════════════════════════════════════════════
@@ -303,19 +385,43 @@ def content_address(payload: Any) -> bytes:
 # ════════════════════════════════════════════════════════════════════════════════════════
 # 4. Small parsers with fail-closed behaviour.
 # ════════════════════════════════════════════════════════════════════════════════════════
-_RE_HEX32 = re.compile(r"0x[0-9a-fA-F]{64}")
+_RE_HEX32 = re.compile(r"0x[0-9a-f]{64}\Z")
+
+# MANIFEST v0.5.7 "identifier_normalization" (1): "Strip leading and trailing characters with the Unicode White_Space
+# property, U+0009-U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000-U+200A, U+2028, U+2029, U+202F, U+205F and U+3000,
+# and no others (n13/p33); a character without the property is not stripped, so an identifier padded with U+FEFF (a
+# format character) or U+001C (a control character without the property) does not parse (n52/n53)".
+# Python's str.strip() is NOT this set: it also strips U+001C-U+001F (str.isspace() is True for them).
+WHITE_SPACE = ("\u0009\u000a\u000b\u000c\u000d\u0020\u0085\u00a0\u1680"
+               + "".join(chr(c) for c in range(0x2000, 0x200B)) + "\u2028\u2029\u202f\u205f\u3000")
+
+
+def ws_strip(t: str) -> str:
+    if not _on("python_whitespace_strip"):
+        return t.strip()
+    return t.strip(WHITE_SPACE)
+
+
+def parse_digest(v: Any) -> Optional[bytes]:
+    """A 32-byte digest written as 0x + 64 hex digits, or None. MANIFEST v0.5.7 "identifier_normalization", last
+    sentence: "Digests compare after the same whitespace strip, lowercased". READING (declared): the lowercase applies
+    to the whole stripped string, so a `0X` prefix reads as `0x` (no vector pins a digest written with `0X`)."""
+    if not isinstance(v, str):
+        return None
+    t = ws_strip(v).lower()
+    if not _RE_HEX32.match(t):
+        return None
+    return bytes.fromhex(t[2:])
 
 
 def hex32(v: Any, reason: str, what: str) -> bytes:
-    """A 32-byte digest written as 0x + 64 hex digits. MANIFEST "identifier_normalization":
-    "digests compare after strip + lowercase; identifiers that do not parse after normalization
-    fail closed" — so surrounding whitespace is tolerated, anything else rejects with the kind's reason."""
+    """parse_digest, failing closed with the kind's reason."""
     if not isinstance(v, str):
         raise Reject(reason, f"{what} is not a string")
-    t = v.strip()
-    if not _RE_HEX32.fullmatch(t):
+    d = parse_digest(v)
+    if d is None:
         raise Reject(reason, f"{what} is not a 0x-prefixed 32-byte hex digest")
-    return bytes.fromhex(t[2:].lower())
+    return d
 
 
 def need_dict(v: Any, reason: str, what: str) -> Dict[str, Any]:
@@ -349,7 +455,7 @@ def k_canonical_bytes(inp: Dict[str, Any]) -> str:
     # MANIFEST "canonicalization": "RFC 8785 (JCS); vector domain is I-JSON with integer numerics";
     # p25/n35 present the payload as raw text (`payload_text`) so the TOKEN class is observable.
     if "payload_text" in inp:
-        if not isinstance(inp["payload_text"], str):
+        if not is_text(inp["payload_text"]):
             raise Reject(R_CANON, "payload_text is not a string")
         try:
             payload = load_json(inp["payload_text"])
@@ -357,6 +463,12 @@ def k_canonical_bytes(inp: Dict[str, Any]) -> str:
             raise Reject(R_CANON, str(e))
         except ValueError as e:
             raise Reject(R_CANON, f"payload_text is not parseable JSON: {e}")
+        # MANIFEST v0.5.7 "canonicalization": a payload_text's "shape, an unpaired surrogate included, is decided before
+        # its number tokens (n92)". For a `payload` given as an object (not as text) no clause orders the two faults:
+        # there the number domain is met first while serializing (K2 below), and that order is a reading, not pinned.
+        lone = lone_surrogate(payload) if _on("no_surrogate_first") else None
+        if lone is not None:
+            raise Reject(R_CANON, f"payload_text holds an unpaired surrogate in {lone!r}: no canonical form (n81-n84, n92)")
     elif "payload" in inp:
         payload = inp["payload"]
     else:
@@ -385,8 +497,12 @@ def k_chain_link(inp: Dict[str, Any]) -> str:
     art = hex32(inp.get("artifact_digest"), R_CONTINUITY, "artifact_digest")
     prev = None if inp.get("prev_digest") is None else hex32(inp["prev_digest"], R_CONTINUITY, "prev_digest")
     seq = inp.get("seq")
-    if not is_int(seq) or not (0 <= seq < 2 ** 64):
-        raise Reject(R_CONTINUITY, "seq is not an integer token in uint64 range")
+    # MANIFEST v0.5.7 "chain_link": "seq is an integer TOKEN in [1, 2^53-1] ... A seq of 0 (n75), a seq past 2^53-1
+    # (n76), or a seq that is not an integer token (a fraction form, n77; an exponent form, n97; a string, n87; a
+    # boolean, n88; null, n89) rejects with continuity_reject; p4 accepts the lower bound and p43 the upper".
+    lo, hi = (1, I_JSON_MAX) if _on("no_seq_domain") else (0, 2 ** 64 - 1)
+    if not is_int(seq) or not (lo <= seq <= hi):
+        raise Reject(R_CONTINUITY, f"seq {seq!r} is not an integer token in [{lo}, {hi}]")
     got = chain_link(art, prev, seq)
     exp = hex32(inp.get("expected_link"), R_CONTINUITY, "expected_link")
     if got != exp:
@@ -527,34 +643,60 @@ def k_phase_claim(inp: Dict[str, Any]) -> str:
 
 
 # ── identities ─────────────────────────────────────────────────────────────────────────
-# MANIFEST "identifier_normalization": "two identity syntaxes … 0x-addresses compare after strip +
-# lowercase; scheme-qualified identifiers (lowercase alnum scheme, one colon, printable non-space ASCII
-# path) compare after strip, case-significant; … identifiers that do not parse after normalization fail closed".
-# n31: the verifier "folds toward SAME PARTY (case, trailing `/` `.` `#`)". x402 compliance-fields:
-# "the normalization MUST fold toward same party: … surrounding whitespace, letter case, an EIP-55
-# checksum variant, or trailing punctuation is that party". CONFLICT on case for scheme identifiers
-# (manifest: case-significant; n31 text / x402: fold) — the MANIFEST reading is implemented and the
-# conflict is declared in the report. No vector separates the two readings.
-_RE_ADDR = re.compile(r"0x[0-9a-fA-F]{40}")
-_RE_SCHEME = re.compile(r"([a-z0-9]+):([\x21-\x7e]+)")
+# MANIFEST v0.5.7 "identifier_normalization" (quoted in full in README.md): one rule for every identifier, in `parties`
+# and in an attestation's `by`, folding toward SAME PARTY; an identifier the rule cannot decide does not parse and
+# fails the claim closed. The steps below are numbered as in the manifest. (v0.5.3 read scheme-qualified identifiers
+# case-significant and with one colon only; v0.5.7 replaced that text, and p31/p37/p38/n45 pin the new one.)
+_RE_ADDR = re.compile(r"0[xX][0-9a-fA-F]{40}\Z")
+_RE_ADDR_LOWER = re.compile(r"0x[0-9a-f]{40}\Z")
+_RE_SCHEME_ANY = re.compile(r"[A-Za-z][A-Za-z0-9+.\-]*:[\x21-\x7e]+\Z")
+_RE_SCHEME_LOWER = re.compile(r"[a-z][a-z0-9+.\-]*:[\x21-\x7e]+\Z")
+_RE_TRIPLET = re.compile(r"%([0-9A-Fa-f]{2})")
+_UNRESERVED = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+
+
+def _decode_unreserved(t: str) -> str:
+    # (3) "Every percent-encoded triplet (either hex case) that encodes an unreserved character (A-Z a-z 0-9 `-` `.`
+    # `_` `~`) is decoded, in one left-to-right pass that is never repeated (RFC 3986 sections 6.2.2.2 and 2.4)".
+    # re.sub scans left to right over the ORIGINAL text and never rescans what it produced (n56: "%%37%34" -> "%74").
+    def one(m):
+        c = chr(int(m.group(1), 16))
+        return c if c in _UNRESERVED else m.group(0)
+    return _RE_TRIPLET.sub(one, t)
 
 
 def normalize_identity(v: Any) -> Optional[str]:
-    """Returns the comparison key, or None when the identifier does not parse (fail closed)."""
+    """Returns the comparison key, or None when the identifier does not parse (fail closed).
+    The key is "addr:0x<40 lowercase hex>" when the identifier names a 0x-address (step 5), else "uri:<normalized>"."""
     if not isinstance(v, str):
         return None
     if not _on("no_identity_normalization"):
         return v if v else None
-    t = v.strip()
-    if _RE_ADDR.fullmatch(t):
-        return "addr:" + t.lower()
-    m = _RE_SCHEME.fullmatch(t)
-    if m and ":" not in m.group(2):                   # "one colon" read strictly: the path carries none
-        path = m.group(2).rstrip("/.#")               # trailing punctuation folds toward same party (n31)
-        if not path:
+    t = ws_strip(v)                                    # (1) White_Space only, U+FEFF / U+001C are not stripped
+    if _RE_ADDR.match(t):                              # (2) 0x or 0X, 40 hex digits either case, lowercased with
+        return "addr:" + t.lower()                     #     its prefix
+    if not _RE_SCHEME_ANY.match(t):                    # (3) letter, then letters/digits/+/./-, one colon, then one or
+        return None                                    #     more printable non-space ASCII; else (4) does not parse
+    if _on("no_percent_rule"):
+        t = _decode_unreserved(t)
+        if "%" in t:                                   # "if any `%` remains, the identifier does not parse"
             return None
-        return "uri:" + m.group(1) + ":" + path
-    return None
+    if _on("no_dot_segment_rule"):
+        if "?" in t:                                   # "If it contains `?` (a query component) ... it does not parse"
+            return None
+        path = t.split(":", 1)[1].split("#", 1)[0]     # "its path, from the colon to the first `?` or `#`"
+        if any(seg in (".", "..") for seg in path.split("/")):
+            return None                                # "has a segment that is exactly `.` or `..`"
+    t = t.lower().rstrip("/.#")                        # "The result is lowercased, the scheme included ... and every
+    if "#" in t:                                       #  trailing `/`, `.` and `#` is removed"; "if a `#` remains
+        return None                                    #  (a fragment with content), it does not parse"
+    if not _RE_SCHEME_LOWER.match(t):                  # "it must still match the grammar with a lowercase scheme and a
+        return None                                    #  non-empty path (n51)"
+    if _on("no_address_alias"):
+        last = t.rsplit(":", 1)[1]                     # (5) "a scheme-qualified identifier whose final colon-separated
+        if _RE_ADDR_LOWER.match(last):                 #  component is a 0x-address ... names that address, whatever
+            return "addr:" + last                      #  the scheme ... on either side and whatever the chain reference"
+    return "uri:" + t
 
 
 CLAIM_ASSERTING = ("independent",)
@@ -563,8 +705,9 @@ DERIVABLE_FIELDS = ("settlement_result", "deliverable_bytes", "deliverable_diges
 
 
 def derive_commitments(inp: Dict[str, Any]) -> Optional[Set[str]]:
-    """MANIFEST "commitment_derivation": "`settlement` when settlement_result.success is true and
-    transaction is a non-empty string; `network` when settlement_result.network is a non-empty string;
+    """MANIFEST "commitment_derivation" (v0.5.3 text; v0.5.7 adds the whitespace strip, see below): "`settlement` when
+    settlement_result.success is true and transaction is a non-empty string; `network` when settlement_result.network
+    is a non-empty string;
     `delivery` when keccak256(utf8(deliverable_bytes)) == deliverable_digest. A record presenting none of
     these fields has no evaluable commitments (…); a record presenting them and committing to none has
     an EMPTY commitment set". Returns None when unevaluable."""
@@ -573,16 +716,24 @@ def derive_commitments(inp: Dict[str, Any]) -> Optional[Set[str]]:
     c: Set[str] = set()
     sr = inp.get("settlement_result")
     if isinstance(sr, dict):
+        # v0.5.7: "transaction is a string that is not empty after the whitespace strip of identifier_normalization
+        # (a result with no transaction member commits to no settlement: n104/p54 ...)"; network: "such a string".
         tx = sr.get("transaction")
-        if sr.get("success") is True and isinstance(tx, str) and tx != "":
+        if sr.get("success") is True and is_text(tx) and ws_strip(tx) != "":
             c.add("settlement")
         net = sr.get("network")
-        if isinstance(net, str) and net != "":
+        if is_text(net) and ws_strip(net) != "":
             c.add("network")
     if "deliverable_bytes" in inp and "deliverable_digest" in inp:
-        b, d = inp["deliverable_bytes"], inp["deliverable_digest"]
-        if isinstance(b, str) and isinstance(d, str) and _RE_HEX32.fullmatch(d.strip()):
-            if keccak256(b.encode("utf-8")) == bytes.fromhex(d.strip()[2:]):
+        b, d = inp["deliverable_bytes"], parse_digest(inp["deliverable_digest"])
+        if is_text(b) and d is not None:
+            try:
+                bb = b.encode("utf-8")
+            except UnicodeEncodeError:
+                # no clause or vector decides this case: fail closed with the criterion's reason (until 2026-10-12 it
+                # surfaced as input_reject "internal error UnicodeEncodeError")
+                raise Reject(R_INDEPENDENCE, "deliverable_bytes holds an unpaired surrogate: no utf8 bytes to digest")
+            if keccak256(bb) == d:
                 c.add("delivery")
     return c
 
@@ -652,6 +803,22 @@ def k_independence_claim(inp: Dict[str, Any]) -> str:
     return f"{outside} non-party attestor(s); no scope asserted"
 
 
+def _bound_digest(obj: Any, reason: str, what: str) -> bytes:
+    """keccak256 of the canonical bytes of an object a criterion BINDS. MANIFEST v0.5.7
+    "canonicalization": an unpaired surrogate has no canonical form, "and a criterion that digests an object rejects it
+    with its own reason (binding_reject for an offer, n94, and for decision evidence, n95; boundary_reject for a
+    boundary prefix, n96)". READING (declared): every canonicalization_reject met while digesting the bound object
+    (an unpaired surrogate, or nesting deeper than 512) takes the criterion's reason; a non-integer number token keeps
+    number_domain_reject, since no clause or vector moves it."""
+    try:
+        cb = jcs(obj)
+    except Reject as r:
+        if r.reason == R_CANON and _on("no_own_reason"):
+            raise Reject(reason, f"{what} has no canonical form ({r.detail}): no digest of it exists to bind")
+        raise
+    return keccak256(cb)
+
+
 def k_offer_binding(inp: Dict[str, Any]) -> str:
     # MANIFEST "offer_binding": "receipt.offerDigest = keccak256(utf8(canonical(offer))); a receipt that
     # commits to no offer digest cannot bind terms and fails closed" (reason binding_reject: n19).
@@ -660,7 +827,7 @@ def k_offer_binding(inp: Dict[str, Any]) -> str:
     if "offerDigest" not in receipt:
         raise Reject(R_BINDING, "receipt commits to no offerDigest: terms cannot be bound (fails closed)")
     claimed = hex32(receipt["offerDigest"], R_BINDING, "receipt.offerDigest")
-    got = content_address(offer)
+    got = _bound_digest(offer, R_BINDING, "offer")
     if got != claimed:
         raise Reject(R_BINDING, f"keccak256(canonical(offer)) = 0x{got.hex()} != receipt.offerDigest (terms substituted)")
     return "receipt.offerDigest binds the presented offer"
@@ -675,7 +842,7 @@ def k_decision_evidence_binding(inp: Dict[str, Any]) -> str:
     if "decisionEvidenceDigest" not in rec:
         raise Reject(R_BINDING, "record carries no decisionEvidenceDigest: the presented reduction is unbound")
     claimed = hex32(rec["decisionEvidenceDigest"], R_BINDING, "record.decisionEvidenceDigest")
-    got = content_address(ev)
+    got = _bound_digest(ev, R_BINDING, "decision_evidence")
     if got != claimed:
         raise Reject(R_BINDING, f"keccak256(canonical(decision_evidence)) = 0x{got.hex()} != committed digest (substitution)")
     return "record binds the exact decision-evidence object"
@@ -706,7 +873,7 @@ def k_boundary_binding(inp: Dict[str, Any]) -> str:
     # (a) prefix digest — READING: keccak256(utf8(canonical(prefix))) over the prefix as a JSON array,
     # under the PRIOR suite whatever `toSuite` says (calibrated on p18's pinned digest, see report).
     claimed = hex32(ev.get("prefixDigest"), R_BOUNDARY, "prefixDigest")
-    got = keccak256(jcs(prefix))
+    got = _bound_digest(prefix, R_BOUNDARY, "prefix")
     if got != claimed:
         raise Reject(R_BOUNDARY, f"prefixDigest does not bind the prefix under {PRIOR_SUITE} (recomputed 0x{got.hex()}) — re-digested or forged history")
     # (b) position — READING: the event sits at the continuation point, position == number of prefix events.
@@ -1015,7 +1182,10 @@ def mutations_for(vec: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
         if "deliverable_bytes" in inp:
             mut("independence:tamper-deliverable", lambda i: i.__setitem__("deliverable_bytes", i["deliverable_bytes"] + " "))
     if isinstance(inp.get("record"), dict) and "economic_phase" in inp["record"]:
-        mut("phase:record-funding", lambda i: i["record"].__setitem__("economic_phase", "funding"))
+        # 2026-10-12: was "set the record's phase to funding", a no-op on a funding record (p47, new in v0.5.7: the
+        # mutant stayed valid); now the record's phase becomes a DIFFERENT vocabulary word
+        mut("phase:record-other-phase", lambda i: i["record"].__setitem__(
+            "economic_phase", "delivery" if i["record"]["economic_phase"] == "funding" else "funding"))
     return out
 
 

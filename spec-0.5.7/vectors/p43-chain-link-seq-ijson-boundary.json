@@ -1,0 +1,12 @@
+{
+  "id": "p43-chain-link-seq-ijson-boundary",
+  "kind": "chain_link",
+  "expect": "valid",
+  "description": "The top of the sequence domain: seq = 2^53-1, the largest integer every JSON engine carries exactly, on p6's second record over its predecessor, link recomputed. Valid. Accepting twin of n76: an engine that defends the bound by stopping short of it rejects here.",
+  "input": {
+    "artifact_digest": "0x5a811da59710bb115a7744189a9732f27883180f5821caa7a99979bc33257c29",
+    "prev_digest": "0x4672842890404de85d907f76149e3edb90687d233ad7efbaabf887f888053ef4",
+    "seq": 9007199254740991,
+    "expected_link": "0x53be811188c5bc2b8fe5a5dc49560d226b4ff796c682dd71125f021d2c86fcb3"
+  }
+}

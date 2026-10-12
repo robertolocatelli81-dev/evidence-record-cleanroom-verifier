@@ -1,0 +1,19 @@
+{
+  "id": "n51-independence-urn-empty-after-normalization",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "An identifier that is empty after normalization: org:/ loses its trailing `/` and leaves no path. It names no party, so it cannot count as one outside the transaction; an identifier that does not parse after normalization fails closed. An engine that checks the grammar only before normalizing accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:/"
+      }
+    ]
+  }
+}

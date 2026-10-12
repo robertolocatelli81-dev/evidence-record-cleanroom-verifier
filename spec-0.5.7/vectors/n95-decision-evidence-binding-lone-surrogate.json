@@ -1,0 +1,47 @@
+{
+  "id": "n95-decision-evidence-binding-lone-surrogate",
+  "kind": "decision_evidence_binding",
+  "expect": "reject",
+  "reason": "binding_reject",
+  "description": "p19 decision evidence with a lone high surrogate, D800, appended to policy.id, and a record committing to the digest a JSON.stringify-based canonicalizer computes for it, with the code unit escaped. The object has no canonical form, so the binding rejects with binding_reject. An engine that skips the well-formedness check when it digests decision evidence recomputes the committed digest and accepts. p19 is the accepting twin.",
+  "input": {
+    "record": {
+      "outcome": "allowed",
+      "decisionEvidenceDigest": "0xa42da1adef51f6526c25c5e8d97cf205e7d3401d4e5af013f719f0598774260d"
+    },
+    "decision_evidence": {
+      "requested": {
+        "capabilities": [
+          "read"
+        ],
+        "budgets": {
+          "nodes": "10"
+        }
+      },
+      "hostAllowed": {
+        "capabilities": [
+          "read"
+        ],
+        "budgets": {
+          "nodes": "10"
+        }
+      },
+      "effective": {
+        "capabilities": [
+          "read"
+        ],
+        "budgets": {
+          "nodes": "10"
+        }
+      },
+      "delta": {
+        "removed": {},
+        "reducedBudgets": {}
+      },
+      "policy": {
+        "id": "host-default\ud800",
+        "version": "1"
+      }
+    }
+  }
+}

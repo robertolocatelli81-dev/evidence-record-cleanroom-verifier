@@ -1,0 +1,12 @@
+{
+  "id": "p52-digest-del-and-c1-controls-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "A string value holding DEL (U+007F) and the C1 controls U+0080 and U+009F. They are control characters in Unicode's general category Cc, but outside the range RFC 8785 section 3.2.2.2 escapes (U+0000-U+001F), so the canonical text carries them as is, and the digest is keccak256 over its UTF-8 bytes, 7f c2 80 c2 9f for the three. Accepting twin of n102: an engine that escapes every control character, not only that range, rejects here.",
+  "input": {
+    "payload": {
+      "a": "\u007f\u0080\u009f"
+    },
+    "expected_digest": "0xf79b409d5519ccbbd07857253a9fa1998c37b373025e11c9e8e82b68402beb6d"
+  }
+}

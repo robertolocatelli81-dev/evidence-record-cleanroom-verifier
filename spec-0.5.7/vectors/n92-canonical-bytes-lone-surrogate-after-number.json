@@ -1,0 +1,11 @@
+{
+  "id": "n92-canonical-bytes-lone-surrogate-after-number",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "payload_text {\"a\":2.0,\"b\":\"\\ud800\"}: an integer-valued float token, which n35 rejects with number_domain_reject, and after it a lone high surrogate, which n81 rejects with canonicalization_reject. With both faults in one text, the rule decides which reason it names: the shape of the text, an unpaired surrogate included, is decided before its number tokens, so this rejects with canonicalization_reject. An engine that finds the surrogate only while serializing meets the number first and names number_domain_reject. claimed_canonical is the text an engine that checks neither emits (JSON.parse collapses 2.0 to 2, and JSON.stringify escapes the code unit), so such an engine accepts.",
+  "input": {
+    "payload_text": "{\"a\":2.0,\"b\":\"\\ud800\"}",
+    "claimed_canonical": "{\"a\":2,\"b\":\"\\ud800\"}"
+  }
+}

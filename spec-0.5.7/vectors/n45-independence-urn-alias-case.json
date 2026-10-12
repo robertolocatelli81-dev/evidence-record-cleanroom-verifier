@@ -1,0 +1,19 @@
+{
+  "id": "n45-independence-urn-alias-case",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by letter case: the deployer attests as org:Caldera-robotics while the parties list carries org:caldera-robotics. Letter case folds toward the same party, so the record is attested only by parties. An engine that compares scheme-qualified identifiers case-significantly counts the alias as an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:Caldera-robotics"
+      }
+    ]
+  }
+}

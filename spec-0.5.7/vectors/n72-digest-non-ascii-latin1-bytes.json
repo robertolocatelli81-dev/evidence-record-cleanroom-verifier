@@ -1,0 +1,13 @@
+{
+  "id": "n72-digest-non-ascii-latin1-bytes",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p40: the same payload, with expected_digest computed over the canonical text encoded one byte per UTF-16 code unit, each truncated to its low eight bits. Those are the bytes Node's Buffer.from(text, \"latin1\") (alias \"binary\") produces, so this is the digest of a pipeline that hashes the canonical string through that encoding: \u4e2d (U+4E2D) becomes 0x2d and \u6587 (U+6587) 0x87, and the value is lost. RFC 8785 section 3.2.4 requires UTF-8. An engine that hashes Latin-1 bytes rejects p39 to p42 and p14 and accepts this vector; one that accepts either encoding accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "\u4e2d\u6587"
+    },
+    "expected_digest": "0x8aba3cbf3d3eb38236db75c957df0e0c2835122609312f0c5d22cf59c5725f6e"
+  }
+}
