@@ -1,0 +1,34 @@
+{
+  "id": "n40-equivocating-record-at-committed-position",
+  "kind": "chain_commitment",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "Equivocation against a committed prefix. The issuer's other record carrying seq 2 and the same correctionSeq (n39's second seq 2) is presented alone at position 2, in place of the committed record, with prevs and links recomputed. This presentation passes the structural chain_set predicate under the same head digest as p29 (asserted at generation): an issuer-only sequence cannot tell the two apart. Only head.acc, the commitment over every link, does, and it rejects (`accumulator mismatch`): two records cannot occupy one committed position. The arithmetic is n36's substitution at an interior position; what differs is the substituted record, a second record under an existing number rather than a forgery.",
+  "input": {
+    "head": {
+      "seq": 3,
+      "digest": "0x4cccd4e30892574acf4911c9a41445aace4f8c440c7208a412b2c11b00393713",
+      "acc": "0x2a1fe13ab3b6da8e6cc2486e58c4303aa7ecac2ae568bc3fdc21eb42a8a47cd8"
+    },
+    "records": [
+      {
+        "seq": 1,
+        "artifact_digest": "0x1712e679abe04f5c28e6da42f11f5a9b9f559248f7ac60add74af52fe847d6de",
+        "prev_digest": null,
+        "link": "0x8e0e243a003b6a0658b8674a9e0ecb6d730234013e380e87735342e596bb363f"
+      },
+      {
+        "seq": 2,
+        "artifact_digest": "0x1193b6afbfdbc964779664e695e1e4ad25f1081e68f5449a08c28d8aa69cdc73",
+        "prev_digest": "0x1712e679abe04f5c28e6da42f11f5a9b9f559248f7ac60add74af52fe847d6de",
+        "link": "0x1057b71c42c303e9ae756a90975ad5aa58ce4f934deff8744b543b31e0aa6b45"
+      },
+      {
+        "seq": 3,
+        "artifact_digest": "0x4cccd4e30892574acf4911c9a41445aace4f8c440c7208a412b2c11b00393713",
+        "prev_digest": "0x1193b6afbfdbc964779664e695e1e4ad25f1081e68f5449a08c28d8aa69cdc73",
+        "link": "0x231e16e0a4fe8f07a8d5882c81fcd4ec37fb47ba90a0b77fab0c97f548a73657"
+      }
+    ]
+  }
+}

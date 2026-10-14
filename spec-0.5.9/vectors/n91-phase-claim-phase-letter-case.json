@@ -1,0 +1,13 @@
+{
+  "id": "n91-phase-claim-phase-letter-case",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "A record whose economic_phase is \"Delivery\", presented as delivery. The vocabulary is closed and its tokens compare as exact strings: \"Delivery\" is not \"delivery\", so the record carries no phase this verifier can interpret, and it rejects. An engine that case-folds phase tokens accepts. p7 is the accepting twin.",
+  "input": {
+    "record": {
+      "economic_phase": "Delivery"
+    },
+    "presented_as": "delivery"
+  }
+}

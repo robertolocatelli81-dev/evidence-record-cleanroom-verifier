@@ -1,0 +1,19 @@
+{
+  "id": "n52-independence-identifier-format-character-padding",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "U+FEFF at the edge of an attestor identifier. It is a format character, not White_Space, so it is not stripped and the identifier does not parse, as U+200B inside one does not (n14): the claim fails closed. JavaScript's trim() removes U+FEFF, so an engine that strips with it counts this attestor, a party outside the transaction, as evaluable and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "\ufefforg:trustline-custody/eu-west"
+      }
+    ]
+  }
+}

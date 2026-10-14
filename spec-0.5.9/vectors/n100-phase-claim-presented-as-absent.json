@@ -1,0 +1,13 @@
+{
+  "id": "n100-phase-claim-presented-as-absent",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "p7 with presented_as absent. presented_as must equal the record's phase, and an absent value equals no phase, so this rejects. An engine that defaults presented_as to the record's own phase accepts every record presented as nothing. p7 is the accepting twin.",
+  "input": {
+    "record": {
+      "economic_phase": "delivery",
+      "deliverable_digest": "0x4672842890404de85d907f76149e3edb90687d233ad7efbaabf887f888053ef4"
+    }
+  }
+}

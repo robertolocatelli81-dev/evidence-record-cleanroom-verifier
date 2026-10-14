@@ -1,0 +1,19 @@
+{
+  "id": "n53-independence-identifier-control-character-padding",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "U+001C at the edge of an attestor identifier. It is a control character, not White_Space, so it is not stripped and the identifier does not parse: the claim fails closed. Python's str.strip() removes U+001C-U+001F, so an engine that strips with it counts this attestor, a party outside the transaction, as evaluable and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/eu-west\u001c"
+      }
+    ]
+  }
+}

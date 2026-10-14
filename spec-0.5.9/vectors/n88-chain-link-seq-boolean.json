@@ -1,0 +1,13 @@
+{
+  "id": "n88-chain-link-seq-boolean",
+  "kind": "chain_link",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "p4 with seq written as the JSON literal true and p4 link for seq 1. A boolean is not an integer token, so this rejects. In Python bool is a subclass of int and True == 1, so an engine that checks isinstance(seq, int) alone accepts; so does one that coerces seq with Number(). p4 is the accepting twin.",
+  "input": {
+    "artifact_digest": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+    "prev_digest": null,
+    "seq": true,
+    "expected_link": "0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5"
+  }
+}

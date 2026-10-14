@@ -1,0 +1,11 @@
+{
+  "id": "n79-phase-claim-record-not-an-object",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "The record presented as an explicit JSON null, as delivery evidence. A record that is not an object carries no phase and rejects; without the object check, both engines raise on the key test and return no verdict. p7 is the accepting twin.",
+  "input": {
+    "record": null,
+    "presented_as": "delivery"
+  }
+}

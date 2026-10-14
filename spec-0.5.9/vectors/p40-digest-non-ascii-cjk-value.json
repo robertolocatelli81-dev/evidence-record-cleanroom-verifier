@@ -1,0 +1,12 @@
+{
+  "id": "p40-digest-non-ascii-cjk-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "A non-ASCII string value from the Basic Multilingual Plane above Latin-1: {\"a\":\"\u4e2d\u6587\"} (U+4E2D U+6587), each a three-byte UTF-8 sequence. The digest is keccak256 over the UTF-8 bytes of the canonical form, code points as is (RFC 8785 sections 3.2.2.2 and 3.2.4). Accepting twin of n72.",
+  "input": {
+    "payload": {
+      "a": "\u4e2d\u6587"
+    },
+    "expected_digest": "0xc2a999b5134e3729e3ed6707e58f4783b04995ff915d6665f966362032d7b1c2"
+  }
+}

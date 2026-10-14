@@ -1,0 +1,10 @@
+{
+  "id": "p53-canonical-bytes-names-differ-only-in-normalization",
+  "kind": "canonical_bytes",
+  "expect": "valid",
+  "description": "payload_text {\"\u00e9\":1,\"e\u0301\":2}: the name U+00E9, and the name e + U+0301, which is U+00E9 decomposed (NFD). Names compare as UTF-16 code units, 00E9 against 0065 0301, and no normalization applies (RFC 8785 section 3.1), so the text repeats no name and has a canonical form; the decomposed name sorts first. An engine that normalizes names before its duplicate check reads one name twice and rejects here. n93 is the duplicate that a comparison by code units does find.",
+  "input": {
+    "payload_text": "{\"\u00e9\":1,\"e\u0301\":2}",
+    "claimed_canonical": "{\"e\u0301\":2,\"\u00e9\":1}"
+  }
+}

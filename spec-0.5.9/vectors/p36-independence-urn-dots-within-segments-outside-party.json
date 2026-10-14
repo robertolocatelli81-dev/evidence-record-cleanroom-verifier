@@ -1,0 +1,18 @@
+{
+  "id": "p36-independence-urn-dots-within-segments-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Near-miss accepting vector for n59/n60/n67/n70: a dot-segment is never evaluable, so the class has no accepting twin; this vector carries an evaluable form beside it instead, dots that are not dot-segments, on an attestor outside the parties. The segments .well-known, ... and ..v2 are ordinary segments (only a complete `.` or `..` is a dot-segment, RFC 3986 section 3.3), so the identifier is evaluable, is not a party, and the claim holds. An engine that rejects any segment starting with a dot, or any run of dots, rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline-custody/.well-known/.../..v2"
+      }
+    ]
+  }
+}

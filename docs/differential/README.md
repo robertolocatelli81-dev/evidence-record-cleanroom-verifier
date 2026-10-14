@@ -38,6 +38,14 @@ wrote the verifier; the clean-room session and this repository's code never open
 
 ## Measured with verifier 0.1.0 (2026-09-29; identical on Python 3.9.25 / 3.11.2 / 3.13.15; logs `results/compare_py*.log`)
 
+Verifier 0.3.0 (2026-10-14, aligned to suite v0.5.9), same recording: 512/524 accept / non-accept, 428/430 on the
+variants that change `input`, 490/492 verdict + reason; ours valid 123, reject 401; 1 case where upstream v0.5.3 rejects
+and we accept (`mut0391`, as with 0.2.0). The two `input` disagreements are `mut0375` (`attestedPrefixLength` 4 on a
+3-entry prefix: upstream v0.5.3 valid, ours reject by the v0.5.9 rule; its input is the suite's n153) and `mut0391`;
+`mut0359` now agrees (its input is v0.5.9's p63) and `mut0038` / `mut0492` (a head with no digest) now carry upstream's
+`completeness_reject` (v0.5.9 n165, whose input is `mut0038`'s). Per-variant rows in
+`../../results/v0.3.0/differential_compare_py*.json`.
+
 Verifier 0.2.0 (2026-10-12, aligned to suite v0.5.7), same recording: 511/524 accept / non-accept, 427/430 on the
 variants that change `input`, 487/492 verdict + reason; ours valid 122, reject 402; **1** case where upstream v0.5.3
 rejects and we accept: `mut0391`, p21 with its first party written `ORG:CALDERA-ROBOTICS`, unparseable under the v0.5.3

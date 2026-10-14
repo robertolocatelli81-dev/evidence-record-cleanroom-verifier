@@ -1,0 +1,18 @@
+{
+  "id": "p33-independence-identifier-whitespace-set",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Accepting twin for the whitespace set, whose rejecting side is n13 (a party padded with a space is that party). The set is the Unicode White_Space property, enumerated in identifier_normalization. Here an attestor outside the parties is padded with U+0085 and U+3000, and a party with U+00A0, all White_Space, so both identifiers parse and the claim holds. JavaScript's trim() does not remove U+0085, so an engine that strips with it rejects this input.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "\u00a0org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "\u0085org:trustline-custody/eu-west\u3000"
+      }
+    ]
+  }
+}

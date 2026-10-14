@@ -1,0 +1,13 @@
+{
+  "id": "n78-phase-claim-no-economic-phase",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "p7's record with economic_phase removed, presented as delivery. A record that carries no economic_phase is evidence of no phase and rejects. Until v0.5.5 no vector reached this branch: with it removed, the Python engine raises on this input and returns no verdict, while the TypeScript engine rejects through the vocabulary check, so there this vector pins the verdict rather than the branch. p7 is the accepting twin. Input from @Rul1an's report (issue #1).",
+  "input": {
+    "record": {
+      "deliverable_digest": "0x4672842890404de85d907f76149e3edb90687d233ad7efbaabf887f888053ef4"
+    },
+    "presented_as": "delivery"
+  }
+}

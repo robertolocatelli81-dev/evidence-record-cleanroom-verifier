@@ -1,0 +1,1098 @@
+[
+ {
+  "mutant": "abl:no_defined_members",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_cli_prints_members_escaped_and_never_crashes_on_them",
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_run_suite_one_planted_vector",
+   "test_single_vector_path_every_position_every_key",
+   "test_suite_057_concordant_flip_mutate",
+   "test_member_check_precedes_every_criterion",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 193/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:head_read_late",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_chain_set_head_is_read_before_the_records",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 237/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:no_head_seq_bound",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_huge_head_seq_rejects_fast",
+   "test_chain_set_head_is_read_before_the_records",
+   "test_integer_tokens_past_4300_digits_are_read_as_integers"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:absent_prev_rejects",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_crash_paths_are_rejects",
+   "test_chain_set_prev_digest_generative"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:zero_prev_as_bytes",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_genesis_prev_must_be_null",
+   "test_chain_set_prev_digest_generative"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:apl_required",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary",
+   "test_k3_no_coverage_claimed",
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_open_objects_decide_nothing",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 237/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:coverage_without_apl",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_k3_no_coverage_claimed",
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:claim_null_unknown",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_k1_claimed_absent_is_silence",
+   "test_independence_claim_vocabulary_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:empty_claim_lists_ok",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_independence_claim_vocabulary_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "abl:int_digit_limit",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_integer_tokens_past_4300_digits_are_read_as_integers"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M01 names case-insensitive",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_single_vector_path_every_position_every_key",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M02 names stripped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_single_vector_path_every_position_every_key",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M03 names NFKC",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M04 only first array entry",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_single_vector_path_every_position_every_key",
+   "test_member_check_precedes_every_criterion",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 234/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M05 stop at first non-object entry",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M06 nested closed object skipped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_single_vector_path_every_position_every_key",
+   "test_member_check_precedes_every_criterion",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 234/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M07 member check after criterion",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_single_vector_path_every_position_every_key",
+   "test_member_check_precedes_every_criterion",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 223/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M08 lists compare skipped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M09 exit ignores DIFFERS",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M10 role dropped from pinned list",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_single_vector_path_every_position_every_key",
+   "test_suite_concordant_and_flip_discordant",
+   "test_suite_057_concordant_flip_mutate",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_open_objects_decide_nothing",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 210/239"
+   ],
+   "spec-0.5.7": [
+    1,
+    "fully concordant 136/162"
+   ],
+   "spec": [
+    1,
+    "fully concordant 49/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M11 acc allowed in chain_set head",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M12 bound > to >=",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_chain_set_head_is_read_before_the_records"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M13 head.seq >= 0",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_chain_set_head_is_read_before_the_records"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M14 head digest reason continuity",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_chain_set_head_is_read_before_the_records",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 237/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M15 zero is null only at genesis",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_chain_set_prev_digest_generative"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M16 final head compare off",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_head_digest_mismatch",
+   "test_suite_057_concordant_flip_mutate",
+   "test_chain_set_head_is_read_before_the_records",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M17 empty prefix accepted",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary_attested_length_and_coverage_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M18 apl upper +1",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary_attested_length_within_prefix",
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 237/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M19 apl lower -1",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M20 apl null as absent",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M21 ct null as absent",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M22 ct >= apl",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_suite_concordant_and_flip_discordant",
+   "test_boundary",
+   "test_k3_no_coverage_claimed",
+   "test_boundary_attested_length_within_prefix",
+   "test_suite_057_concordant_flip_mutate",
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_open_objects_decide_nothing",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 237/239"
+   ],
+   "spec-0.5.7": [
+    1,
+    "fully concordant 160/162"
+   ],
+   "spec": [
+    1,
+    "fully concordant 67/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M23 ct >= -1",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_k3_no_coverage_claimed",
+   "test_boundary_attested_length_and_coverage_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M24 position only upper",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_boundary",
+   "test_boundary_attested_length_and_coverage_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M25 issuer_attested not silent",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_suite_concordant_and_flip_discordant",
+   "test_silence",
+   "test_suite_057_concordant_flip_mutate",
+   "test_independence_claim_vocabulary_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 238/239"
+   ],
+   "spec-0.5.7": [
+    1,
+    "fully concordant 161/162"
+   ],
+   "spec": [
+    1,
+    "fully concordant 68/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M26 silence tokens not dropped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_run_suite_names_members_planted_in_the_suite_itself",
+   "test_suite_concordant_and_flip_discordant",
+   "test_k1_claimed_absent_is_silence",
+   "test_silence",
+   "test_suite_057_concordant_flip_mutate",
+   "test_independence_claim_vocabulary_against_the_oracle",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 235/239"
+   ],
+   "spec-0.5.7": [
+    1,
+    "fully concordant 159/162"
+   ],
+   "spec": [
+    1,
+    "fully concordant 66/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M27 case-folded vocabulary",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_unknown_claim_fails_closed",
+   "test_independence_claim_vocabulary_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M28 array of any strings",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_silence",
+   "test_independence_claim_vocabulary_against_the_oracle"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M29 any independent suffices",
+  "status": "SURVIVED",
+  "unittest_rc": 0,
+  "failed_tests": [],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M30 chunk factor fixed",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_integer_tokens_past_4300_digits_are_read_as_integers"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M31 sign dropped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_integer_tokens_past_4300_digits_are_read_as_integers"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M32 _r catches TypeError",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_integer_tokens_past_4300_digits_are_read_as_integers"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M33 member mutants dropped",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M34 records entries not object -> skipped by criterion",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_non_object_entries_and_closed_objects"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    0,
+    "fully concordant 239/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ },
+ {
+  "mutant": "M35 n148 entries after non-object",
+  "status": "KILLED",
+  "unittest_rc": 1,
+  "failed_tests": [
+   "test_single_vector_path_every_position_every_key",
+   "test_member_check_precedes_every_criterion",
+   "test_near_spellings_of_every_defined_name_at_every_closed_object",
+   "test_non_object_entries_and_closed_objects",
+   "test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run",
+   "test_suite_059_concordant_flip_mutate"
+  ],
+  "suites": {
+   "spec-0.5.9": [
+    1,
+    "fully concordant 234/239"
+   ],
+   "spec-0.5.7": [
+    0,
+    "fully concordant 162/162"
+   ],
+   "spec": [
+    0,
+    "fully concordant 69/69"
+   ]
+  }
+ }
+]

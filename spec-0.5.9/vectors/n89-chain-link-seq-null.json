@@ -1,0 +1,13 @@
+{
+  "id": "n89-chain-link-seq-null",
+  "kind": "chain_link",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "p4 with seq written as null and p4 link for seq 1. null is not an integer token, so this rejects. An engine that defaults a missing or null seq to the genesis sequence number 1 recomputes the link and accepts. p4 is the accepting twin.",
+  "input": {
+    "artifact_digest": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+    "prev_digest": null,
+    "seq": null,
+    "expected_link": "0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5"
+  }
+}

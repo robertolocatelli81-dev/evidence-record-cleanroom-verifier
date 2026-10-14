@@ -1,0 +1,14 @@
+{
+  "id": "n90-phase-claim-delivery-presented-as-funding",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "p7 presented as funding: a delivery-phase record offered as evidence of funding, an earlier phase. n6 pins the other direction, a funding record presented as delivery. A record verifies as evidence of the phase it carries and of no other, so an engine that rejects only a record presented as a LATER phase passes n6 and accepts this vector. p7 is the accepting twin. Issue #9 listed an earlier phase presented among its coverage gaps.",
+  "input": {
+    "record": {
+      "economic_phase": "delivery",
+      "deliverable_digest": "0x4672842890404de85d907f76149e3edb90687d233ad7efbaabf887f888053ef4"
+    },
+    "presented_as": "funding"
+  }
+}

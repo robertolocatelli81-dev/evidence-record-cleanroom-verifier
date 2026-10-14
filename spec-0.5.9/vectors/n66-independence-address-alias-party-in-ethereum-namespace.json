@@ -1,0 +1,19 @@
+{
+  "id": "n66-independence-address-alias-party-in-ethereum-namespace",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "n65 from the party side: the party is listed as ethereum:<address> and the attestor as did:ethr:<address>, so neither side carries the bare address, a CAIP-10 account or a did:pkh. Both identifiers end in the same 0x-address, so the attestor is the party. An engine that derives the address from any namespace on the attestor side but only from the bare, CAIP-10 or did:pkh forms on the party side accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "ethereum:0xCa1De7A500000000000000000000000000000Bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "did:ethr:0xca1de7a500000000000000000000000000000bb0"
+      }
+    ]
+  }
+}

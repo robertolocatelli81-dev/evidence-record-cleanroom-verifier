@@ -1,0 +1,19 @@
+{
+  "id": "n54-independence-urn-alias-percent-encoded-unreserved-set",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Rejecting side of p34: the party is org:caldera_robotics~2 and the attestor writes it org:caldera%5Frobotics%7e%32. The triplets decode to `_`, `~` and `2`, so the attestor is the party and the record is attested only by parties. An engine that checks the decoded form for a leftover `%` but compares the identifier as written counts the alias as an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera_robotics~2",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:caldera%5Frobotics%7e%32"
+      }
+    ]
+  }
+}

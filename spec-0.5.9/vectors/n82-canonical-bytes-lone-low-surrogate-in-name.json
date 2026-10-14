@@ -1,0 +1,11 @@
+{
+  "id": "n82-canonical-bytes-lone-low-surrogate-in-name",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "p44 with the name's first half dropped: payload_text {\"\\udfb7\":\"\\ud842\\udfb7\"}, a lone LOW surrogate in a NAME. The rule covers names as well as values (RFC 7493 section 2.1), and a low half without its high half as well as the reverse, so a check that reads only values, or only looks for a high surrogate missing its low half, misses it. claimed_canonical carries the escape, {\"\\udfb7\":\"\ud842\udfb7\"}, the text JSON.stringify emits since ES2019, so an engine built on it that skips the check compares equal and accepts. Measured on v0.5.4's engines: TypeScript valid, Python number_domain_reject (its key sort raised a UnicodeEncodeError, which it read as a number-domain error).",
+  "input": {
+    "payload_text": "{\"\\udfb7\":\"\\ud842\\udfb7\"}",
+    "claimed_canonical": "{\"\\udfb7\":\"\ud842\udfb7\"}"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "n71-digest-non-ascii-escaped-before-hashing",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p39: the same payload, with expected_digest computed over {\"a\":\"\\u00e9\"}, \u00e9 written as a \\u escape. That is the text Python's json.dumps emits with its default ensure_ascii=True and separators=(\",\", \":\"), so it is the digest a canonicalizer built on json.dumps(value, sort_keys=True, separators=(\",\", \":\")) computes. RFC 8785 section 3.2.2.2 escapes only the control range, the quotation mark and the backslash, and serializes every other code point as is: the escaped text is not the canonical form, and its digest does not commit to this payload. An engine that escapes non-ASCII values rejects p39 to p42 and accepts this vector; one that accepts either form accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "\u00e9"
+    },
+    "expected_digest": "0x3bd85970909c557269daba588d4cbc85c83d4360ad9fb87a61bbb29b3f5d1be3"
+  }
+}

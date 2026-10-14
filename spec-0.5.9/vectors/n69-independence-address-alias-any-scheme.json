@@ -1,0 +1,19 @@
+{
+  "id": "n69-independence-address-alias-any-scheme",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "The address rule does not depend on the scheme. The party is a bare 0x-address and the attestor writes it as acct:<address>, in mixed case, under a scheme outside the CAIP-10, did:pkh, did:ethr and ethereum: forms that n63-n66 pin. Its final colon-separated component is the party's 0x-address, so the attestor is the party and the record is attested only by parties. An engine that derives the address only for a list of schemes (CAIP-10, did:pkh, did:ethr, ethereum: or any other finite list without acct:) counts an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "0xca1de7a500000000000000000000000000000bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "acct:0xCa1De7A500000000000000000000000000000Bb0"
+      }
+    ]
+  }
+}

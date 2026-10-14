@@ -1,0 +1,22 @@
+{
+  "id": "n63-independence-address-alias-caip10-and-did-pkh",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass across namespaces. The party is a bare 0x-address; the attestors write the same address as a CAIP-10 account on chain 8453 and as a did:pkh on chain 1, in mixed case. An identifier whose final colon-separated component is a 0x-address names that address, so both attestors are the party and the record is attested only by parties. An engine that compares the forms as distinct identifiers, or recognizes only one of the two forms, counts an outside attestor and accepts.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "0xca1de7a500000000000000000000000000000bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "eip155:8453:0xCa1De7A500000000000000000000000000000Bb0"
+      },
+      {
+        "by": "did:pkh:eip155:1:0xca1de7a500000000000000000000000000000bb0"
+      }
+    ]
+  }
+}

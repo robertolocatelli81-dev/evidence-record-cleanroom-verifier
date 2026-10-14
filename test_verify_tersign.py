@@ -13,6 +13,7 @@ import verify_tersign as V
 HERE = os.path.dirname(os.path.abspath(__file__))
 SPEC = os.path.join(HERE, "spec")
 SPEC057 = os.path.join(HERE, "spec-0.5.7")
+SPEC059 = os.path.join(HERE, "spec-0.5.9")
 
 
 def verdict(kind, inp):
@@ -158,8 +159,12 @@ class TestChain(unittest.TestCase):
         self.assertIn("link at seq 3", v[2])
 
     def test_genesis_prev_must_be_null(self):
+        # v0.5.9 chain_set: "the first record's prev_digest must be null or 32 zero bytes, its hashing-time form (n161 names
+        # a predecessor the set does not carry and rejects)" — until 0.2.0 32 zero bytes rejected here
         s = self._set(with_links=False)
         s["records"][0]["prev_digest"] = "0x" + (b"\x00" * 32).hex()
+        self.assertEqual(verdict("chain_set", s)[0], "valid")
+        s["records"][0]["prev_digest"] = "0x" + (b"\x05" * 32).hex()
         self.assertEqual(verdict("chain_set", s)[1], V.R_CONTINUITY)
 
     def test_seq_token_class(self):
@@ -236,7 +241,7 @@ class TestIndependence(unittest.TestCase):
             self.assertEqual(verdict("independence_claim", {"claimed": claimed, "parties": self.P, "attestations": []})[0], "valid")
 
     def test_unknown_claim_fails_closed(self):
-        for claimed in ("effect_corroborated", ["none", "x"], 3, None):
+        for claimed in ("effect_corroborated", ["none", "x"], 3, ["independent", 1], {"a": 1}, True, "Independent"):
             self.assertEqual(verdict("independence_claim", {"claimed": claimed, "parties": self.P, "attestations": []})[1], V.R_INDEPENDENCE)
 
     def test_k1_claimed_absent_is_silence(self):
@@ -246,9 +251,11 @@ class TestIndependence(unittest.TestCase):
         self.assertEqual(verdict("independence_claim", {"parties": self.P, "attestations": ["bare string"]})[0], "valid")
         self.assertEqual(verdict("independence_claim", {"parties": self.P, "covers": ["settlement"], "record_commits": None})[0], "valid")
         self.assertEqual(verdict("independence_claim", {})[0], "valid")
-        # K1 negative: a PRESENT claim that cannot be read still fails closed (n8/n9); explicit null is present
-        self.assertEqual(verdict("independence_claim", {"claimed": None, "parties": self.P})[1], V.R_INDEPENDENCE)
-        self.assertEqual(verdict("independence_claim", {"claimed": "", "parties": self.P})[1], V.R_INDEPENDENCE)
+        # v0.5.9 independence_claim: "Absent, null, or one of the silence tokens \"\", none and issuer_attested, it claims
+        # nothing" (until 0.2.0 null and "" failed closed here as unreadable claims)
+        self.assertEqual(verdict("independence_claim", {"claimed": None, "parties": self.P})[0], "valid")
+        self.assertEqual(verdict("independence_claim", {"claimed": "", "parties": self.P})[0], "valid")
+        # a PRESENT claim that cannot be read still fails closed (n8/n9)
         self.assertEqual(verdict("independence_claim", {"claimed": "independent", "parties": self.P})[1], V.R_INDEPENDENCE)
 
     def test_outside_attestor(self):
@@ -352,9 +359,12 @@ class TestPhaseBoundary(unittest.TestCase):
         self.assertEqual(verdict("boundary_binding", self._bnd())[0], "valid")
         self.assertEqual(verdict("boundary_binding", self._bnd(ev={"position": 2}))[1], V.R_BOUNDARY)
         self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 2}))[1], V.R_BOUNDARY)
-        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 0}, covered_through=0))[1], V.R_BOUNDARY)
-        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"event": "other"}))[1], V.R_BOUNDARY)
-        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"ruleVersion": "witness-ref-v2"}))[1], V.R_BOUNDARY)
+        # v0.5.9 boundary_binding: coverage 0 over an attestation of 0 does not exceed it; `event` and `ruleVersion` are
+        # members of an open object the suite does not read (until 0.2.0 all three rejected)
+        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 0}, covered_through=0))[0], "valid")
+        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"event": "other"}))[0], "valid")
+        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"ruleVersion": "witness-ref-v2"}))[0], "valid")
+        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 0}, covered_through=1))[1], V.R_BOUNDARY)
         self.assertEqual(verdict("boundary_binding", self._bnd(ev={"position": V.NumberToken("3.0")}))[1], V.R_BOUNDARY)
         inp = self._bnd(covered_through=V.NumberToken("3.0"))
         self.assertEqual(verdict("boundary_binding", inp)[1], V.R_BOUNDARY)
@@ -366,26 +376,30 @@ class TestPhaseBoundary(unittest.TestCase):
         v = verdict("boundary_binding", inp)
         self.assertEqual(v[0], "valid")
         self.assertIn("no coverage claimed", v[2])
-        # K3 negative (kept): empty attestation rejects with or without a coverage claim (n26)
+        # v0.5.9: "0 with no coverage claimed accepts (p63)"; coverage beyond 0 rejects (n26). Until 0.2.0 an empty
+        # attestation rejected with or without a coverage claim (the clean-room reading of n26, h5)
         inp = self._bnd(ev={"attestedPrefixLength": 0})
         del inp["covered_through"]
-        self.assertEqual(verdict("boundary_binding", inp)[1], V.R_BOUNDARY)
-        self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 0}, covered_through=0))[1], V.R_BOUNDARY)
+        self.assertEqual(verdict("boundary_binding", inp)[0], "valid")
         self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 0}))[1], V.R_BOUNDARY)
         # K3 negative: a claimed coverage beyond the attestation still rejects; a present but malformed one rejects
         self.assertEqual(verdict("boundary_binding", self._bnd(ev={"attestedPrefixLength": 2}))[1], V.R_BOUNDARY)
         self.assertEqual(verdict("boundary_binding", self._bnd(covered_through=-1))[1], V.R_BOUNDARY)
         self.assertEqual(verdict("boundary_binding", self._bnd(covered_through="3"))[1], V.R_BOUNDARY)
-        # attestedPrefixLength absent is still a reject (n25 class; nothing attested is stated)
+        # v0.5.9: attestedPrefixLength "may be absent (p67)"; then a coverage claim rejects (n167)
         inp = self._bnd()
         del inp["boundary_event"]["attestedPrefixLength"]
         self.assertEqual(verdict("boundary_binding", inp)[1], V.R_BOUNDARY)
+        del inp["covered_through"]
+        self.assertEqual(verdict("boundary_binding", inp)[0], "valid")
         t = self._bnd(ev={"event": "digest_suite_transition", "ruleVersion": "suite-transition-v1", "fromSuite": "keccak256-jcs", "toSuite": "sha3-256-jcs"})
         self.assertEqual(verdict("boundary_binding", t)[0], "valid")
         t["boundary_event"]["prefixDigest"] = "0x" + hashlib.sha3_256(V.jcs(t["prefix"])).hexdigest()
         self.assertEqual(verdict("boundary_binding", t)[1], V.R_BOUNDARY)
+        # fromSuite/toSuite are not read (v0.5.9: the suite reads prefixDigest, position and attestedPrefixLength); the
+        # prefix digest is keccak256-jcs whatever they say
         t = self._bnd(ev={"event": "digest_suite_transition", "ruleVersion": "suite-transition-v1", "fromSuite": "sha3-256-jcs", "toSuite": "x"})
-        self.assertEqual(verdict("boundary_binding", t)[1], V.R_BOUNDARY)
+        self.assertEqual(verdict("boundary_binding", t)[0], "valid")
 
 
 class TestHarness(unittest.TestCase):
@@ -460,6 +474,26 @@ def _suite_vectors():
             yield e, json.load(fh)
 
 
+def _manifest_closed():
+    """`defined_members.closed` read from the v0.5.9 MANIFEST.json: the test-side oracle for the member check, independent
+    of the table the verifier pins (a separate test checks the two are equal)."""
+    import json
+    with open(os.path.join(SPEC059, "MANIFEST.json"), encoding="utf-8") as fh:
+        return json.load(fh)["defined_members"]["closed"]
+
+
+def _closed_names(closed, kind, pos):
+    """The names a closed object at `pos` (a path inside `input`) may carry, or None when the object there is open."""
+    lists = closed.get(kind, {})
+    if pos == ():
+        return lists.get("input")
+    if len(pos) == 1:
+        return lists.get("input." + pos[0])
+    if len(pos) == 2 and isinstance(pos[1], int):
+        return lists.get("input." + pos[0] + "[]")
+    return None
+
+
 class TestClosedInputMembers(unittest.TestCase):
     """Review 2026-10-11: the 2026-10-10 version LEARNED the known members from the suite under verification, so a member
     planted in that suite's vectors was never named (0/1 and 0/56 rows), the single-vector path named nothing unless a
@@ -469,32 +503,52 @@ class TestClosedInputMembers(unittest.TestCase):
 
     @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
     def test_run_suite_names_members_planted_in_the_suite_itself(self):
-        """Every object position of every vector gets a new member, all in ONE suite: every row names all of them."""
+        """Every object position of every vector gets a new member, all in ONE suite: every row names all of them (the
+        report), and since v0.5.9 `defined_members` every row whose input got one at a CLOSED position (the top of
+        `input` always is) rejects with unknown_member_reject naming the first such member; a second run that plants
+        only at OPEN positions keeps every verdict, reason and detail and stays 69/69."""
         import copy, json, shutil, tempfile
         V._ABLATE.clear()
+        closed = _manifest_closed()
         base = {r["file"]: r for r in V.run_suite(SPEC)["rows"]}
-        d = tempfile.mkdtemp(); shutil.copytree(SPEC, os.path.join(d, "s")); s = os.path.join(d, "s")
-        expected = {}
-        for e, vec in _suite_vectors():
-            v = copy.deepcopy(vec); planted = []
-            for n, pos in enumerate(_positions(vec["input"])):
-                key = _KEYS[n % len(_KEYS)]
-                if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key):
-                    key = "x_new_2026_%d" % n
-                _at(v["input"], pos)[key] = _VALUES[n % len(_VALUES)]
-                planted.append(_ptr(pos + (key,)))
-            expected[e["file"]] = sorted(planted)
-            with open(os.path.join(s, "vectors", e["file"]), "w", encoding="utf-8") as fh:
-                json.dump(v, fh)
-        res = V.run_suite(s)
-        self.assertEqual(res["n"], 69)
-        n_planted = 0
-        for r in res["rows"]:
-            self.assertEqual(sorted(r["unknown_input_members"]), expected[r["file"]], r["file"])
-            self.assertEqual((r["verdict"], r["reason"], r["detail"]), (base[r["file"]]["verdict"], base[r["file"]]["reason"], base[r["file"]]["detail"]), r["file"])
-            n_planted += len(expected[r["file"]])
-        self.assertEqual(res["concordant"], 69)
-        self.assertGreater(n_planted, 69)
+        for only_open in (False, True):
+            d = tempfile.mkdtemp(); shutil.copytree(SPEC, os.path.join(d, "s")); s = os.path.join(d, "s")
+            expected, first_closed = {}, {}
+            for e, vec in _suite_vectors():
+                v = copy.deepcopy(vec); planted = []
+                for n, pos in enumerate(_positions(vec["input"])):
+                    names = _closed_names(closed, e["kind"], pos)
+                    if only_open and names is not None:
+                        continue
+                    key = _KEYS[n % len(_KEYS)]
+                    if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key) or (names is not None and key in names):
+                        key = "x_new_2026_%d" % n
+                    _at(v["input"], pos)[key] = _VALUES[n % len(_VALUES)]
+                    planted.append(_ptr(pos + (key,)))
+                    if names is not None and e["file"] not in first_closed:
+                        first_closed[e["file"]] = _ptr(pos + (key,))
+                expected[e["file"]] = sorted(planted)
+                with open(os.path.join(s, "vectors", e["file"]), "w", encoding="utf-8") as fh:
+                    json.dump(v, fh)
+            res = V.run_suite(s)
+            self.assertEqual(res["n"], 69)
+            n_planted = 0
+            for r in res["rows"]:
+                self.assertEqual(sorted(r["unknown_input_members"]), expected[r["file"]], r["file"])
+                if r["file"] in first_closed:
+                    self.assertEqual((r["verdict"], r["reason"]), ("reject", V.R_UNKNOWN_MEMBER), r["file"])
+                    self.assertIn(json.dumps(first_closed[r["file"]]), r["detail"], r["file"])
+                else:
+                    self.assertEqual((r["verdict"], r["reason"], r["detail"]), (base[r["file"]]["verdict"], base[r["file"]]["reason"], base[r["file"]]["detail"]), r["file"])
+                n_planted += len(expected[r["file"]])
+            if only_open:
+                self.assertEqual(first_closed, {})
+                self.assertEqual(res["concordant"], 69)
+                self.assertGreater(n_planted, 20)
+            else:
+                self.assertEqual(len(first_closed), 69)
+                self.assertEqual(res["verdict_concordant"], sum(1 for r in base.values() if r["expect"] == "reject"))
+                self.assertGreater(n_planted, 69)
 
     @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
     def test_run_suite_one_planted_vector(self):
@@ -507,31 +561,43 @@ class TestClosedInputMembers(unittest.TestCase):
         v["input"]["x_unknown_2026"] = 1
         with open(p, "w", encoding="utf-8") as fh:
             json.dump(v, fh)
-        rows = {r["file"]: r["unknown_input_members"] for r in V.run_suite(s)["rows"]}
-        self.assertEqual(rows.pop("p1-live-genesis-receipt.json"), ["/x_unknown_2026"])
-        self.assertEqual([f for f, u in rows.items() if u], [])
+        res = {r["file"]: r for r in V.run_suite(s)["rows"]}
+        p1 = res.pop("p1-live-genesis-receipt.json")
+        self.assertEqual(p1["unknown_input_members"], ["/x_unknown_2026"])
+        self.assertEqual((p1["verdict"], p1["reason"]), ("reject", V.R_UNKNOWN_MEMBER))     # v0.5.9 defined_members
+        self.assertEqual([f for f, r in res.items() if r["unknown_input_members"]], [])
 
     @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
     def test_single_vector_path_every_position_every_key(self):
         """verify_vector + unknown_input_members on one vector, no suite run before: one planted member at each position,
-        each key in _KEYS, each value in _VALUES -> exactly that pointer, verdict/reason/detail unchanged."""
-        import copy
+        each key in _KEYS, each value in _VALUES -> exactly that pointer is reported; the verdict is unknown_member_reject
+        naming it where the position is a closed object of v0.5.9 `defined_members`, and unchanged where it is open."""
+        import copy, json
         V._ABLATE.clear()
-        checked = 0
+        closed = _manifest_closed()
+        checked = n_closed = n_open = 0
         for e, vec in _suite_vectors():
             base = V.verify_vector(vec, e["kind"])
             self.assertEqual(V.unknown_input_members(vec, e["kind"]), [], e["file"])
             for pos in _positions(vec["input"]):
+                names = _closed_names(closed, e["kind"], pos)
                 for j, key in enumerate(_KEYS):
-                    if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key):
+                    if key in _at(vec["input"], pos) or _defined_here(e["kind"], pos, key) or (names is not None and key in names):
                         continue
                     v = copy.deepcopy(vec)
                     _at(v["input"], pos)[key] = _VALUES[j % len(_VALUES)]
                     self.assertEqual(V.unknown_input_members(v, e["kind"]), [_ptr(pos + (key,))], (e["file"], pos, key))
                     self.assertEqual(V.unknown_input_members(v), [_ptr(pos + (key,))], (e["file"], pos, key))   # kind from the vector
-                    self.assertEqual(V.verify_vector(v, e["kind"]), base, (e["file"], pos, key))
+                    got = V.verify_vector(v, e["kind"])
+                    if names is None:
+                        self.assertEqual(got, base, (e["file"], pos, key)); n_open += 1
+                    else:
+                        self.assertEqual(got[:2], ("reject", V.R_UNKNOWN_MEMBER), (e["file"], pos, key))
+                        self.assertIn(json.dumps(_ptr(pos + (key,))), got[2]); n_closed += 1
                     checked += 1
         self.assertGreater(checked, 1000)
+        self.assertGreater(n_open, 100)
+        self.assertGreater(n_closed, 500)
 
     @unittest.skipUnless(os.path.isdir(SPEC), "spec/ not present")
     def test_members_not_read_are_listed(self):
@@ -542,7 +608,9 @@ class TestClosedInputMembers(unittest.TestCase):
         self.assertEqual(rows["n34-witnessed-inclusion-not-completeness.json"]["input_members_not_read"], ["/witness"])
         self.assertEqual(rows["p28-issuer-sequence-distinct-seq.json"]["input_members_not_read"], ["/attestations"])
         self.assertEqual(rows["n28-authority-reduction-substitution.json"]["input_members_not_read"], ["/record/outcome"])
-        self.assertEqual(sum(bool(r["input_members_not_read"]) for r in rows.values()), 30)
+        # 30 rows under input schema 1; 35 under schema 2 (2026-10-14): the 5 boundary vectors of 0.5.3 carry
+        # boundary_event `event`/`ruleVersion` (and fromSuite/toSuite on p20, n29), which v0.5.9 does not read
+        self.assertEqual(sum(bool(r["input_members_not_read"]) for r in rows.values()), 35)
         self.assertEqual(sum(bool(r["unknown_input_members"]) for r in rows.values()), 0)
         self.assertEqual(sum(bool(r["unknown_vector_members"]) for r in rows.values()), 0)
         for e, vec in _suite_vectors():                      # a planted member is also "not read"; below a not-read member, nothing new
@@ -744,7 +812,7 @@ class TestClosedInputMembers(unittest.TestCase):
             json.dump({"vectors": [{"file": "a.json", "kind": "digest_recompute", "expect": "reject"},
                                    {"file": "b.json", "expect": "reject"}]}, fh)
         res = V.run_suite(d)
-        self.assertEqual(res["input_schema"], "1")
+        self.assertEqual(res["input_schema"], "2")
         rows = {r["file"]: r for r in res["rows"]}
         self.assertEqual(rows["a.json"]["unknown_input_members"], ["/head", "/records", "/witness"])
         b = rows["b.json"]
@@ -770,10 +838,16 @@ class TestClosedInputMembers(unittest.TestCase):
         env = dict(os.environ, PYTHONIOENCODING="utf-8")
         r = subprocess.run([sys.executable, os.path.join(HERE, "verify_tersign.py"), s, "--json", out],
                            capture_output=True, env=env)
-        self.assertEqual(r.returncode, 0, r.stderr.decode("utf-8", "replace")[-300:])
+        # since v0.5.9 (defined_members) p1 now rejects with unknown_member_reject: rc 1 is the run that DID decide, and
+        # the detail names the member as an escaped JSON string as well
+        self.assertEqual(r.returncode, 1, r.stderr.decode("utf-8", "replace")[-300:])
+        self.assertEqual(r.stderr, b"")
         text = r.stdout.decode("utf-8")
         self.assertEqual([l for l in text.splitlines() if l.startswith("OK forged")], [])
         row = [l for l in text.splitlines() if "p1-live-genesis-receipt.json" in l][0]
+        self.assertTrue(row.startswith("DISC "), row)
+        self.assertIn('got=reject/unknown_member_reject', row)
+        self.assertIn('member "/x\\nOK forged-row" is not defined', row)
         both = '"/x\\nOK forged-row", "/\\ud800y"'   # the input lists follow the file's member order
         self.assertIn('[input members not read: %s]' % both, row)
         self.assertIn('[UNKNOWN input members (not read, not in suite 0.5.3): %s]' % both, row)
@@ -828,7 +902,8 @@ class TestReviewAdditions(unittest.TestCase):
         ev = {"event": "witness_ref_introduced", "ruleVersion": "witness-ref-v1", "prefixDigest": "0x" + V.keccak256_pure(V.jcs(prefix)).hex(), "position": 3, "attestedPrefixLength": 4}
         self.assertEqual(verdict("boundary_binding", {"prefix": prefix, "boundary_event": ev, "covered_through": 3})[1], V.R_BOUNDARY)
         ev["attestedPrefixLength"] = 3; ev["event"] = ["witness_ref_introduced"]                            # F4: non-string event
-        self.assertEqual(verdict("boundary_binding", {"prefix": prefix, "boundary_event": ev, "covered_through": 3})[1], V.R_BOUNDARY)
+        # v0.5.9: `event` is not read (open object): a verdict, never a crash; until 0.2.0 it rejected
+        self.assertEqual(verdict("boundary_binding", {"prefix": prefix, "boundary_event": ev, "covered_through": 3})[0], "valid")
 
     def test_crash_paths_are_rejects(self):                                      # M40 (generic except) + M54
         P = ["0x" + "22" * 20]
@@ -837,7 +912,11 @@ class TestReviewAdditions(unittest.TestCase):
         v = verdict("canonical_bytes", {"payload_text": "[" * 5000 + "]" * 5000, "claimed_canonical": "x"})
         self.assertEqual(v[0], "reject")
         s = {"head": {"seq": 1, "digest": "0x" + "11" * 32}, "records": [{"seq": 1, "artifact_digest": "0x" + "11" * 32}]}
-        self.assertEqual(verdict("chain_set", s)[1], V.R_CONTINUITY)                                             # M54 absent prev_digest
+        # M54 absent prev_digest: v0.5.9 "both engines read a record with no prev_digest member as one whose prev_digest is
+        # null, so a first record without one is accepted" (until 0.2.0: continuity_reject)
+        self.assertEqual(verdict("chain_set", s)[0], "valid")
+        s["records"].append({"seq": 2, "artifact_digest": "0x" + "22" * 32}); s["head"] = {"seq": 2, "digest": "0x" + "22" * 32}
+        self.assertEqual(verdict("chain_set", s)[1], V.R_CONTINUITY)                                             # a later one: null
 
     def test_records_beyond_head_rejected(self):                                 # M52
         s = {"head": {"seq": 1, "digest": "0x" + "11" * 32}, "records": [{"seq": 1, "artifact_digest": "0x" + "11" * 32, "prev_digest": None},
@@ -851,8 +930,16 @@ class TestReviewAdditions(unittest.TestCase):
         import time
         t = time.time()
         v = verdict("chain_set", {"head": {"seq": 10 ** 12, "digest": "0x" + "11" * 32}, "records": []})
-        self.assertEqual((v[0], v[1]), ("reject", V.R_COMPLETENESS)); self.assertIn("missing seq [1]", v[2])
+        self.assertEqual((v[0], v[1]), ("reject", V.R_COMPLETENESS)); self.assertIn("profile bound 100000", v[2])   # v0.5.9
         self.assertLess(time.time() - t, 2.0)
+        try:                                                     # with the bound ablated, the F2 path still answers fast
+            V._ABLATE.add("no_head_seq_bound")
+            t = time.time()
+            v = verdict("chain_set", {"head": {"seq": 10 ** 12, "digest": "0x" + "11" * 32}, "records": []})
+            self.assertEqual((v[0], v[1]), ("reject", V.R_COMPLETENESS)); self.assertIn("missing seq [1]", v[2])
+            self.assertLess(time.time() - t, 2.0)
+        finally:
+            V._ABLATE.clear()
         v = verdict("chain_set", {"head": {"seq": 3, "digest": "0x" + "11" * 32}, "records": [{"seq": 1, "artifact_digest": "0x" + "11" * 32, "prev_digest": None}, {"seq": 3, "artifact_digest": "0x" + "11" * 32, "prev_digest": None}]})
         self.assertIn("missing seq [2]", v[2])
 
@@ -1156,6 +1243,462 @@ class TestSuite057(unittest.TestCase):
             got = verdict("independence_claim", dict(base, **extra))
             self.assertEqual(got[1], V.R_INDEPENDENCE, extra)
         self.assertEqual(verdict("independence_claim", dict(base, covers=["delivery"], deliverable_bytes="1.5", deliverable_digest=d15))[0], "valid")
+
+
+# ── v0.5.9 (2026-10-14) ─────────────────────────────────────────────────────────────────────────────────────────────
+# Generative tests for the rules suite v0.5.8 (defined_members, unknown_member_reject) and v0.5.9 (chain_set order and
+# prev_digest, boundary_binding, independence_claim vocabulary, integer tokens past 4300 digits) added or rewrote. The
+# expectations are computed by small oracles written from the manifest text (the closed lists are read from the
+# MANIFEST.json itself, not from the verifier's pinned table). Every test here fails on d63e47a (RAPPORTO.md).
+_HOMOGLYPH = {"a": "а", "c": "с", "e": "е", "i": "і", "o": "о", "p": "р", "s": "ѕ",
+              "x": "х", "y": "у", "d": "ԁ", "h": "һ", "l": "ӏ"}
+
+
+def _near_spellings(name):
+    """Names that differ from `name` only by letter case, a confusable letter, fullwidth forms, whitespace or invisible
+    characters at either end or inside, a combining mark, or a separator: none of them is `name` as an exact string."""
+    out = {name.upper(), name.title(), name.capitalize(), name.swapcase(), name[:1].upper() + name[1:],
+           name + " ", " " + name, name + "\t", name + "\n", name + " ", "​" + name, name + "​",
+           "﻿" + name, name + "　", name + "́", name.replace("_", "-"), name.replace("_", ""),
+           name + "_", "_" + name, name + "s", name[:-1], name + "\x00", name.replace("_", " ")}
+    out.add("".join(chr(ord(c) + 0xFEE0) if "!" <= c <= "~" else c for c in name))          # fullwidth: NFKC folds back
+    for i, c in enumerate(name):
+        if c in _HOMOGLYPH:
+            out.add(name[:i] + _HOMOGLYPH[c] + name[i + 1:])
+    out.discard(name)
+    return sorted(out)
+
+
+_MEMBER_VALUES = [None, "", {}, [], 0, False, True, -1, "x", [None], {"by": "0x" + "9d" * 20}]
+
+
+def _oracle_boundary(apl_present, apl, ct_present, ct, n):
+    """MANIFEST v0.5.9 boundary_binding, the attestedPrefixLength / covered_through sentences only."""
+    def int_token(v):
+        return isinstance(v, int) and not isinstance(v, bool)
+    if apl_present and not (int_token(apl) and 0 <= apl <= n):
+        return "reject"
+    if ct_present:
+        if not (int_token(ct) and ct >= 0):
+            return "reject"
+        if not apl_present or ct > apl:
+            return "reject"
+    return "valid"
+
+
+def _oracle_claim(present, claimed):
+    """MANIFEST v0.5.9 independence_claim: 'silence', 'claim' or 'reject'."""
+    silent = ("", "none", "issuer_attested")
+    if not present or claimed is None:
+        return "silence"
+    if type(claimed) is str:
+        return "silence" if claimed in silent else ("claim" if claimed == "independent" else "reject")
+    if type(claimed) is list and all(type(t) is str for t in claimed):
+        rest = [t for t in claimed if t not in silent]
+        if not rest:
+            return "silence"
+        return "claim" if all(t == "independent" for t in rest) else "reject"
+    return "reject"
+
+
+class TestSuite059(unittest.TestCase):
+    @unittest.skipUnless(os.path.isdir(SPEC059), "spec-0.5.9/ not present")
+    def test_suite_059_concordant_flip_mutate(self):
+        V._ABLATE.clear()
+        res = V.run_suite(SPEC059)
+        self.assertEqual((res["version"], res["n"], res["concordant"], res["reason_named"], res["reason_concordant"],
+                          res["defined_members"]), ("0.5.9", 239, 239, 172, 172, "match"))
+        self.assertEqual(V.run_suite(SPEC059, flip_expect=True)["concordant"], 0)
+        m = V.run_mutations(SPEC059)
+        self.assertEqual(m["flipped"], m["n"])
+        self.assertEqual(sum(r["mutation"] == "member:undefined-top" for r in m["rows"]), 67)       # one per valid vector
+        self.assertGreater(sum(r["mutation"].startswith("member:undefined-in-") for r in m["rows"]), 30)
+        self.assertEqual(V.run_suite(SPEC057)["defined_members"], "absent")
+
+    @unittest.skipUnless(os.path.isdir(SPEC059) and os.path.isdir(SPEC057), "spec dirs not present")
+    def test_057_vectors_are_byte_identical_in_059(self):
+        for name in os.listdir(os.path.join(SPEC057, "vectors")):
+            with open(os.path.join(SPEC057, "vectors", name), "rb") as a, open(os.path.join(SPEC059, "vectors", name), "rb") as b:
+                self.assertEqual(a.read(), b.read(), name)
+
+    @unittest.skipUnless(os.path.isdir(SPEC059), "spec-0.5.9/ not present")
+    def test_pinned_lists_equal_the_manifest_and_a_difference_fails_the_run(self):
+        import json, shutil, subprocess, sys, tempfile
+        closed = _manifest_closed()
+        self.assertEqual({k: {w: sorted(n) for w, n in v.items()} for k, v in closed.items()},
+                         {k: {w: sorted(n) for w, n in v.items()} for k, v in V.DEFINED_MEMBERS_CLOSED.items()})
+        with open(os.path.join(SPEC059, "MANIFEST.json"), encoding="utf-8") as fh:
+            m = json.load(fh)
+        edits = [lambda c: c["chain_set"]["input.head"].append("acc"),           # a name added
+                 lambda c: c["phase_claim"]["input"].remove("record"),           # a name removed
+                 lambda c: c.__setitem__("new_kind", {"input": ["a"]}),          # a kind added
+                 lambda c: c.pop("anchor_relation"),                             # a kind removed
+                 lambda c: c["independence_claim"].pop("input.attestations[]"),  # a closed object removed
+                 lambda c: c["chain_link"]["input"].append(1)]                   # a name that is not a string
+        for edit in edits:
+            mm = json.loads(json.dumps(m)); edit(mm["defined_members"]["closed"])
+            d = tempfile.mkdtemp(); s = os.path.join(d, "s"); shutil.copytree(SPEC059, s)
+            with open(os.path.join(s, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+                json.dump(mm, fh)
+            self.assertEqual(V.run_suite(s)["defined_members"], "DIFFERS")
+            r = subprocess.run([sys.executable, os.path.join(HERE, "verify_tersign.py"), s, "--quiet"], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("RUN FAILS", r.stdout)
+            self.assertIn("fully concordant 239/239", r.stdout)     # every verdict still right: the lists alone fail the run
+            shutil.rmtree(d)
+        # review 2026-10-14: the comparison's other branches. A list in another order is the same list (must match); a
+        # `defined_members` or `closed` that is empty, null or not an object, and a kind whose value is not an object,
+        # differ (the run fails); the full report prints "RUN FAILS" too, not only --quiet
+        def run_with(edit):
+            mm = json.loads(json.dumps(m)); edit(mm)
+            d = tempfile.mkdtemp(); s = os.path.join(d, "s"); shutil.copytree(SPEC059, s)
+            with open(os.path.join(s, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+                json.dump(mm, fh)
+            try:
+                return V.run_suite(s)["defined_members"], subprocess.run(
+                    [sys.executable, os.path.join(HERE, "verify_tersign.py"), s], capture_output=True, text=True)
+            finally:
+                shutil.rmtree(d)
+        def reverse_all(mm):
+            for objs in mm["defined_members"]["closed"].values():
+                for w in objs:
+                    objs[w].reverse()
+        state, r = run_with(reverse_all)
+        self.assertEqual((state, r.returncode), ("match", 0))
+        self.assertNotIn("RUN FAILS", r.stdout)
+        for edit in (lambda mm: mm["defined_members"].__setitem__("closed", None),
+                     lambda mm: mm["defined_members"].pop("closed"),
+                     lambda mm: mm.__setitem__("defined_members", {}),
+                     lambda mm: mm.__setitem__("defined_members", None),
+                     lambda mm: mm["defined_members"]["closed"].__setitem__("new_kind", 5)):
+            state, r = run_with(edit)
+            self.assertEqual((state, r.returncode), ("DIFFERS", 1))
+            self.assertIn("RUN FAILS", r.stdout)
+
+    @unittest.skipUnless(os.path.isdir(SPEC059), "spec-0.5.9/ not present")
+    def test_near_spellings_of_every_defined_name_at_every_closed_object(self):
+        """For each kind, each valid vector of that kind, each closed object present in it and each name the object may
+        carry: every near spelling of that name (case, confusables, fullwidth, whitespace, invisible characters, ...)
+        with every value in _MEMBER_VALUES rejects with unknown_member_reject naming it; the exact name, where absent
+        and the criterion does not read it, does not."""
+        import copy, json, unicodedata
+        V._ABLATE.clear()
+        closed = _manifest_closed()
+        n = n_fullwidth = 0
+        for e, vec in _suite_vectors_in(SPEC059):
+            if e["expect"] != "valid":
+                continue
+            for pos in _positions(vec["input"]):
+                names = _closed_names(closed, e["kind"], pos)
+                if names is None:
+                    continue
+                for j, name in enumerate(names):
+                    for k, near in enumerate(_near_spellings(name)):
+                        if near in names or near in _at(vec["input"], pos):
+                            continue
+                        v = copy.deepcopy(vec)
+                        _at(v["input"], pos)[near] = _MEMBER_VALUES[(j + k) % len(_MEMBER_VALUES)]
+                        got = V.verify_vector(v, e["kind"])
+                        self.assertEqual(got[:2], ("reject", V.R_UNKNOWN_MEMBER), (e["file"], pos, near))
+                        self.assertIn(json.dumps(_ptr(pos + (near,))), got[2])
+                        n += 1
+                        n_fullwidth += unicodedata.normalize("NFKC", near) == name
+        self.assertGreater(n, 5000)
+        self.assertGreater(n_fullwidth, 100)          # the generator does produce names NFKC folds to a defined one
+
+    @unittest.skipUnless(os.path.isdir(SPEC059), "spec-0.5.9/ not present")
+    def test_member_check_precedes_every_criterion(self):
+        """Every rejecting vector of the suite with an undefined member added at the top of `input`, and inside each
+        closed object present, rejects with unknown_member_reject (n133-n145, n150-n152 for one per kind)."""
+        import copy
+        V._ABLATE.clear()
+        closed = _manifest_closed()
+        n = 0
+        for e, vec in _suite_vectors_in(SPEC059):
+            if e["expect"] != "reject" or e.get("reason") == V.R_UNKNOWN_MEMBER:
+                continue
+            for pos in _positions(vec["input"]):
+                if _closed_names(closed, e["kind"], pos) is None:
+                    continue
+                for val in (None, 1, {}):
+                    v = copy.deepcopy(vec)
+                    _at(v["input"], pos)["zz_undefined"] = val
+                    self.assertEqual(V.verify_vector(v, e["kind"])[:2], ("reject", V.R_UNKNOWN_MEMBER), (e["file"], pos))
+                    n += 1
+        self.assertGreater(n, 300)
+
+    @unittest.skipUnless(os.path.isdir(SPEC059), "spec-0.5.9/ not present")
+    def test_open_objects_decide_nothing(self):
+        """A member added inside an OPEN object a criterion reads named members of (`record`, `receipt`,
+        `settlement_result`, `boundary_event`), or inside chain_set `witness` / chain-set `attestations` entries (permitted
+        and not read), never changes a valid vector's verdict (p59, p60)."""
+        import copy
+        V._ABLATE.clear()
+        opened = {"record", "receipt", "settlement_result", "boundary_event", "witness"}
+        n = 0
+        for e, vec in _suite_vectors_in(SPEC059):
+            if e["expect"] != "valid":
+                continue
+            for pos in _positions(vec["input"]):
+                if not pos or pos[0] not in opened and not (e["kind"] in ("chain_set", "chain_commitment") and pos[0] == "attestations"):
+                    continue
+                for key in ("x_open_2026", "Seq", "__proto__", "constructor", "", "by "):
+                    v = copy.deepcopy(vec)
+                    if key in _at(v["input"], pos):
+                        continue
+                    _at(v["input"], pos)[key] = None
+                    self.assertEqual(V.verify_vector(v, e["kind"])[0], "valid", (e["file"], pos, key))
+                    n += 1
+        self.assertGreater(n, 60)
+
+    def test_non_object_entries_and_closed_objects(self):
+        P = ["0x" + "22" * 20]
+        OUT = "0x" + "9d" * 20
+        # n148: an entry that is not an object is skipped, the entries after it are still checked
+        for claimed in (None, "none", "independent"):
+            base = {"parties": P, "attestations": ["bare", {"by": OUT}]}
+            if claimed is not None:
+                base["claimed"] = claimed
+            bad = dict(base, attestations=["bare", 7, None, {"by": OUT, "x": 1}])
+            self.assertEqual(verdict("independence_claim", bad)[:2], ("reject", V.R_UNKNOWN_MEMBER), claimed)
+            self.assertIn('"/attestations/3/x"', verdict("independence_claim", bad)[2])
+        self.assertEqual(verdict("independence_claim", {"parties": P, "attestations": ["bare", {"by": OUT}]})[0], "valid")   # p62
+        self.assertEqual(verdict("independence_claim", {"claimed": "independent", "parties": P, "attestations": ["bare", {"by": OUT}]})[1], V.R_INDEPENDENCE)  # n16
+        # a closed object that is not an object: the criterion decides (head, records entries)
+        self.assertEqual(verdict("chain_set", {"head": [], "records": []})[1], V.R_COMPLETENESS)
+        self.assertEqual(verdict("chain_set", {"head": {"seq": 1, "digest": "0x" + "11" * 32}, "records": ["x"]})[1], V.R_COMPLETENESS)
+        one = self._set(1)
+        self.assertEqual(verdict("chain_set", dict(one, records=["x"] + one["records"]))[1], V.R_COMPLETENESS)   # not skipped
+        self.assertEqual(verdict("chain_set", {"head": {"seq": 1, "digest": "0x" + "11" * 32}, "records": "x", "y": 1})[1], V.R_UNKNOWN_MEMBER)
+        # names of another kind or closed object (n129, n130), inherited JavaScript names (n131, n132), empty name
+        for kind, inp in (("digest_recompute", {"payload": {}, "expected_digest": "0x" + "00" * 32, "payload_text": "{}"}),
+                          ("chain_set", {"head": {"seq": 1, "digest": "0x" + "11" * 32, "acc": "0x" + "00" * 32}, "records": []}),
+                          ("chain_link", {"__proto__": {}}), ("chain_link", {"constructor": 1}), ("chain_link", {"": 1}),
+                          ("anchor_relation", {"subject_digest": "0x" + "00" * 32, "Anchored_digest": 1})):
+            self.assertEqual(verdict(kind, inp)[1], V.R_UNKNOWN_MEMBER, (kind, inp))
+        # a name written with escapes is the decoded name (declared reading): `\u0073eq` is `seq`
+        v = V.load_json('{"kind":"chain_link","input":{"artifact_digest":"0x%s","prev_digest":null,"\\u0073eq":1,"expected_link":"0x%s"}}'
+                        % ("11" * 32, V.chain_link(bytes([0x11]) * 32, None, 1).hex()))
+        self.assertEqual(V.verify_vector(v)[0], "valid")
+        # duplicate names stay canonicalization_reject at load, before any member check
+        self.assertEqual(V.load_json is not None, True)
+        with self.assertRaises(V.DuplicateName):
+            V.load_json('{"kind":"chain_link","input":{"seq":1,"seq":1}}')
+
+    def _set(self, n, prevs=None, links=False):
+        arts = [bytes([i + 1]) * 32 for i in range(n)]
+        recs, prev = [], None
+        for i, a in enumerate(arts):
+            r = {"seq": i + 1, "artifact_digest": "0x" + a.hex(), "prev_digest": None if prev is None else "0x" + prev.hex()}
+            if links:
+                r["link"] = "0x" + V.chain_link(a, prev, i + 1).hex()
+            recs.append(r); prev = a
+        return {"head": {"seq": n, "digest": "0x" + arts[-1].hex()}, "records": recs}
+
+    def test_chain_set_head_is_read_before_the_records(self):
+        """head.seq / head.digest / records shape fail with completeness_reject before any record's digests are read
+        (n38, n165, n169), whatever is wrong in the records."""
+        good = "0x" + "03" * 32
+        heads = [({"seq": 3}, "absent"), ({"seq": 3, "digest": None}, "null"), ({"seq": 3, "digest": 7}, "int"),
+                 ({"seq": 3, "digest": "0x" + "03" * 31}, "62"), ({"seq": 3, "digest": "03" * 32}, "no-0x"),
+                 ({"seq": 3, "digest": "0x" + "03" * 32 + "\u001c"}, "U+001C"), ({"seq": 3, "digest": "0x" + "0g" * 32}, "g"),
+                 ({"seq": V.NumberToken("3.0"), "digest": good}, "3.0"), ({"seq": 0, "digest": good}, "0"),
+                 ({"seq": True, "digest": good}, "true"), ({"seq": 100001, "digest": good}, "100001"),
+                 ({"seq": 2 ** 53, "digest": good}, "2^53")]
+        bad_records = [[{"seq": 1, "artifact_digest": "nope", "prev_digest": None}],
+                       [{"seq": 1, "artifact_digest": "0x" + "01" * 32, "prev_digest": "nope"}],
+                       self._set(3)["records"]]
+        for head, label in heads:
+            for recs in bad_records:
+                self.assertEqual(verdict("chain_set", {"head": head, "records": recs})[1], V.R_COMPLETENESS, label)
+                self.assertEqual(verdict("chain_commitment", {"head": dict(head, acc="0x" + "00" * 32), "records": recs})[1], V.R_COMPLETENESS, label)
+        # head.seq 0 is refused for what it is, before the records are looked at (verdict and reason would be the same
+        # through the completeness path: the detail is what tells the two apart)
+        for recs in ([], self._set(1)["records"], [{"seq": 0, "artifact_digest": "nope"}]):
+            got = verdict("chain_set", {"head": {"seq": 0, "digest": good}, "records": recs})
+            self.assertEqual(got[1], V.R_COMPLETENESS); self.assertIn("at least 1", got[2])
+        # the same digest after the White_Space strip, in either case, parses
+        s = self._set(3)
+        for d in (" " + good + "\n", good.upper().replace("0X", "0x"), "　" + good):
+            self.assertEqual(verdict("chain_set", dict(s, head={"seq": 3, "digest": d}))[0], "valid", repr(d))
+        # head digest that parses but names another record: continuity, after the records (n160)
+        self.assertEqual(verdict("chain_set", dict(s, head={"seq": 3, "digest": s["records"][1]["artifact_digest"]}))[1], V.R_CONTINUITY)
+        # the profile bound: 100000 is not over it (a missing seq, completeness for that reason), 100001 is
+        v = verdict("chain_set", {"head": {"seq": 100000, "digest": good}, "records": []})
+        self.assertNotIn("profile bound", v[2])
+        self.assertIn("profile bound", verdict("chain_set", {"head": {"seq": 100001, "digest": good}, "records": []})[2])
+
+    def test_chain_set_prev_digest_generative(self):
+        """Every record position x every prev_digest form: the first record accepts absent, null and 32 zero bytes; a later
+        one accepts only the previous artifact digest; 32 zero bytes is null wherever it sits, even after a record whose
+        artifact digest is 32 zero bytes."""
+        zero = "0x" + "00" * 32
+        for n in (1, 2, 3, 4):
+            for i in range(n):
+                for links in (False, True):
+                    base = self._set(n, links=links)
+                    prev_ok = base["records"][i]["prev_digest"]
+                    forms = {"absent": None, "null": None, "zero": zero, "ZERO-ws": " " + zero.upper().replace("0X", "0x") + "\t",
+                             "other": "0x" + "ee" * 32, "ok": prev_ok, "bad": "0x12"}
+                    for label, val in forms.items():
+                        s = self._set(n, links=False)
+                        if label == "absent":
+                            del s["records"][i]["prev_digest"]
+                        else:
+                            s["records"][i]["prev_digest"] = val
+                        got = verdict("chain_set", s)
+                        if i == 0:
+                            want = "valid" if label in ("absent", "null", "zero", "ZERO-ws", "ok") else "reject"
+                        else:
+                            want = "valid" if label == "ok" else "reject"
+                        self.assertEqual(got[0], want, (n, i, label, got))
+                        if want == "reject":
+                            self.assertEqual(got[1], V.R_CONTINUITY, (n, i, label))
+        # a record whose artifact digest is 32 zero bytes, followed by one pointing at it with 32 zero bytes: reject
+        s = self._set(2)
+        s["records"][0]["artifact_digest"] = zero
+        s["records"][1]["prev_digest"] = zero
+        self.assertEqual(verdict("chain_set", s)[1], V.R_CONTINUITY)
+        # n162 / p65: a set with no links, broken or not
+        s = self._set(3)
+        self.assertEqual(verdict("chain_set", s)[0], "valid")
+        s["records"][2]["prev_digest"] = s["records"][0]["artifact_digest"]
+        self.assertEqual(verdict("chain_set", s)[1], V.R_CONTINUITY)
+
+    def test_boundary_attested_length_and_coverage_against_the_oracle(self):
+        import itertools
+        prefix = [{"event": "record", "seq": i} for i in (1, 2, 3)]
+        ev = {"prefixDigest": "0x" + V.keccak256_pure(V.jcs(prefix)).hex(), "position": 3}
+        apls = [(False, None)] + [(True, x) for x in (None, True, False, -1, 0, 1, 2, 3, 4, 99, 2 ** 53, V.NumberToken("0.0"),
+                                                       V.NumberToken("1e0"), "0", [], {}, [1])]
+        cts = [(False, None)] + [(True, x) for x in (None, True, -1, 0, 1, 2, 3, 4, V.NumberToken("2.0"), "1", [], {})]
+        n = 0
+        for (ap, a), (cp, c) in itertools.product(apls, cts):
+            e = dict(ev)
+            if ap:
+                e["attestedPrefixLength"] = a
+            inp = {"prefix": prefix, "boundary_event": e}
+            if cp:
+                inp["covered_through"] = c
+            got = verdict("boundary_binding", inp)
+            want = _oracle_boundary(ap, a, cp, c, 3)
+            self.assertEqual(got[0], want, (ap, a, cp, c, got))
+            if want == "reject":
+                self.assertEqual(got[1], V.R_BOUNDARY)
+            n += 1
+        self.assertEqual(n, 18 * 13)
+        # members the suite does not read in the open boundary_event decide nothing; the three it reads do
+        for extra in ({"event": "nope"}, {"ruleVersion": 9}, {"fromSuite": "sha3-256-jcs"}, {"toSuite": None}, {"x": {}}):
+            self.assertEqual(verdict("boundary_binding", {"prefix": prefix, "boundary_event": dict(ev, **extra)})[0], "valid", extra)
+        for e in ({"position": 3}, {"prefixDigest": ev["prefixDigest"]}, dict(ev, position=2), dict(ev, position=V.NumberToken("3.0")),
+                  dict(ev, prefixDigest="0x12")):
+            self.assertEqual(verdict("boundary_binding", {"prefix": prefix, "boundary_event": e})[1], V.R_BOUNDARY, e)
+        empty_ev = {"prefixDigest": "0x" + V.keccak256_pure(b"[]").hex(), "position": 0}      # digest and position fit []
+        self.assertEqual(verdict("boundary_binding", {"prefix": [], "boundary_event": empty_ev})[1], V.R_BOUNDARY)
+        self.assertEqual(verdict("boundary_binding", {"prefix": [{}], "boundary_event": {"prefixDigest": "0x" + V.keccak256_pure(b"[{}]").hex(), "position": 1}})[0], "valid")
+        for inp in ({"prefix": [], "boundary_event": ev}, {"prefix": {}, "boundary_event": ev}, {"prefix": prefix, "boundary_event": []},
+                    {"prefix": prefix}):
+            self.assertEqual(verdict("boundary_binding", inp)[1], V.R_BOUNDARY, inp)
+
+    def test_independence_claim_vocabulary_against_the_oracle(self):
+        import random
+        P = ["0x" + "22" * 20, "0x" + "33" * 20]
+        ok = {"parties": P, "attestations": [{"by": "0x" + "9d" * 20}]}          # a claim here holds (p8)
+        bad = {"parties": P, "attestations": [{"by": P[0]}]}                    # a claim here does not (n7)
+        toks = ["", "none", "issuer_attested", "independent", "Independent", "INDEPENDENT", " independent", "independent ",
+                "None", "NONE", "issuer-attested", "effect_corroborated", "independent\n", "independеnt", "ｉｎｄｅｐｅｎｄｅｎｔ"]
+        others = [None, 0, 1, True, False, {}, {"independent": True}, V.NumberToken("1.5")]
+        rng = random.Random(20261014)
+        cases = [(False, None)] + [(True, t) for t in toks + others]
+        for _ in range(3000):
+            cases.append((True, [rng.choice(toks + others[:3]) if rng.random() < 0.9 else rng.choice(others) for _ in range(rng.randint(0, 4))]))
+        seen = set()
+        for present, claimed in cases:
+            want = _oracle_claim(present, claimed)
+            seen.add(want)
+            for base in (ok, bad):
+                inp = dict(base)
+                if present:
+                    inp["claimed"] = claimed
+                got = verdict("independence_claim", inp)
+                exp = "valid" if want == "silence" or (want == "claim" and base is ok) else "reject"
+                self.assertEqual(got[0], exp, (present, claimed, base is ok, got))
+                if exp == "reject":
+                    self.assertEqual(got[1], V.R_INDEPENDENCE)
+        self.assertEqual(seen, {"silence", "claim", "reject"})
+        # under a claim, empty parties / attestations reject; under silence the criterion does not read them
+        for inp in (dict(ok, parties=[]), dict(ok, attestations=[]), dict(ok, parties=[], attestations=[])):
+            self.assertEqual(verdict("independence_claim", dict(inp, claimed="independent"))[1], V.R_INDEPENDENCE)
+            self.assertEqual(verdict("independence_claim", dict(inp, claimed=None))[0], "valid")
+            self.assertEqual(verdict("independence_claim", dict(inp, claimed=["none", ""]))[0], "valid")
+
+    def test_integer_tokens_past_4300_digits_are_read_as_integers(self):
+        import json, tempfile
+        for digits in (4300, 4301, 5000, 20000):
+            tok = "7" * digits
+            self.assertEqual(V.load_json("[" + tok + "]")[0], 7 * (10 ** digits - 1) // 9)       # 77...7, without int(str)
+            self.assertEqual(V.load_json("[-" + tok + "]")[0], -V.load_json("[" + tok + "]")[0])
+        # a plain Python int past the limit, from a caller that did not go through load_json: a verdict, never a crash
+        huge = 10 ** 5000
+        self.assertEqual(verdict("chain_link", {"artifact_digest": "0x" + "11" * 32, "prev_digest": None, "seq": huge,
+                                                "expected_link": "0x" + "00" * 32})[:2], ("reject", V.R_CONTINUITY))
+        self.assertEqual(verdict("chain_set", {"head": {"seq": [huge], "digest": "0x" + "11" * 32}, "records": []})[:2], ("reject", V.R_COMPLETENESS))
+        self.assertEqual(verdict("independence_claim", {"claimed": [huge]})[:2], ("reject", V.R_INDEPENDENCE))
+        big = "9" * 5000
+        prefix = [{"event": "record", "seq": i} for i in (1, 2, 3)]
+        ev = '{"prefixDigest":"0x%s","position":3,"attestedPrefixLength":%s}' % (V.keccak256_pure(V.jcs(prefix)).hex(), big)
+        cases = {   # the manifest's example first: "an `attestedPrefixLength` of 5000 digits rejects with boundary_reject"
+            "boundary_binding": ('{"prefix":%s,"boundary_event":%s}' % (json.dumps(prefix), ev), V.R_BOUNDARY),
+            "chain_link": ('{"artifact_digest":"0x%s","prev_digest":null,"seq":%s,"expected_link":"0x%s"}' % ("11" * 32, big, "00" * 32), V.R_CONTINUITY),
+            "chain_set": ('{"head":{"seq":%s,"digest":"0x%s"},"records":[]}' % (big, "11" * 32), V.R_COMPLETENESS),
+            "digest_recompute": ('{"payload":{"n":-%s},"expected_digest":"0x%s"}' % (big, "00" * 32), V.R_NUMBER),
+        }
+        d = tempfile.mkdtemp()
+        for kind, (inp, reason) in cases.items():
+            p = os.path.join(d, kind + ".json")
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write('{"kind":"%s","input":%s}' % (kind, inp))
+            got = V.verify_file(p)
+            self.assertEqual(got[:2], ("reject", reason), (kind, got[2][:200]))
+            if 0 < V._int_digit_limit() < 5000:            # past the interpreter's limit: printed as a digit count
+                self.assertIn("5000 digits", got[2])
+            try:                                             # positive control: CPython's default refuses the token
+                V._ABLATE.add("int_digit_limit")
+                self.assertEqual(V.verify_file(p)[:2], ("reject", V.R_INPUT), kind)
+            finally:
+                V._ABLATE.clear()
+        try:                                                 # the ablation's bound is CPython's default, 4300 digits
+            V._ABLATE.add("int_digit_limit")
+            self.assertEqual(V.load_json("[" + "7" * 4300 + "]")[0] % 1000, 777)
+            with self.assertRaises(ValueError):
+                V.load_json("[" + "7" * 4301 + "]")
+        finally:
+            V._ABLATE.clear()
+        # the reader does not depend on the interpreter's own limit: the lowest one CPython accepts (640), none (0), the
+        # default; a 700-digit token is past 640 and within 4300 (review 2026-10-14: with 640 it was input_reject)
+        import subprocess, sys
+        os.makedirs(os.path.join(d, "vectors"))
+        entries = []
+        for kind, (inp, reason) in cases.items():
+            os.replace(os.path.join(d, kind + ".json"), os.path.join(d, "vectors", kind + ".json"))
+            entries.append({"file": kind + ".json", "kind": kind, "expect": "reject", "reason": reason})
+        with open(os.path.join(d, "vectors", "len700.json"), "w", encoding="utf-8") as fh:   # 700 digits: past 640
+            fh.write('{"kind":"chain_set","input":{"head":{"seq":%s,"digest":"0x%s"},"records":[]}}' % ("9" * 700, "11" * 32))
+        entries.append({"file": "len700.json", "kind": "chain_set", "expect": "reject", "reason": V.R_COMPLETENESS})
+        with open(os.path.join(d, "MANIFEST.json"), "w", encoding="utf-8") as fh:
+            json.dump({"vectors": entries}, fh)
+        prog = ("import sys, verify_tersign as V; t = sys.argv[1]; v = V.load_json('[' + t + ']')[0]; "
+                "print(v % 1000, v < 0, len(V._r(v)) > 0)")
+        for limit in ("640", "0", "4300"):
+            env = dict(os.environ, PYTHONINTMAXSTRDIGITS=limit, PYTHONDONTWRITEBYTECODE="1")
+            for tok in ("7" * 700, "7" * 5000, "-" + "7" * 5000):
+                r = subprocess.run([sys.executable, "-c", prog, tok], cwd=HERE, env=env, capture_output=True, text=True)
+                want = ["223", "True", "True"] if tok[0] == "-" else ["777", "False", "True"]    # -...777 % 1000 == 223
+                self.assertEqual((r.returncode, r.stdout.split()), (0, want), (limit, len(tok), r.stderr[-300:]))
+            r = subprocess.run([sys.executable, os.path.join(HERE, "verify_tersign.py"), d, "--quiet"], cwd=HERE, env=env,
+                               capture_output=True, text=True)
+            self.assertEqual((r.returncode, r.stdout.strip().splitlines()[-1:]), (0, ["fully concordant 5/5"]),
+                             (limit, r.stdout[-300:], r.stderr[-300:]))
 
 
 def _suite_vectors_in(spec):

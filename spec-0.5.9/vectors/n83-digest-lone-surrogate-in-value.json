@@ -1,0 +1,13 @@
+{
+  "id": "n83-digest-lone-surrogate-in-value",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "p41's payload with the pair's second half dropped: {\"a\":\"\\ud842\"}, a lone high surrogate in the digest domain, with expected_digest computed over the text {\"a\":\"\\ud842\"} with the code unit escaped, which is what a canonicalizer built on JSON.stringify hashes. The payload has no canonical form (RFC 8785 section 3.2.2.2; RFC 7493 section 2.1) and no UTF-8 encoding, so it rejects with canonicalization_reject whatever digest is claimed. Measured on v0.5.4's engines: TypeScript valid, Python number_domain_reject.",
+  "input": {
+    "payload": {
+      "a": "\ud842"
+    },
+    "expected_digest": "0xffcdd38879c11446a9ccdccb2049938cd36df928bf8ed9056caa8c192e9128d4"
+  }
+}

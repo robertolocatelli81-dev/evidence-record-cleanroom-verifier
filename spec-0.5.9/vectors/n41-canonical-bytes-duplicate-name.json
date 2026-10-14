@@ -1,0 +1,11 @@
+{
+  "id": "n41-canonical-bytes-duplicate-name",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "Duplicate object names inside payload_text: {\"a\":1,\"a\":2}, claimed canonical {\"a\":2}, the form a last-wins parser produces. RFC 8785 \u00a73.1 requires input without duplicate property names (RFC 7493 \u00a72.3 forbids them), so the text has no canonical form to compare against. The duplicate-name rule applies to payload_text as it does to the vector file at load. Input from @Rul1an's report (issue #10).",
+  "input": {
+    "payload_text": "{\"a\":1,\"a\":2}",
+    "claimed_canonical": "{\"a\":2}"
+  }
+}

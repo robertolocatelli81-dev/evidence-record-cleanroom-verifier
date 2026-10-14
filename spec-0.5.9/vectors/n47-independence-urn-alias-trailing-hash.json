@@ -1,0 +1,19 @@
+{
+  "id": "n47-independence-urn-alias-trailing-hash",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by a trailing `#` (an empty fragment). Every trailing `/` `.` `#` is removed before comparison, so org:caldera-robotics# is the party org:caldera-robotics. An engine that strips only `/` accepts here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:caldera-robotics#"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+=== run_logged header ===
+cmd      : python3.11 verify_tersign.py heldout
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-10-14T09:03:44+02:00
+ended    : 2026-10-14T09:03:44+02:00
+exit     : 0
+=== stdout ===
+Tersign evidence-record-conformance-heldout-cleanroom v0.2.0 — independent verifier 0.3.0 — Python 3.11.2
+OK   h1-claimed-absent-is-silence.json                        independence_claim         expect=valid                              got=valid                              no independence claimed (`claimed` absent or null): nothing to disqualify (p9)  [input members not read: "/attestations/0/role", "/attestations/1/role"]
+OK   h2-claimed-absent-covers-present.json                    independence_claim         expect=valid                              got=valid                              no independence claimed (`claimed` absent or null): nothing to disqualify (p9)  [input members not read: "/attestations/0/role", "/attestations/1/role"]
+OK   h3-float-payload-without-claimed-canonical.json          canonical_bytes            expect=reject/number_domain_reject        got=reject/number_domain_reject        non-integer number token '1.1' in the digest domain
+OK   h4-boundary-no-coverage-claimed-full-attestation.json    boundary_binding           expect=valid                              got=valid                              prefixDigest binds 3 entries under keccak256-jcs; position 3; no coverage claimed; attested 3  [input members not read: "/boundary_event/event", "/boundary_event/ruleVersion"]
+OK   h5-boundary-empty-attestation-no-coverage.json           boundary_binding           expect=valid                              got=valid                              prefixDigest binds 3 entries under keccak256-jcs; position 3; no coverage claimed; attested 0  [input members not read: "/boundary_event/event", "/boundary_event/ruleVersion"]
+verdict concordant 5/5; reason concordant 1/1 (where the manifest names one); fully concordant 5/5
+=== stderr ===

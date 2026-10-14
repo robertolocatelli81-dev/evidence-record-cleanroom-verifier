@@ -27,6 +27,8 @@ jobs:
         run: cd spec && sha256sum -c ../SPEC_SHA256SUMS
       - name: spec integrity v0.5.7 (hash-pinned upstream vectors, unmodified)
         run: cd spec-0.5.7 && sha256sum -c ../SPEC_0.5.7_SHA256SUMS
+      - name: spec integrity v0.5.9 (hash-pinned upstream vectors, unmodified)
+        run: cd spec-0.5.9 && sha256sum -c ../SPEC_0.5.9_SHA256SUMS
       - name: unit tests
         run: python -m unittest -v test_verify_tersign
       - name: unit tests — crypto profile runner (PR #11)
@@ -65,6 +67,20 @@ jobs:
           # the two must fail for the pre-fix reason (the form check lets the value through and the run goes on), not for a
           # root mismatch: vector 7 ends unknown, vector 8 resolved
           python -c "import json,sys; d=json.load(open(sys.argv[1])); f=sorted((r['id'], r['bbv']['outcome']) for r in d['rows'] if not r['bbv_pass']); print('rc', sys.argv[2], 'failing', f); sys.exit(0 if sys.argv[2] == '1' and f == [('evi-retrieved-at-trailing-newline-rejects', 'resolved'), ('evi-snippet-sha256-trailing-newline-rejects', 'unknown')] else 1)" "$RUNNER_TEMP/pc.json" "$rc"
+      - name: suite v0.5.9 (239 vectors, expect 239/239 verdict and 172/172 reason; defined_members lists equal the pinned ones)
+        run: python verify_tersign.py spec-0.5.9/
+      - name: positive control v0.5.9 — flipped expect must be 0/239 (exit 1)
+        run: |
+          set +e
+          out=$(python verify_tersign.py spec-0.5.9/ --flip-expect --quiet); rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ] || [ "$out" != "fully concordant 0/239" ]; then echo "flip-expect did NOT fail as required"; exit 1; fi
+      - name: positive control v0.5.9 — mutated valid vectors must all reject (undefined members included)
+        run: python verify_tersign.py spec-0.5.9/ --mutate --quiet
+      - name: positive controls on live-ledger values v0.5.9
+        run: python positive_controls.py spec-0.5.9/
+      - name: ablations v0.5.9 (one rule off at a time)
+        run: python ablation_study.py spec-0.5.9/
       - name: suite v0.5.7 (162 vectors, expect 162/162 verdict and 106/106 reason)
         run: python verify_tersign.py spec-0.5.7/
       - name: positive control v0.5.7 — flipped expect must be 0/162 (exit 1)

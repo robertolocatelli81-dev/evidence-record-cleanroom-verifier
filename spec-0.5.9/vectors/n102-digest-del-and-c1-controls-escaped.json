@@ -1,0 +1,13 @@
+{
+  "id": "n102-digest-del-and-c1-controls-escaped",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p52: the same payload, with expected_digest computed over {\"a\":\"\\u007f\\u0080\\u009f\"}, the three written as escapes. That is the text Python's json.dumps emits with its default ensure_ascii=True, which escapes DEL as well as every non-ASCII code point, and separators=(\",\", \":\"), so it is the digest a canonicalizer built on json.dumps(value, sort_keys=True, separators=(\",\", \":\")) computes; an encoder that escapes every control character emits the same text. It is not the canonical form, and its digest does not commit to this payload. An engine that escapes them rejects p52 and accepts this vector; one that accepts either form accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "\u007f\u0080\u009f"
+    },
+    "expected_digest": "0x9af273ae6754b83f91be6128aa9633c3af31c1804a140d09abf16b7e571b76cd"
+  }
+}

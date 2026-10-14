@@ -1,0 +1,13 @@
+{
+  "id": "n101-phase-claim-refund-presented-as-reversal",
+  "kind": "phase_claim",
+  "expect": "reject",
+  "reason": "phase_reject",
+  "description": "A refund-phase record presented as reversal. The vocabulary's five words are five phases, refund and reversal among them, so a record of one is not evidence of the other. An engine that reads the two as one phase accepts. p49 is the accepting twin, and p50 accepts reversal presented as itself.",
+  "input": {
+    "record": {
+      "economic_phase": "refund"
+    },
+    "presented_as": "reversal"
+  }
+}

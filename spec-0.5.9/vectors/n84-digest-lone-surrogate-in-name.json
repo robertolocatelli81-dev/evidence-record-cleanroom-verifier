@@ -1,0 +1,14 @@
+{
+  "id": "n84-digest-lone-surrogate-in-name",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "canonicalization_reject",
+  "description": "p14's payload with the second name's low half dropped: the name U+10000 (D800 DC00) becomes a lone high surrogate, D800, in the digest domain. expected_digest is computed over the text JSON.stringify emits for it, with that name escaped and sorted first by UTF-16 code unit. A name holding an unpaired surrogate has no canonical form (RFC 7493 section 2.1 covers member names; RFC 8785 section 3.2.2.2), so it rejects with canonicalization_reject, as n83 does for a value; p14 is the accepting twin. An engine that checks values and not names reads this vector valid when it is built on JSON.stringify, and rejects it with number_domain_reject when, as v0.5.4's Python engine did, its UTF-16 sort key raises on the name.",
+  "input": {
+    "payload": {
+      "\uff61": 1,
+      "\ud800": 2
+    },
+    "expected_digest": "0x3eceb1d7c3c310c96a2a6bdd8425a7f928e63ccdcfdb2220d9d4898323d01ad9"
+  }
+}

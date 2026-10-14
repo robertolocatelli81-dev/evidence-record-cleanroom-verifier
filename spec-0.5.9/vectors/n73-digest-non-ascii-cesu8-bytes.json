@@ -1,0 +1,13 @@
+{
+  "id": "n73-digest-non-ascii-cesu8-bytes",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p41: the same payload, with expected_digest computed over CESU-8 (Unicode Technical Report #26), where each half of the surrogate pair is encoded on its own in three bytes, ed a1 82 ed be b7 in place of f0 a0 ae b7. That is the output of a UTF-8 encoder that walks UTF-16 code units without combining pairs. CESU-8 equals UTF-8 on every BMP character, so p39, p40 and p42 cannot tell the two apart; only an astral code point can. RFC 8785 section 3.2.4 requires UTF-8. An engine that hashes CESU-8 rejects p41 and p14 and accepts this vector; one that accepts either encoding accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "\ud842\udfb7"
+    },
+    "expected_digest": "0x022e00bb3fe6eccfbf63a0f8540a6cc777d36eb61bc62a021bc48a688d760407"
+  }
+}

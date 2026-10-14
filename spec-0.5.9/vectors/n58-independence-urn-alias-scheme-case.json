@@ -1,0 +1,19 @@
+{
+  "id": "n58-independence-urn-alias-scheme-case",
+  "kind": "independence_claim",
+  "expect": "reject",
+  "reason": "independence_reject",
+  "description": "Alias bypass by the case of the scheme alone: the deployer attests as ORG:caldera-robotics while the parties list carries org:caldera-robotics. Schemes are case-insensitive (RFC 3986 section 3.1) and letter case folds in the scheme as in the path, so the record is attested only by parties. An engine that folds the path but keeps the scheme's case counts the alias as an outside attestor and accepts. p31 is the accepting side (an upper-case scheme on a party outside the transaction).",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "ORG:caldera-robotics"
+      }
+    ]
+  }
+}

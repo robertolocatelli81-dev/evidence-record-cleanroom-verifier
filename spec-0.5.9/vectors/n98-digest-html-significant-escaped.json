@@ -1,0 +1,13 @@
+{
+  "id": "n98-digest-html-significant-escaped",
+  "kind": "digest_recompute",
+  "expect": "reject",
+  "reason": "recompute_mismatch",
+  "description": "Rejecting twin of p51: the same payload, with expected_digest computed over {\"a\":\"\\u003cb\\u003e\\u0026\"}, the three written as escapes. Go encoding/json emits that text by default (json.Marshal escapes \"<\", \">\" and \"&\" for HTML safety; an Encoder with SetEscapeHTML(false) does not; measured, go1.27.1), so it is the digest a canonicalizer built on json.Marshal computes. The escaped text is not the canonical form, and its digest does not commit to this payload. An engine that escapes them rejects p51 and accepts this vector; one that accepts either form accepts this vector only.",
+  "input": {
+    "payload": {
+      "a": "<b>&"
+    },
+    "expected_digest": "0x70f0dc4e89a42fcabc3d83783d3a9af57ae07df2c207fc7d1059ed5365c1de8c"
+  }
+}

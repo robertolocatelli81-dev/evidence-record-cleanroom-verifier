@@ -1,0 +1,718 @@
+=== run_logged header ===
+cmd      : python3.11 -c import subprocess,sys; e=sys.executable; D=('spec-0.5.9/','spec-0.5.7/','spec/'); r=[subprocess.run([e,'verify_tersign.py',d,'--flip-expect','--quiet']).returncode for d in D]+[subprocess.run([e,'verify_tersign.py',d,'--mutate','--quiet']).returncode for d in D]+[subprocess.run([e,'ablation_study.py',d]).returncode for d in D]+[subprocess.run([e,'positive_controls.py',d]).returncode for d in D]; print('exit codes flip059/057/053, mutate059/057/053, ablate059/057/053, pc059/057/053:', r); sys.exit(0 if r==[1,1,1]+[0]*9 else 1)
+cwd      : . (repository root)
+interp   : Python 3.11.2  (wrapper sys.version: 3.11.2)
+started  : 2026-10-14T09:03:13+02:00
+ended    : 2026-10-14T09:03:23+02:00
+exit     : 0
+=== stdout ===
+fully concordant 0/239
+fully concordant 0/162
+fully concordant 0/69
+mutations flipped valid->reject: 301/301
+mutations flipped valid->reject: 237/237
+mutations flipped valid->reject: 146/146
+baseline: 239/239 concordant
+
+== ablate keccak_to_sha3: content address / links / delivery digest computed with SHA3-256 instead of Keccak-256
+   concordant 203/239  (verdict flips: 36, reason-only: 0)
+   DISC p1-live-genesis-receipt.json                             expect=valid/None                         got=reject/recompute_mismatch
+   DISC p3-integer-key-utf16-order.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p4-chain-link-genesis.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p6-chain-set-complete.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p12-ijson-integer-boundary.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p13-decimal-string-beside-integer.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p23-delivery-independence-within-commitment.json         expect=valid/None                         got=reject/independence_reject
+   DISC p24-witnessed-complete-set.json                          expect=valid/None                         got=reject/continuity_reject
+   DISC p18-boundary-binds-prefix-and-position.json              expect=valid/None                         got=reject/boundary_reject
+   DISC p19-authority-reduction-bound.json                       expect=valid/None                         got=reject/binding_reject
+   DISC p20-suite-transition-preserves-prefix.json               expect=valid/None                         got=reject/boundary_reject
+   DISC n29-suite-transition-redigests-prefix.json               expect=reject/boundary_reject             got=valid/None
+   DISC p15-offer-binding.json                                   expect=valid/None                         got=reject/binding_reject
+   DISC p26-chain-commitment-complete.json                       expect=valid/None                         got=reject/continuity_reject
+   DISC p27-live-chain-commitment-genesis-chain.json             expect=valid/None                         got=reject/continuity_reject
+   DISC p28-issuer-sequence-distinct-seq.json                    expect=valid/None                         got=reject/continuity_reject
+   DISC p29-committed-prefix-one-record-per-position.json        expect=valid/None                         got=reject/continuity_reject
+   DISC p39-digest-non-ascii-latin1-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p40-digest-non-ascii-cjk-value.json                      expect=valid/None                         got=reject/recompute_mismatch
+   DISC p41-digest-non-ascii-astral-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p42-digest-non-ascii-decomposed-value.json               expect=valid/None                         got=reject/recompute_mismatch
+   DISC p43-chain-link-seq-ijson-boundary.json                   expect=valid/None                         got=reject/continuity_reject
+   DISC p45-digest-line-separators-value.json                    expect=valid/None                         got=reject/recompute_mismatch
+   DISC p46-digest-decomposed-name.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p51-digest-html-significant-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p52-digest-del-and-c1-controls-value.json                expect=valid/None                         got=reject/recompute_mismatch
+   DISC p55-independence-scope-delivery-only.json                expect=valid/None                         got=reject/independence_reject
+   DISC p57-chain-commitment-witness-and-attestations.json       expect=valid/None                         got=reject/continuity_reject
+   DISC p58-chain-set-not-read-contents.json                     expect=valid/None                         got=reject/continuity_reject
+   DISC p60-receipt-open.json                                    expect=valid/None                         got=reject/binding_reject
+   DISC p61-chain-commitment-not-read-contents.json              expect=valid/None                         got=reject/continuity_reject
+   DISC p63-boundary-empty-attestation-no-coverage.json          expect=valid/None                         got=reject/boundary_reject
+   DISC p64-boundary-attested-length-equals-shorter-prefix.json  expect=valid/None                         got=reject/boundary_reject
+   DISC p66-digest-integer-negative-bound.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p67-boundary-position-without-attested-length.json       expect=valid/None                         got=reject/boundary_reject
+
+== ablate codepoint_key_order: JCS keys sorted by Unicode code point instead of UTF-16 code units
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC n12-codepoint-key-order.json                             expect=reject/canonicalization_reject     got=valid/None
+
+== ablate no_number_domain: non-integer number tokens and integers beyond 2^53-1 are serialized instead of rejected
+   concordant 234/239  (verdict flips: 2, reason-only: 3)
+   DISC n10-float-in-digest-domain.json                          expect=reject/number_domain_reject        got=valid/None
+   DISC n11-integer-beyond-ijson-range.json                      expect=reject/number_domain_reject        got=reject/recompute_mismatch
+   DISC n35-integer-valued-float-token.json                      expect=reject/number_domain_reject        got=reject/canonicalization_reject
+   DISC n103-canonical-bytes-exponent-token.json                 expect=reject/number_domain_reject        got=reject/canonicalization_reject
+   DISC n164-digest-integer-past-negative-bound.json             expect=reject/number_domain_reject        got=valid/None
+
+== ablate no_seq_completeness: chain_set skips the every-seq-exactly-once check (missing / duplicate)
+   concordant 236/239  (verdict flips: 1, reason-only: 2)
+   DISC n4-omitted-record.json                                   expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n34-witnessed-inclusion-not-completeness.json            expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n39-issuer-sequence-duplicate-seq.json                   expect=reject/completeness_reject         got=valid/None
+
+== ablate no_link_recompute: chain_set does not recompute a presented `link`
+   concordant 238/239  (verdict flips: 1, reason-only: 0)
+   DISC n17-renumbered-omission.json                             expect=reject/continuity_reject           got=valid/None
+
+== ablate no_accumulator: chain_commitment does not compare head.acc with the fold
+   concordant 236/239  (verdict flips: 3, reason-only: 0)
+   DISC n36-chain-commitment-prefix-substituted.json             expect=reject/continuity_reject           got=valid/None
+   DISC n37-chain-commitment-last-link-only.json                 expect=reject/continuity_reject           got=valid/None
+   DISC n40-equivocating-record-at-committed-position.json       expect=reject/continuity_reject           got=valid/None
+
+== ablate no_independence: independence_claim does not require a non-party attestor
+   concordant 221/239  (verdict flips: 18, reason-only: 0)
+   DISC n7-issuer-only-independence.json                         expect=reject/independence_reject         got=valid/None
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n32-delivery-self-attested.json                          expect=reject/independence_reject         got=valid/None
+   DISC n30-independence-urn-self-attested.json                  expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+   DISC n45-independence-urn-alias-case.json                     expect=reject/independence_reject         got=valid/None
+   DISC n46-independence-urn-alias-trailing-dot.json             expect=reject/independence_reject         got=valid/None
+   DISC n47-independence-urn-alias-trailing-hash.json            expect=reject/independence_reject         got=valid/None
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n58-independence-urn-alias-scheme-case.json              expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+   DISC n106-independence-address-alias-letter-case.json         expect=reject/independence_reject         got=valid/None
+
+== ablate no_identity_normalization: identities compared byte-exact (no strip / lowercase / trailing-punctuation fold)
+   concordant 211/239  (verdict flips: 28, reason-only: 0)
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n14-unparseable-attestor.json                            expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+   DISC n45-independence-urn-alias-case.json                     expect=reject/independence_reject         got=valid/None
+   DISC n46-independence-urn-alias-trailing-dot.json             expect=reject/independence_reject         got=valid/None
+   DISC n47-independence-urn-alias-trailing-hash.json            expect=reject/independence_reject         got=valid/None
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n50-independence-urn-percent-encoded-reserved.json       expect=reject/independence_reject         got=valid/None
+   DISC n51-independence-urn-empty-after-normalization.json      expect=reject/independence_reject         got=valid/None
+   DISC n52-independence-identifier-format-character-padding.json expect=reject/independence_reject         got=valid/None
+   DISC n53-independence-identifier-control-character-padding.json expect=reject/independence_reject         got=valid/None
+   DISC n58-independence-urn-alias-scheme-case.json              expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n55-independence-urn-percent-encoded-percent-sign.json   expect=reject/independence_reject         got=valid/None
+   DISC n56-independence-urn-triplet-assembled-by-decoding.json  expect=reject/independence_reject         got=valid/None
+   DISC n59-independence-urn-alias-dot-segment.json              expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+   DISC n67-independence-urn-alias-leading-dot-segment.json      expect=reject/independence_reject         got=valid/None
+   DISC n70-independence-urn-alias-leading-dot-dot-segment.json  expect=reject/independence_reject         got=valid/None
+   DISC n61-independence-urn-query-component.json                expect=reject/independence_reject         got=valid/None
+   DISC n62-independence-urn-fragment-component.json             expect=reject/independence_reject         got=valid/None
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+   DISC n106-independence-address-alias-letter-case.json         expect=reject/independence_reject         got=valid/None
+
+== ablate no_record_commits_presence: a declared `record_commits` field is ignored instead of rejected
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate declared_commits: commitments are read from a declared `record_commits` list when present (the n22 override bug)
+   concordant 236/239  (verdict flips: 3, reason-only: 0)
+   DISC n22-independence-scope-declared-override.json            expect=reject/independence_reject         got=valid/None
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate no_position_binding: boundary_binding does not require `position`
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC n25-boundary-prefix-only-no-position.json                expect=reject/boundary_reject             got=valid/None
+   DISC n168-boundary-position-not-prefix-end.json               expect=reject/boundary_reject             got=valid/None
+
+== ablate no_coverage_bound: boundary_binding does not compare covered_through with attestedPrefixLength
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC n26-coverage-claimed-over-empty-attestation.json         expect=reject/boundary_reject             got=valid/None
+   DISC n166-boundary-coverage-past-attestation.json             expect=reject/boundary_reject             got=valid/None
+
+== ablate phase_any: phase_claim accepts any phase token (no vocabulary, no equality)
+   concordant 230/239  (verdict flips: 9, reason-only: 0)
+   DISC n6-phase-confusion.json                                  expect=reject/phase_reject                got=valid/None
+   DISC n18-unrecognized-phase.json                              expect=reject/phase_reject                got=valid/None
+   DISC n78-phase-claim-no-economic-phase.json                   expect=reject/phase_reject                got=valid/None
+   DISC n80-phase-claim-unrecognized-phase-presented-as-itself.json expect=reject/phase_reject                got=valid/None
+   DISC n90-phase-claim-delivery-presented-as-funding.json       expect=reject/phase_reject                got=valid/None
+   DISC n91-phase-claim-phase-letter-case.json                   expect=reject/phase_reject                got=valid/None
+   DISC n99-phase-claim-presented-as-letter-case.json            expect=reject/phase_reject                got=valid/None
+   DISC n100-phase-claim-presented-as-absent.json                expect=reject/phase_reject                got=valid/None
+   DISC n101-phase-claim-refund-presented-as-reversal.json       expect=reject/phase_reject                got=valid/None
+
+== ablate no_unknown_claim_reject: unknown independence claim tokens are ignored instead of rejected
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC n8-unrecognized-independence-claim.json                  expect=reject/independence_reject         got=valid/None
+   DISC n9-unrecognized-member-in-claim-set.json                 expect=reject/independence_reject         got=valid/None
+
+== ablate no_seq_domain: chain_link accepts any uint64 seq instead of an integer token in [1, 2^53-1]
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC n75-chain-link-seq-zero.json                             expect=reject/continuity_reject           got=valid/None
+   DISC n76-chain-link-seq-past-ijson-range.json                 expect=reject/continuity_reject           got=valid/None
+
+== ablate no_surrogate_first: payload_text: number tokens are checked before an unpaired surrogate
+   concordant 238/239  (verdict flips: 0, reason-only: 1)
+   DISC n92-canonical-bytes-lone-surrogate-after-number.json     expect=reject/canonicalization_reject     got=reject/number_domain_reject
+
+== ablate no_own_reason: offer/decision-evidence/boundary criteria name canonicalization_reject for an object with no canonical form
+   concordant 236/239  (verdict flips: 0, reason-only: 3)
+   DISC n94-offer-binding-lone-surrogate.json                    expect=reject/binding_reject              got=reject/canonicalization_reject
+   DISC n95-decision-evidence-binding-lone-surrogate.json        expect=reject/binding_reject              got=reject/canonicalization_reject
+   DISC n96-boundary-binding-lone-surrogate-in-prefix.json       expect=reject/boundary_reject             got=reject/canonicalization_reject
+
+== ablate no_pair_join: a surrogate pair written half raw, half escaped stays two code points (names compared as code points)
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate python_whitespace_strip: identifiers and digests stripped with Python str.strip() (also strips U+001C-U+001F)
+   concordant 238/239  (verdict flips: 1, reason-only: 0)
+   DISC n53-independence-identifier-control-character-padding.json expect=reject/independence_reject         got=valid/None
+
+== ablate no_percent_rule: percent-encoded triplets are neither decoded nor refused
+   concordant 232/239  (verdict flips: 7, reason-only: 0)
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n50-independence-urn-percent-encoded-reserved.json       expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n55-independence-urn-percent-encoded-percent-sign.json   expect=reject/independence_reject         got=valid/None
+   DISC n56-independence-urn-triplet-assembled-by-decoding.json  expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+
+== ablate no_dot_segment_rule: `?` and dot-segments do not make an identifier unparseable
+   concordant 234/239  (verdict flips: 5, reason-only: 0)
+   DISC n59-independence-urn-alias-dot-segment.json              expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+   DISC n67-independence-urn-alias-leading-dot-segment.json      expect=reject/independence_reject         got=valid/None
+   DISC n70-independence-urn-alias-leading-dot-dot-segment.json  expect=reject/independence_reject         got=valid/None
+   DISC n61-independence-urn-query-component.json                expect=reject/independence_reject         got=valid/None
+
+== ablate no_address_alias: a scheme-qualified identifier ending in a 0x-address does not name that address
+   concordant 234/239  (verdict flips: 5, reason-only: 0)
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+
+== ablate no_defined_members: a member outside the `defined_members` lists of a closed object is not rejected
+   concordant 193/239  (verdict flips: 30, reason-only: 16)
+   DISC n107-unknown-member-digest-recompute.json                expect=reject/unknown_member_reject       got=valid/None
+   DISC n108-unknown-member-canonical-bytes.json                 expect=reject/unknown_member_reject       got=valid/None
+   DISC n109-unknown-member-chain-link.json                      expect=reject/unknown_member_reject       got=valid/None
+   DISC n110-unknown-member-chain-set.json                       expect=reject/unknown_member_reject       got=valid/None
+   DISC n111-unknown-member-chain-commitment.json                expect=reject/unknown_member_reject       got=valid/None
+   DISC n112-unknown-member-anchor-relation.json                 expect=reject/unknown_member_reject       got=valid/None
+   DISC n113-unknown-member-phase-claim.json                     expect=reject/unknown_member_reject       got=valid/None
+   DISC n114-unknown-member-independence-claim.json              expect=reject/unknown_member_reject       got=valid/None
+   DISC n115-unknown-member-offer-binding.json                   expect=reject/unknown_member_reject       got=valid/None
+   DISC n116-unknown-member-decision-evidence-binding.json       expect=reject/unknown_member_reject       got=valid/None
+   DISC n117-unknown-member-boundary-binding.json                expect=reject/unknown_member_reject       got=valid/None
+   DISC n118-unknown-member-in-chain-set-head.json               expect=reject/unknown_member_reject       got=valid/None
+   DISC n119-unknown-member-in-chain-set-record.json             expect=reject/unknown_member_reject       got=valid/None
+   DISC n120-unknown-member-in-chain-commitment-head.json        expect=reject/unknown_member_reject       got=valid/None
+   DISC n121-unknown-member-in-chain-commitment-record.json      expect=reject/unknown_member_reject       got=valid/None
+   DISC n122-unknown-member-in-attestation.json                  expect=reject/unknown_member_reject       got=valid/None
+   DISC n123-unknown-member-null-value.json                      expect=reject/unknown_member_reject       got=valid/None
+   DISC n124-unknown-member-empty-string-value.json              expect=reject/unknown_member_reject       got=valid/None
+   DISC n125-unknown-member-empty-object-value.json              expect=reject/unknown_member_reject       got=valid/None
+   DISC n126-member-name-letter-case.json                        expect=reject/unknown_member_reject       got=valid/None
+   DISC n127-member-name-cyrillic-homoglyph.json                 expect=reject/unknown_member_reject       got=valid/None
+   DISC n128-member-name-fullwidth-compatibility-form.json       expect=reject/unknown_member_reject       got=valid/None
+   DISC n129-member-of-another-kind.json                         expect=reject/unknown_member_reject       got=valid/None
+   DISC n130-chain-commitment-head-read-as-chain-set.json        expect=reject/unknown_member_reject       got=valid/None
+   DISC n131-member-named-constructor.json                       expect=reject/unknown_member_reject       got=valid/None
+   DISC n132-member-named-proto.json                             expect=reject/unknown_member_reject       got=valid/None
+   DISC n133-unknown-member-before-criterion.json                expect=reject/unknown_member_reject       got=reject/completeness_reject
+   DISC n134-unknown-member-before-criterion-digest-recompute.json expect=reject/unknown_member_reject       got=reject/recompute_mismatch
+   DISC n135-unknown-member-before-criterion-canonical-bytes.json expect=reject/unknown_member_reject       got=reject/canonicalization_reject
+   DISC n136-unknown-member-before-criterion-chain-link.json     expect=reject/unknown_member_reject       got=reject/continuity_reject
+   DISC n137-unknown-member-before-criterion-chain-commitment.json expect=reject/unknown_member_reject       got=reject/continuity_reject
+   DISC n138-unknown-member-before-criterion-anchor-relation.json expect=reject/unknown_member_reject       got=reject/existence_reject
+   DISC n139-unknown-member-before-criterion-phase-claim.json    expect=reject/unknown_member_reject       got=reject/phase_reject
+   DISC n140-unknown-member-before-criterion-independence-claim.json expect=reject/unknown_member_reject       got=reject/independence_reject
+   DISC n141-unknown-member-before-criterion-offer-binding.json  expect=reject/unknown_member_reject       got=reject/binding_reject
+   DISC n142-unknown-member-before-criterion-decision-evidence-binding.json expect=reject/unknown_member_reject       got=reject/binding_reject
+   DISC n143-unknown-member-before-criterion-boundary-binding.json expect=reject/unknown_member_reject       got=reject/boundary_reject
+   DISC n144-unknown-member-in-head-before-criterion.json        expect=reject/unknown_member_reject       got=reject/completeness_reject
+   DISC n145-unknown-member-in-attestation-before-criterion.json expect=reject/unknown_member_reject       got=reject/independence_reject
+   DISC n146-unknown-member-in-party-attestation.json            expect=reject/unknown_member_reject       got=valid/None
+   DISC n147-unknown-member-in-attestation-no-claim.json         expect=reject/unknown_member_reject       got=valid/None
+   DISC n148-unknown-member-after-non-object-entry.json          expect=reject/unknown_member_reject       got=valid/None
+   DISC n149-member-name-trailing-space.json                     expect=reject/unknown_member_reject       got=valid/None
+   DISC n150-unknown-member-in-record-before-criterion.json      expect=reject/unknown_member_reject       got=reject/completeness_reject
+   DISC n151-unknown-member-in-commitment-head-before-criterion.json expect=reject/unknown_member_reject       got=reject/continuity_reject
+   DISC n152-unknown-member-in-commitment-record-before-criterion.json expect=reject/unknown_member_reject       got=reject/continuity_reject
+
+== ablate head_read_late: chain_set: head.digest is read after the records, an unreadable one as continuity_reject (v0.5.7)
+   concordant 237/239  (verdict flips: 0, reason-only: 2)
+   DISC n165-chain-set-head-digest-absent.json                   expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n169-chain-set-head-digest-unparseable.json              expect=reject/completeness_reject         got=reject/continuity_reject
+
+== ablate no_head_seq_bound: chain_set: a head.seq above the profile bound 100000 is not rejected
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate absent_prev_rejects: chain_set: a record with no prev_digest member rejects instead of reading as null
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate zero_prev_as_bytes: chain_set: a prev_digest of 32 zero bytes is compared as bytes, not read as null
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate apl_required: boundary_binding: attestedPrefixLength required and 0 rejected (the v0.5.7 reading of n26)
+   concordant 237/239  (verdict flips: 2, reason-only: 0)
+   DISC p63-boundary-empty-attestation-no-coverage.json          expect=valid/None                         got=reject/boundary_reject
+   DISC p67-boundary-position-without-attested-length.json       expect=valid/None                         got=reject/boundary_reject
+
+== ablate coverage_without_apl: boundary_binding: covered_through accepted when attestedPrefixLength is absent
+   concordant 238/239  (verdict flips: 1, reason-only: 0)
+   DISC n167-boundary-coverage-without-attested-length.json      expect=reject/boundary_reject             got=valid/None
+
+== ablate claim_null_unknown: independence_claim: `claimed` null or "" is an unknown token instead of silence
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate empty_claim_lists_ok: independence_claim: an empty `parties` or `attestations` array under a claim is accepted
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+== ablate int_digit_limit: an integer token longer than 4300 digits is refused by the parser (CPython's default limit, whatever this interpreter's setting)
+   concordant 239/239  (verdict flips: 0, reason-only: 0)
+
+ablations with NO discordant vector (unpinned rules): ['no_pair_join', 'no_head_seq_bound', 'absent_prev_rejects', 'zero_prev_as_bytes', 'claim_null_unknown', 'empty_claim_lists_ok', 'int_digit_limit']
+baseline: 162/162 concordant
+
+== ablate keccak_to_sha3: content address / links / delivery digest computed with SHA3-256 instead of Keccak-256
+   concordant 134/162  (verdict flips: 28, reason-only: 0)
+   DISC p1-live-genesis-receipt.json                             expect=valid/None                         got=reject/recompute_mismatch
+   DISC p3-integer-key-utf16-order.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p4-chain-link-genesis.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p6-chain-set-complete.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p12-ijson-integer-boundary.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p13-decimal-string-beside-integer.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p23-delivery-independence-within-commitment.json         expect=valid/None                         got=reject/independence_reject
+   DISC p24-witnessed-complete-set.json                          expect=valid/None                         got=reject/continuity_reject
+   DISC p18-boundary-binds-prefix-and-position.json              expect=valid/None                         got=reject/boundary_reject
+   DISC p19-authority-reduction-bound.json                       expect=valid/None                         got=reject/binding_reject
+   DISC p20-suite-transition-preserves-prefix.json               expect=valid/None                         got=reject/boundary_reject
+   DISC n29-suite-transition-redigests-prefix.json               expect=reject/boundary_reject             got=valid/None
+   DISC p15-offer-binding.json                                   expect=valid/None                         got=reject/binding_reject
+   DISC p26-chain-commitment-complete.json                       expect=valid/None                         got=reject/continuity_reject
+   DISC p27-live-chain-commitment-genesis-chain.json             expect=valid/None                         got=reject/continuity_reject
+   DISC p28-issuer-sequence-distinct-seq.json                    expect=valid/None                         got=reject/continuity_reject
+   DISC p29-committed-prefix-one-record-per-position.json        expect=valid/None                         got=reject/continuity_reject
+   DISC p39-digest-non-ascii-latin1-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p40-digest-non-ascii-cjk-value.json                      expect=valid/None                         got=reject/recompute_mismatch
+   DISC p41-digest-non-ascii-astral-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p42-digest-non-ascii-decomposed-value.json               expect=valid/None                         got=reject/recompute_mismatch
+   DISC p43-chain-link-seq-ijson-boundary.json                   expect=valid/None                         got=reject/continuity_reject
+   DISC p45-digest-line-separators-value.json                    expect=valid/None                         got=reject/recompute_mismatch
+   DISC p46-digest-decomposed-name.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p51-digest-html-significant-value.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p52-digest-del-and-c1-controls-value.json                expect=valid/None                         got=reject/recompute_mismatch
+   DISC p55-independence-scope-delivery-only.json                expect=valid/None                         got=reject/independence_reject
+
+== ablate codepoint_key_order: JCS keys sorted by Unicode code point instead of UTF-16 code units
+   concordant 160/162  (verdict flips: 2, reason-only: 0)
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC n12-codepoint-key-order.json                             expect=reject/canonicalization_reject     got=valid/None
+
+== ablate no_number_domain: non-integer number tokens and integers beyond 2^53-1 are serialized instead of rejected
+   concordant 158/162  (verdict flips: 1, reason-only: 3)
+   DISC n10-float-in-digest-domain.json                          expect=reject/number_domain_reject        got=valid/None
+   DISC n11-integer-beyond-ijson-range.json                      expect=reject/number_domain_reject        got=reject/recompute_mismatch
+   DISC n35-integer-valued-float-token.json                      expect=reject/number_domain_reject        got=reject/canonicalization_reject
+   DISC n103-canonical-bytes-exponent-token.json                 expect=reject/number_domain_reject        got=reject/canonicalization_reject
+
+== ablate no_seq_completeness: chain_set skips the every-seq-exactly-once check (missing / duplicate)
+   concordant 159/162  (verdict flips: 1, reason-only: 2)
+   DISC n4-omitted-record.json                                   expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n34-witnessed-inclusion-not-completeness.json            expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n39-issuer-sequence-duplicate-seq.json                   expect=reject/completeness_reject         got=valid/None
+
+== ablate no_link_recompute: chain_set does not recompute a presented `link`
+   concordant 161/162  (verdict flips: 1, reason-only: 0)
+   DISC n17-renumbered-omission.json                             expect=reject/continuity_reject           got=valid/None
+
+== ablate no_accumulator: chain_commitment does not compare head.acc with the fold
+   concordant 159/162  (verdict flips: 3, reason-only: 0)
+   DISC n36-chain-commitment-prefix-substituted.json             expect=reject/continuity_reject           got=valid/None
+   DISC n37-chain-commitment-last-link-only.json                 expect=reject/continuity_reject           got=valid/None
+   DISC n40-equivocating-record-at-committed-position.json       expect=reject/continuity_reject           got=valid/None
+
+== ablate no_independence: independence_claim does not require a non-party attestor
+   concordant 144/162  (verdict flips: 18, reason-only: 0)
+   DISC n7-issuer-only-independence.json                         expect=reject/independence_reject         got=valid/None
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n32-delivery-self-attested.json                          expect=reject/independence_reject         got=valid/None
+   DISC n30-independence-urn-self-attested.json                  expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+   DISC n45-independence-urn-alias-case.json                     expect=reject/independence_reject         got=valid/None
+   DISC n46-independence-urn-alias-trailing-dot.json             expect=reject/independence_reject         got=valid/None
+   DISC n47-independence-urn-alias-trailing-hash.json            expect=reject/independence_reject         got=valid/None
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n58-independence-urn-alias-scheme-case.json              expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+   DISC n106-independence-address-alias-letter-case.json         expect=reject/independence_reject         got=valid/None
+
+== ablate no_identity_normalization: identities compared byte-exact (no strip / lowercase / trailing-punctuation fold)
+   concordant 134/162  (verdict flips: 28, reason-only: 0)
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n14-unparseable-attestor.json                            expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+   DISC n45-independence-urn-alias-case.json                     expect=reject/independence_reject         got=valid/None
+   DISC n46-independence-urn-alias-trailing-dot.json             expect=reject/independence_reject         got=valid/None
+   DISC n47-independence-urn-alias-trailing-hash.json            expect=reject/independence_reject         got=valid/None
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n50-independence-urn-percent-encoded-reserved.json       expect=reject/independence_reject         got=valid/None
+   DISC n51-independence-urn-empty-after-normalization.json      expect=reject/independence_reject         got=valid/None
+   DISC n52-independence-identifier-format-character-padding.json expect=reject/independence_reject         got=valid/None
+   DISC n53-independence-identifier-control-character-padding.json expect=reject/independence_reject         got=valid/None
+   DISC n58-independence-urn-alias-scheme-case.json              expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n55-independence-urn-percent-encoded-percent-sign.json   expect=reject/independence_reject         got=valid/None
+   DISC n56-independence-urn-triplet-assembled-by-decoding.json  expect=reject/independence_reject         got=valid/None
+   DISC n59-independence-urn-alias-dot-segment.json              expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+   DISC n67-independence-urn-alias-leading-dot-segment.json      expect=reject/independence_reject         got=valid/None
+   DISC n70-independence-urn-alias-leading-dot-dot-segment.json  expect=reject/independence_reject         got=valid/None
+   DISC n61-independence-urn-query-component.json                expect=reject/independence_reject         got=valid/None
+   DISC n62-independence-urn-fragment-component.json             expect=reject/independence_reject         got=valid/None
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+   DISC n106-independence-address-alias-letter-case.json         expect=reject/independence_reject         got=valid/None
+
+== ablate no_record_commits_presence: a declared `record_commits` field is ignored instead of rejected
+   concordant 160/162  (verdict flips: 2, reason-only: 0)
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate declared_commits: commitments are read from a declared `record_commits` list when present (the n22 override bug)
+   concordant 159/162  (verdict flips: 3, reason-only: 0)
+   DISC n22-independence-scope-declared-override.json            expect=reject/independence_reject         got=valid/None
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate no_position_binding: boundary_binding does not require `position`
+   concordant 161/162  (verdict flips: 1, reason-only: 0)
+   DISC n25-boundary-prefix-only-no-position.json                expect=reject/boundary_reject             got=valid/None
+
+== ablate no_coverage_bound: boundary_binding does not compare covered_through with attestedPrefixLength
+   concordant 161/162  (verdict flips: 1, reason-only: 0)
+   DISC n26-coverage-claimed-over-empty-attestation.json         expect=reject/boundary_reject             got=valid/None
+
+== ablate phase_any: phase_claim accepts any phase token (no vocabulary, no equality)
+   concordant 153/162  (verdict flips: 9, reason-only: 0)
+   DISC n6-phase-confusion.json                                  expect=reject/phase_reject                got=valid/None
+   DISC n18-unrecognized-phase.json                              expect=reject/phase_reject                got=valid/None
+   DISC n78-phase-claim-no-economic-phase.json                   expect=reject/phase_reject                got=valid/None
+   DISC n80-phase-claim-unrecognized-phase-presented-as-itself.json expect=reject/phase_reject                got=valid/None
+   DISC n90-phase-claim-delivery-presented-as-funding.json       expect=reject/phase_reject                got=valid/None
+   DISC n91-phase-claim-phase-letter-case.json                   expect=reject/phase_reject                got=valid/None
+   DISC n99-phase-claim-presented-as-letter-case.json            expect=reject/phase_reject                got=valid/None
+   DISC n100-phase-claim-presented-as-absent.json                expect=reject/phase_reject                got=valid/None
+   DISC n101-phase-claim-refund-presented-as-reversal.json       expect=reject/phase_reject                got=valid/None
+
+== ablate no_unknown_claim_reject: unknown independence claim tokens are ignored instead of rejected
+   concordant 160/162  (verdict flips: 2, reason-only: 0)
+   DISC n8-unrecognized-independence-claim.json                  expect=reject/independence_reject         got=valid/None
+   DISC n9-unrecognized-member-in-claim-set.json                 expect=reject/independence_reject         got=valid/None
+
+== ablate no_seq_domain: chain_link accepts any uint64 seq instead of an integer token in [1, 2^53-1]
+   concordant 160/162  (verdict flips: 2, reason-only: 0)
+   DISC n75-chain-link-seq-zero.json                             expect=reject/continuity_reject           got=valid/None
+   DISC n76-chain-link-seq-past-ijson-range.json                 expect=reject/continuity_reject           got=valid/None
+
+== ablate no_surrogate_first: payload_text: number tokens are checked before an unpaired surrogate
+   concordant 161/162  (verdict flips: 0, reason-only: 1)
+   DISC n92-canonical-bytes-lone-surrogate-after-number.json     expect=reject/canonicalization_reject     got=reject/number_domain_reject
+
+== ablate no_own_reason: offer/decision-evidence/boundary criteria name canonicalization_reject for an object with no canonical form
+   concordant 159/162  (verdict flips: 0, reason-only: 3)
+   DISC n94-offer-binding-lone-surrogate.json                    expect=reject/binding_reject              got=reject/canonicalization_reject
+   DISC n95-decision-evidence-binding-lone-surrogate.json        expect=reject/binding_reject              got=reject/canonicalization_reject
+   DISC n96-boundary-binding-lone-surrogate-in-prefix.json       expect=reject/boundary_reject             got=reject/canonicalization_reject
+
+== ablate no_pair_join: a surrogate pair written half raw, half escaped stays two code points (names compared as code points)
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate python_whitespace_strip: identifiers and digests stripped with Python str.strip() (also strips U+001C-U+001F)
+   concordant 161/162  (verdict flips: 1, reason-only: 0)
+   DISC n53-independence-identifier-control-character-padding.json expect=reject/independence_reject         got=valid/None
+
+== ablate no_percent_rule: percent-encoded triplets are neither decoded nor refused
+   concordant 155/162  (verdict flips: 7, reason-only: 0)
+   DISC n48-independence-urn-alias-percent-encoded.json          expect=reject/independence_reject         got=valid/None
+   DISC n49-independence-urn-alias-party-side-encoded-dot.json   expect=reject/independence_reject         got=valid/None
+   DISC n50-independence-urn-percent-encoded-reserved.json       expect=reject/independence_reject         got=valid/None
+   DISC n54-independence-urn-alias-percent-encoded-unreserved-set.json expect=reject/independence_reject         got=valid/None
+   DISC n55-independence-urn-percent-encoded-percent-sign.json   expect=reject/independence_reject         got=valid/None
+   DISC n56-independence-urn-triplet-assembled-by-decoding.json  expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+
+== ablate no_dot_segment_rule: `?` and dot-segments do not make an identifier unparseable
+   concordant 157/162  (verdict flips: 5, reason-only: 0)
+   DISC n59-independence-urn-alias-dot-segment.json              expect=reject/independence_reject         got=valid/None
+   DISC n60-independence-urn-encoded-trailing-dot-segment.json   expect=reject/independence_reject         got=valid/None
+   DISC n67-independence-urn-alias-leading-dot-segment.json      expect=reject/independence_reject         got=valid/None
+   DISC n70-independence-urn-alias-leading-dot-dot-segment.json  expect=reject/independence_reject         got=valid/None
+   DISC n61-independence-urn-query-component.json                expect=reject/independence_reject         got=valid/None
+
+== ablate no_address_alias: a scheme-qualified identifier ending in a 0x-address does not name that address
+   concordant 157/162  (verdict flips: 5, reason-only: 0)
+   DISC n63-independence-address-alias-caip10-and-did-pkh.json   expect=reject/independence_reject         got=valid/None
+   DISC n64-independence-address-alias-party-in-caip10.json      expect=reject/independence_reject         got=valid/None
+   DISC n65-independence-address-alias-did-ethr.json             expect=reject/independence_reject         got=valid/None
+   DISC n66-independence-address-alias-party-in-ethereum-namespace.json expect=reject/independence_reject         got=valid/None
+   DISC n69-independence-address-alias-any-scheme.json           expect=reject/independence_reject         got=valid/None
+
+== ablate no_defined_members: a member outside the `defined_members` lists of a closed object is not rejected
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate head_read_late: chain_set: head.digest is read after the records, an unreadable one as continuity_reject (v0.5.7)
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate no_head_seq_bound: chain_set: a head.seq above the profile bound 100000 is not rejected
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate absent_prev_rejects: chain_set: a record with no prev_digest member rejects instead of reading as null
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate zero_prev_as_bytes: chain_set: a prev_digest of 32 zero bytes is compared as bytes, not read as null
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate apl_required: boundary_binding: attestedPrefixLength required and 0 rejected (the v0.5.7 reading of n26)
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate coverage_without_apl: boundary_binding: covered_through accepted when attestedPrefixLength is absent
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate claim_null_unknown: independence_claim: `claimed` null or "" is an unknown token instead of silence
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate empty_claim_lists_ok: independence_claim: an empty `parties` or `attestations` array under a claim is accepted
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+== ablate int_digit_limit: an integer token longer than 4300 digits is refused by the parser (CPython's default limit, whatever this interpreter's setting)
+   concordant 162/162  (verdict flips: 0, reason-only: 0)
+
+ablations with NO discordant vector (unpinned rules): ['no_pair_join', 'no_defined_members', 'head_read_late', 'no_head_seq_bound', 'absent_prev_rejects', 'zero_prev_as_bytes', 'apl_required', 'coverage_without_apl', 'claim_null_unknown', 'empty_claim_lists_ok', 'int_digit_limit']
+baseline: 69/69 concordant
+
+== ablate keccak_to_sha3: content address / links / delivery digest computed with SHA3-256 instead of Keccak-256
+   concordant 51/69  (verdict flips: 18, reason-only: 0)
+   DISC p1-live-genesis-receipt.json                             expect=valid/None                         got=reject/recompute_mismatch
+   DISC p3-integer-key-utf16-order.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p4-chain-link-genesis.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p6-chain-set-complete.json                               expect=valid/None                         got=reject/continuity_reject
+   DISC p12-ijson-integer-boundary.json                          expect=valid/None                         got=reject/recompute_mismatch
+   DISC p13-decimal-string-beside-integer.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC p23-delivery-independence-within-commitment.json         expect=valid/None                         got=reject/independence_reject
+   DISC p24-witnessed-complete-set.json                          expect=valid/None                         got=reject/continuity_reject
+   DISC p18-boundary-binds-prefix-and-position.json              expect=valid/None                         got=reject/boundary_reject
+   DISC p19-authority-reduction-bound.json                       expect=valid/None                         got=reject/binding_reject
+   DISC p20-suite-transition-preserves-prefix.json               expect=valid/None                         got=reject/boundary_reject
+   DISC n29-suite-transition-redigests-prefix.json               expect=reject/boundary_reject             got=valid/None
+   DISC p15-offer-binding.json                                   expect=valid/None                         got=reject/binding_reject
+   DISC p26-chain-commitment-complete.json                       expect=valid/None                         got=reject/continuity_reject
+   DISC p27-live-chain-commitment-genesis-chain.json             expect=valid/None                         got=reject/continuity_reject
+   DISC p28-issuer-sequence-distinct-seq.json                    expect=valid/None                         got=reject/continuity_reject
+   DISC p29-committed-prefix-one-record-per-position.json        expect=valid/None                         got=reject/continuity_reject
+
+== ablate codepoint_key_order: JCS keys sorted by Unicode code point instead of UTF-16 code units
+   concordant 67/69  (verdict flips: 2, reason-only: 0)
+   DISC p14-supplementary-plane-key-order.json                   expect=valid/None                         got=reject/recompute_mismatch
+   DISC n12-codepoint-key-order.json                             expect=reject/canonicalization_reject     got=valid/None
+
+== ablate no_number_domain: non-integer number tokens and integers beyond 2^53-1 are serialized instead of rejected
+   concordant 66/69  (verdict flips: 1, reason-only: 2)
+   DISC n10-float-in-digest-domain.json                          expect=reject/number_domain_reject        got=valid/None
+   DISC n11-integer-beyond-ijson-range.json                      expect=reject/number_domain_reject        got=reject/recompute_mismatch
+   DISC n35-integer-valued-float-token.json                      expect=reject/number_domain_reject        got=reject/canonicalization_reject
+
+== ablate no_seq_completeness: chain_set skips the every-seq-exactly-once check (missing / duplicate)
+   concordant 66/69  (verdict flips: 1, reason-only: 2)
+   DISC n4-omitted-record.json                                   expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n34-witnessed-inclusion-not-completeness.json            expect=reject/completeness_reject         got=reject/continuity_reject
+   DISC n39-issuer-sequence-duplicate-seq.json                   expect=reject/completeness_reject         got=valid/None
+
+== ablate no_link_recompute: chain_set does not recompute a presented `link`
+   concordant 68/69  (verdict flips: 1, reason-only: 0)
+   DISC n17-renumbered-omission.json                             expect=reject/continuity_reject           got=valid/None
+
+== ablate no_accumulator: chain_commitment does not compare head.acc with the fold
+   concordant 66/69  (verdict flips: 3, reason-only: 0)
+   DISC n36-chain-commitment-prefix-substituted.json             expect=reject/continuity_reject           got=valid/None
+   DISC n37-chain-commitment-last-link-only.json                 expect=reject/continuity_reject           got=valid/None
+   DISC n40-equivocating-record-at-committed-position.json       expect=reject/continuity_reject           got=valid/None
+
+== ablate no_independence: independence_claim does not require a non-party attestor
+   concordant 64/69  (verdict flips: 5, reason-only: 0)
+   DISC n7-issuer-only-independence.json                         expect=reject/independence_reject         got=valid/None
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n32-delivery-self-attested.json                          expect=reject/independence_reject         got=valid/None
+   DISC n30-independence-urn-self-attested.json                  expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+
+== ablate no_identity_normalization: identities compared byte-exact (no strip / lowercase / trailing-punctuation fold)
+   concordant 66/69  (verdict flips: 3, reason-only: 0)
+   DISC n13-party-alias-whitespace.json                          expect=reject/independence_reject         got=valid/None
+   DISC n14-unparseable-attestor.json                            expect=reject/independence_reject         got=valid/None
+   DISC n31-independence-urn-alias-trailing-slash.json           expect=reject/independence_reject         got=valid/None
+
+== ablate no_record_commits_presence: a declared `record_commits` field is ignored instead of rejected
+   concordant 67/69  (verdict flips: 2, reason-only: 0)
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate declared_commits: commitments are read from a declared `record_commits` list when present (the n22 override bug)
+   concordant 66/69  (verdict flips: 3, reason-only: 0)
+   DISC n22-independence-scope-declared-override.json            expect=reject/independence_reject         got=valid/None
+   DISC n23-independence-scope-null-declared.json                expect=reject/independence_reject         got=valid/None
+   DISC n24-independence-scope-declared-no-scope.json            expect=reject/independence_reject         got=valid/None
+
+== ablate no_position_binding: boundary_binding does not require `position`
+   concordant 68/69  (verdict flips: 1, reason-only: 0)
+   DISC n25-boundary-prefix-only-no-position.json                expect=reject/boundary_reject             got=valid/None
+
+== ablate no_coverage_bound: boundary_binding does not compare covered_through with attestedPrefixLength
+   concordant 68/69  (verdict flips: 1, reason-only: 0)
+   DISC n26-coverage-claimed-over-empty-attestation.json         expect=reject/boundary_reject             got=valid/None
+
+== ablate phase_any: phase_claim accepts any phase token (no vocabulary, no equality)
+   concordant 67/69  (verdict flips: 2, reason-only: 0)
+   DISC n6-phase-confusion.json                                  expect=reject/phase_reject                got=valid/None
+   DISC n18-unrecognized-phase.json                              expect=reject/phase_reject                got=valid/None
+
+== ablate no_unknown_claim_reject: unknown independence claim tokens are ignored instead of rejected
+   concordant 67/69  (verdict flips: 2, reason-only: 0)
+   DISC n8-unrecognized-independence-claim.json                  expect=reject/independence_reject         got=valid/None
+   DISC n9-unrecognized-member-in-claim-set.json                 expect=reject/independence_reject         got=valid/None
+
+== ablate no_seq_domain: chain_link accepts any uint64 seq instead of an integer token in [1, 2^53-1]
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_surrogate_first: payload_text: number tokens are checked before an unpaired surrogate
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_own_reason: offer/decision-evidence/boundary criteria name canonicalization_reject for an object with no canonical form
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_pair_join: a surrogate pair written half raw, half escaped stays two code points (names compared as code points)
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate python_whitespace_strip: identifiers and digests stripped with Python str.strip() (also strips U+001C-U+001F)
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_percent_rule: percent-encoded triplets are neither decoded nor refused
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_dot_segment_rule: `?` and dot-segments do not make an identifier unparseable
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_address_alias: a scheme-qualified identifier ending in a 0x-address does not name that address
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_defined_members: a member outside the `defined_members` lists of a closed object is not rejected
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate head_read_late: chain_set: head.digest is read after the records, an unreadable one as continuity_reject (v0.5.7)
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate no_head_seq_bound: chain_set: a head.seq above the profile bound 100000 is not rejected
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate absent_prev_rejects: chain_set: a record with no prev_digest member rejects instead of reading as null
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate zero_prev_as_bytes: chain_set: a prev_digest of 32 zero bytes is compared as bytes, not read as null
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate apl_required: boundary_binding: attestedPrefixLength required and 0 rejected (the v0.5.7 reading of n26)
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate coverage_without_apl: boundary_binding: covered_through accepted when attestedPrefixLength is absent
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate claim_null_unknown: independence_claim: `claimed` null or "" is an unknown token instead of silence
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate empty_claim_lists_ok: independence_claim: an empty `parties` or `attestations` array under a claim is accepted
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+== ablate int_digit_limit: an integer token longer than 4300 digits is refused by the parser (CPython's default limit, whatever this interpreter's setting)
+   concordant 69/69  (verdict flips: 0, reason-only: 0)
+
+ablations with NO discordant vector (unpinned rules): ['no_seq_domain', 'no_surrogate_first', 'no_own_reason', 'no_pair_join', 'python_whitespace_strip', 'no_percent_rule', 'no_dot_segment_rule', 'no_address_alias', 'no_defined_members', 'head_read_late', 'no_head_seq_bound', 'absent_prev_rejects', 'zero_prev_as_bytes', 'apl_required', 'coverage_without_apl', 'claim_null_unknown', 'empty_claim_lists_ok', 'int_digit_limit']
+[PASS] keccak256('') public value 
+[PASS] keccak256('abc') public value 
+[PASS] keccak256 != sha3_256 
+[PASS] n29 prefixDigest == sha3_256(canonical(prefix)) [independent pin of the prefix domain] bytes=[{"event":"record","seq":1},{"event":"record","seq":2},{"event":"record","seq":3}]
+[PASS] p27 keccak256(canonical(commitment)) == provenance.commitment_digest canonical={"acc":"0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5511","head":"0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961","schema":"tersign-chain-commitment-v1","seq":13}
+[PASS] p27 sha256(commitment_digest) == provenance.anchored_digest 
+[PASS] p27 head.acc == provenance.commitment.acc 
+[PASS] p1 genesis digest == p27 seq-1 artifact 
+[PASS] p1 genesis digest == p4 artifact_digest 
+[PASS] p13 canonical bytes agree with json.dumps(sort_keys) on BMP-ASCII keys 
+[PASS] p14 canonical bytes DIFFER from json.dumps(sort_keys) (code-point sort) — the class p14/n12 pins 
+ALL PASS
+[PASS] keccak256('') public value 
+[PASS] keccak256('abc') public value 
+[PASS] keccak256 != sha3_256 
+[PASS] n29 prefixDigest == sha3_256(canonical(prefix)) [independent pin of the prefix domain] bytes=[{"event":"record","seq":1},{"event":"record","seq":2},{"event":"record","seq":3}]
+[PASS] p27 keccak256(canonical(commitment)) == provenance.commitment_digest canonical={"acc":"0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5511","head":"0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961","schema":"tersign-chain-commitment-v1","seq":13}
+[PASS] p27 sha256(commitment_digest) == provenance.anchored_digest 
+[PASS] p27 head.acc == provenance.commitment.acc 
+[PASS] p1 genesis digest == p27 seq-1 artifact 
+[PASS] p1 genesis digest == p4 artifact_digest 
+[PASS] p13 canonical bytes agree with json.dumps(sort_keys) on BMP-ASCII keys 
+[PASS] p14 canonical bytes DIFFER from json.dumps(sort_keys) (code-point sort) — the class p14/n12 pins 
+ALL PASS
+[PASS] keccak256('') public value 
+[PASS] keccak256('abc') public value 
+[PASS] keccak256 != sha3_256 
+[PASS] n29 prefixDigest == sha3_256(canonical(prefix)) [independent pin of the prefix domain] bytes=[{"event":"record","seq":1},{"event":"record","seq":2},{"event":"record","seq":3}]
+[PASS] p27 keccak256(canonical(commitment)) == provenance.commitment_digest canonical={"acc":"0xfc831c0f98c8ea5df6417cd26afa278ed4ab82a1e682d170e47aa4a4173c5511","head":"0x339800528596c7d53d32571ad999695aef6dfc8fc86dcc4fb827bb6080493961","schema":"tersign-chain-commitment-v1","seq":13}
+[PASS] p27 sha256(commitment_digest) == provenance.anchored_digest 
+[PASS] p27 head.acc == provenance.commitment.acc 
+[PASS] p1 genesis digest == p27 seq-1 artifact 
+[PASS] p1 genesis digest == p4 artifact_digest 
+[PASS] p13 canonical bytes agree with json.dumps(sort_keys) on BMP-ASCII keys 
+[PASS] p14 canonical bytes DIFFER from json.dumps(sort_keys) (code-point sort) — the class p14/n12 pins 
+ALL PASS
+exit codes flip059/057/053, mutate059/057/053, ablate059/057/053, pc059/057/053: [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+=== stderr ===

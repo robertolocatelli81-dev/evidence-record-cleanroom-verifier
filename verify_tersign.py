@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """verify_tersign.py — INDEPENDENT (clean-room) structural verifier for the Tersign
-`evidence-record-conformance` suite v0.5.7 (162 vectors, upstream tag v0.5.7 = commit 112b3ed6; the same
-MANIFEST.json and vectors at 9be9eec9). Written first against v0.5.3 (69 vectors, upstream commit 0eda3038);
-aligned to v0.5.7 on 2026-10-12 from the v0.5.7 MANIFEST.json rule texts and vector files only.
+`evidence-record-conformance` suite v0.5.9 (239 vectors, upstream tag v0.5.9 = commit 851eb766). Written first
+against v0.5.3 (69 vectors, upstream commit 0eda3038); aligned to v0.5.7 on 2026-10-12 and to v0.5.9 on 2026-10-14
+from the MANIFEST.json rule texts and vector files only.
 
 Written 2026-09-28 in a separate, isolated session (clean room) from ONLY:
   * spec/MANIFEST.json  (rule texts per kind, reject reasons, profile)
@@ -12,10 +12,11 @@ Written 2026-09-28 in a separate, isolated session (clean room) from ONLY:
     x402 PR #2853 `specs/extensions/compliance_fields.md` @ b8a81c0 (read via jsdelivr),
     MCP issue #3004 (comments read via api.github.com).
 NOT read: Tersign's verify.py / keccak.py / tools/ / crypto/ / README / CONTRIBUTORS / TypeScript engine
-(neither in the 2026-09-28 session nor in the 2026-10-12 alignment to v0.5.7).
+(neither in the 2026-09-28 session nor in the 2026-10-12 alignment to v0.5.7 nor in the 2026-10-14 alignment to v0.5.9).
 
 Usage:
-    python3 verify_tersign.py spec-0.5.7/          # run the 162 vectors of v0.5.7, print verdict+reason, exit 1 on discord
+    python3 verify_tersign.py spec-0.5.9/          # run the 239 vectors of v0.5.9, print verdict+reason, exit 1 on discord
+    python3 verify_tersign.py spec-0.5.7/          # the 162 vectors of v0.5.7 (byte-identical to the same files in v0.5.9)
     python3 verify_tersign.py spec/                # the 69 vectors of v0.5.3 (byte-identical to the same files in v0.5.7)
     python3 verify_tersign.py spec/ --json out.json
     python3 verify_tersign.py spec/ --ablate keccak_to_sha3     # disable one rule (ablation study)
@@ -40,8 +41,8 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-__version__ = "0.2.0"
-SUITE_VERSION = "0.5.7"
+__version__ = "0.3.0"
+SUITE_VERSION = "0.5.9"
 
 # ════════════════════════════════════════════════════════════════════════════════════════
 # 0. Reject reasons — the closed vocabulary used by MANIFEST.json `reason` fields.
@@ -56,6 +57,7 @@ R_PHASE = "phase_reject"
 R_INDEPENDENCE = "independence_reject"
 R_BOUNDARY = "boundary_reject"
 R_BINDING = "binding_reject"
+R_UNKNOWN_MEMBER = "unknown_member_reject"   # v0.5.8 MANIFEST `defined_members`
 R_INPUT = "input_reject"          # NOT in the manifest vocabulary: vector file unreadable / kind unknown
 
 
@@ -93,6 +95,17 @@ ABLATIONS = {
     "no_percent_rule": "percent-encoded triplets are neither decoded nor refused",
     "no_dot_segment_rule": "`?` and dot-segments do not make an identifier unparseable",
     "no_address_alias": "a scheme-qualified identifier ending in a 0x-address does not name that address",
+    # added 2026-10-14 with the v0.5.8/v0.5.9 rules (each one rule of the v0.5.9 MANIFEST, see the code that reads it)
+    "no_defined_members": "a member outside the `defined_members` lists of a closed object is not rejected",
+    "head_read_late": "chain_set: head.digest is read after the records, an unreadable one as continuity_reject (v0.5.7)",
+    "no_head_seq_bound": "chain_set: a head.seq above the profile bound 100000 is not rejected",
+    "absent_prev_rejects": "chain_set: a record with no prev_digest member rejects instead of reading as null",
+    "zero_prev_as_bytes": "chain_set: a prev_digest of 32 zero bytes is compared as bytes, not read as null",
+    "apl_required": "boundary_binding: attestedPrefixLength required and 0 rejected (the v0.5.7 reading of n26)",
+    "coverage_without_apl": "boundary_binding: covered_through accepted when attestedPrefixLength is absent",
+    "claim_null_unknown": "independence_claim: `claimed` null or \"\" is an unknown token instead of silence",
+    "empty_claim_lists_ok": "independence_claim: an empty `parties` or `attestations` array under a claim is accepted",
+    "int_digit_limit": "an integer token longer than 4300 digits is refused by the parser (CPython's default limit, whatever this interpreter's setting)",
 }
 _ABLATE: Set[str] = set()
 
@@ -248,9 +261,60 @@ def _join_values(x: Any) -> Any:
     return x
 
 
+class BigInt(int):
+    """An integer token longer than this interpreter's int/str conversion limit (CPython's default is 4300 digits; it
+    can be set lower, down to 640, with PYTHONINTMAXSTRDIGITS or -X int_max_str_digits). MANIFEST v0.5.9
+    "canonicalization": "An integer token longer than 4300 digits, which CPython's json refuses to convert by default, is
+    read by verify.py as the integer it is, so the criterion decides it as the TypeScript engine does (an
+    `attestedPrefixLength` of 5000 digits rejects with boundary_reject); no vector carries such a token". It IS the
+    integer (every comparison is exact); only its printed form is a digit count, because str() of it would raise."""
+
+    def __repr__(self) -> str:
+        return f"<integer token of {self.ndigits} digits>"
+
+    __str__ = __repr__
+
+
+_INT_CHUNK = 4000
+_CPYTHON_DEFAULT_INT_DIGITS = 4300
+
+
+def _int_digit_limit() -> int:
+    """This interpreter's int/str conversion limit; 0 means none (the setting, or an interpreter without the limit)."""
+    get = getattr(sys, "get_int_max_str_digits", None)
+    return get() if get is not None else 0
+
+
+def _parse_int(token: str) -> int:
+    neg = token.startswith("-")
+    digits = token[1:] if neg else token
+    if not _on("int_digit_limit") and len(digits) > _CPYTHON_DEFAULT_INT_DIGITS:
+        # ablation: CPython's DEFAULT refusal, whatever limit this interpreter was started with
+        raise ValueError(f"integer token of {len(digits)} digits refused (CPython's default limit; ablation)")
+    limit = _int_digit_limit()
+    if limit == 0 or len(digits) <= limit:
+        return int(token)
+    chunk = min(_INT_CHUNK, limit)                     # each chunk is within the limit; the sum is exact
+    v = 0
+    for i in range(0, len(digits), chunk):
+        c = digits[i:i + chunk]
+        v = v * 10 ** len(c) + int(c)
+    out = BigInt(-v if neg else v)
+    out.ndigits = len(digits)
+    return out
+
+
+def _r(v: Any) -> str:
+    """repr() for a detail string that never raises (a container holding an integer past the conversion limit would)."""
+    try:
+        return repr(v)
+    except ValueError:
+        return f"<{type(v).__name__} holding an integer too long to print>"
+
+
 def load_json(text: str) -> Any:
     v = json.loads(text, parse_float=NumberToken, parse_constant=_bad_constant,
-                   object_pairs_hook=_pairs_no_dup)
+                   object_pairs_hook=_pairs_no_dup, parse_int=_parse_int)
     if _RE_SURROGATE.search(text):    # a split pair needs a raw surrogate code unit in the text itself
         v = _join_values(v)
     return v
@@ -349,7 +413,7 @@ def _jcs(x: Any, depth: int) -> str:
         return str(x)                                 # ablated: emit the token as-is
     if isinstance(x, int):
         if abs(x) > I_JSON_MAX and _on("no_number_domain"):
-            raise Reject(R_NUMBER, f"integer {x} outside the I-JSON exact range |n| <= 2^53-1")
+            raise Reject(R_NUMBER, f"integer {_r(x)} outside the I-JSON exact range |n| <= 2^53-1")
         return str(x)                                 # ES6 Number::toString of an integer is its decimal digits
     if isinstance(x, float):                          # only reachable if a caller bypasses load_json
         if _on("no_number_domain"):
@@ -502,7 +566,7 @@ def k_chain_link(inp: Dict[str, Any]) -> str:
     # boolean, n88; null, n89) rejects with continuity_reject; p4 accepts the lower bound and p43 the upper".
     lo, hi = (1, I_JSON_MAX) if _on("no_seq_domain") else (0, 2 ** 64 - 1)
     if not is_int(seq) or not (lo <= seq <= hi):
-        raise Reject(R_CONTINUITY, f"seq {seq!r} is not an integer token in [{lo}, {hi}]")
+        raise Reject(R_CONTINUITY, f"seq {_r(seq)} is not an integer token in [{lo}, {hi}]")
     got = chain_link(art, prev, seq)
     exp = hex32(inp.get("expected_link"), R_CONTINUITY, "expected_link")
     if got != exp:
@@ -520,22 +584,40 @@ def k_anchor_relation(inp: Dict[str, Any]) -> str:
     return "anchored digest binds the subject (existence of the anchor itself NOT checked: structural profile)"
 
 
+CHAIN_SET_HEAD_SEQ_MAX = 100_000   # MANIFEST v0.5.9 "chain_set": "A head.seq above 100000, this suite's profile bound"
+
+
 def _chain_set_links(inp: Dict[str, Any]) -> Tuple[int, List[bytes]]:
     """Shared by chain_set and chain_commitment. Returns (head.seq, recomputed links seq 1..head.seq).
 
-    MANIFEST "chain_set": "records chain raw artifact digests via prev pointers (genesis prev = null);
-    head.digest equals the final record's artifact digest; completeness = every seq 1..head.seq present
-    exactly once (a second record at an occupied seq rejects: n39); where a record presents a link, it
-    must recompute as keccak256(artifact || prev || seq_be8)".
+    MANIFEST v0.5.9 "chain_set", in its order: (1) "`head` must be an object whose `seq` is an integer token of at least
+    1 and whose `digest` parses as a 32-byte hex digest after the whitespace strip of identifier_normalization,
+    lowercased, and `records` must be an array of objects, each with an integer-token `seq`. Each of these failures
+    rejects with completeness_reject ... before any record's digests are read" (n38, n165, n169); "A head.seq above
+    100000, this suite's profile bound, and a record seq that is not an integer token reject the same way".
+    (2) "Completeness is decided next (n4, n39)". (3) "then continuity, record by record in seq order, each failure
+    continuity_reject: the record's artifact_digest and prev_digest must parse; the first record's prev_digest must be
+    null or 32 zero bytes ... a record with no prev_digest member [is read] as one whose prev_digest is null ...; each
+    later record's prev_digest must equal the previous record's artifact_digest, whether or not the records present
+    links (n162; p65); a prev_digest of 32 zero bytes is read as null, the genesis predecessor, wherever it sits, so a
+    later record whose prev_digest is 32 zero bytes rejects, even after a record whose artifact_digest is 32 zero bytes;
+    a presented link must recompute (n17); and, after the last record, head.digest must equal the final record's
+    artifact_digest (n160; p6)".
     MANIFEST "witnessed_inclusion": witness material is "permitted and NOT load-bearing" — never read.
     MANIFEST "duplicate_sequence": "the issuer's `attestations` are permitted and not read".
-    n38: "a sequence number is an integer TOKEN" — a non-integer token rejects as completeness_reject.
+    READINGS (declared, the manifest says "no vector pins" these): a record whose seq lies outside 1..head.seq rejects
+    with completeness_reject (completeness = "every seq 1..head.seq present exactly once"); a `link` member holding
+    null is a presented link that does not parse (continuity_reject).
     """
     head = need_dict(inp.get("head"), R_COMPLETENESS, "head")
     hseq = head.get("seq")
     if not is_int(hseq) or hseq < 1:
-        raise Reject(R_COMPLETENESS, f"head.seq {hseq!r} is not a positive integer token")
-    hdig = hex32(head.get("digest"), R_CONTINUITY, "head.digest")
+        raise Reject(R_COMPLETENESS, f"head.seq {_r(hseq)} is not an integer token of at least 1")
+    if hseq > CHAIN_SET_HEAD_SEQ_MAX and _on("no_head_seq_bound"):
+        raise Reject(R_COMPLETENESS, f"head.seq {_r(hseq)} is above this suite's profile bound {CHAIN_SET_HEAD_SEQ_MAX}")
+    hdig: Optional[bytes] = None
+    if _on("head_read_late"):
+        hdig = hex32(head.get("digest"), R_COMPLETENESS, "head.digest")       # n165 absent, n169 unparseable
     records = need_list(inp.get("records"), R_COMPLETENESS, "records")
     by_seq: Dict[int, Dict[str, Any]] = {}
     duplicates: List[int] = []
@@ -543,7 +625,7 @@ def _chain_set_links(inp: Dict[str, Any]) -> Tuple[int, List[bytes]]:
         r = need_dict(r, R_COMPLETENESS, "record")
         s = r.get("seq")
         if not is_int(s):
-            raise Reject(R_COMPLETENESS, f"record seq {s!r} is not an integer token")
+            raise Reject(R_COMPLETENESS, f"record seq {_r(s)} is not an integer token")
         if s in by_seq:
             duplicates.append(s)
         else:
@@ -551,7 +633,7 @@ def _chain_set_links(inp: Dict[str, Any]) -> Tuple[int, List[bytes]]:
     beyond = sorted(s for s in by_seq if s < 1 or s > hseq)
     if _on("no_seq_completeness"):
         if duplicates:
-            raise Reject(R_COMPLETENESS, f"duplicate seq {sorted(set(duplicates))} under committed head")
+            raise Reject(R_COMPLETENESS, f"duplicate seq {_r(sorted(set(duplicates)))} under committed head")
         # REVIEW FIX F2 (2026-09-29): never materialize range(1, head.seq + 1) — a presented head.seq of 10^12 used to
         # exhaust memory (OOM kill, no verdict). The count of in-range records decides; the list is only a message.
         in_range = sum(1 for s in by_seq if 1 <= s <= hseq)
@@ -560,27 +642,30 @@ def _chain_set_links(inp: Dict[str, Any]) -> Tuple[int, List[bytes]]:
             missing = [s for s in range(1, scan_to + 1) if s not in by_seq]
             raise Reject(R_COMPLETENESS, f"missing seq {missing} under committed head")
         if beyond:
-            raise Reject(R_COMPLETENESS, f"seq {beyond} outside 1..head.seq")
+            raise Reject(R_COMPLETENESS, f"seq {_r(beyond)} outside 1..head.seq")
     present = sorted(s for s in by_seq if 1 <= s <= hseq)
     if not present:
         raise Reject(R_COMPLETENESS, "no record under the committed head")
-    last_art = hex32(by_seq[present[-1]].get("artifact_digest"), R_CONTINUITY, "artifact_digest")
-    if present[-1] == hseq and last_art != hdig:
-        raise Reject(R_CONTINUITY, "head.digest does not equal the final record's artifact digest")
     links: List[bytes] = []
     prev_art: Optional[bytes] = None
+    zero = bytes(32)
     for s in present:
         r = by_seq[s]
         art = hex32(r.get("artifact_digest"), R_CONTINUITY, f"artifact_digest at seq {s}")
-        if "prev_digest" not in r:
+        if "prev_digest" not in r and not _on("absent_prev_rejects"):
             raise Reject(R_CONTINUITY, f"record at seq {s} presents no prev_digest")
-        pd = r["prev_digest"]
-        if s == 1:
+        pd_raw = r.get("prev_digest")
+        pd = None if pd_raw is None else hex32(pd_raw, R_CONTINUITY, f"prev_digest at seq {s}")
+        if pd == zero and _on("zero_prev_as_bytes"):
+            pd = None                                  # "a prev_digest of 32 zero bytes is read as null ... wherever it sits"
+        if s == present[0]:
             if pd is not None:
-                raise Reject(R_CONTINUITY, "genesis record (seq 1) must carry a null prev_digest")
-        else:
-            if pd is None or hex32(pd, R_CONTINUITY, f"prev_digest at seq {s}") != prev_art:
-                raise Reject(R_CONTINUITY, f"prev_digest at seq {s} is not the previous record's artifact digest")
+                raise Reject(R_CONTINUITY, f"first record (seq {s}) must carry a null prev_digest (or 32 zero bytes), "
+                                           "not a predecessor the set does not carry (n161)")
+        elif pd is None:
+            raise Reject(R_CONTINUITY, f"prev_digest at seq {s} is null or 32 zero bytes (the genesis predecessor) on a later record")
+        elif pd != prev_art:
+            raise Reject(R_CONTINUITY, f"prev_digest at seq {s} is not the previous record's artifact digest")
         link = chain_link(art, prev_art, s)
         if "link" in r and _on("no_link_recompute"):
             claimed = hex32(r["link"], R_CONTINUITY, f"link at seq {s}")
@@ -588,6 +673,10 @@ def _chain_set_links(inp: Dict[str, Any]) -> Tuple[int, List[bytes]]:
                 raise Reject(R_CONTINUITY, f"link at seq {s} does not recompute as keccak256(artifact || prev || seq_be8)")
         links.append(link)
         prev_art = art
+    if hdig is None:                                   # ablation head_read_late: the v0.5.7 place and reason
+        hdig = hex32(head.get("digest"), R_CONTINUITY, "head.digest")
+    if present[-1] == hseq and prev_art != hdig:
+        raise Reject(R_CONTINUITY, "head.digest does not equal the final record's artifact digest (n160)")
     return hseq, links
 
 
@@ -632,9 +721,9 @@ def k_phase_claim(inp: Dict[str, Any]) -> str:
     if not _on("phase_any"):
         return "phase check ablated"
     if not isinstance(phase, str) or phase not in PHASES:
-        raise Reject(R_PHASE, f"economic_phase {phase!r} is outside the declared vocabulary {list(PHASES)}")
+        raise Reject(R_PHASE, f"economic_phase {_r(phase)} is outside the declared vocabulary {list(PHASES)}")
     if not isinstance(presented, str) or presented not in PHASES:
-        raise Reject(R_PHASE, f"presented_as {presented!r} is outside the declared vocabulary")
+        raise Reject(R_PHASE, f"presented_as {_r(presented)} is outside the declared vocabulary")
     # READING (stricter than the spec's "any later phase"): a record verifies only as evidence of ITS OWN
     # phase. Declared choice, see README.md «Readings where the manifest is silent» (economic phase vocabulary).
     if phase != presented:
@@ -700,7 +789,9 @@ def normalize_identity(v: Any) -> Optional[str]:
 
 
 CLAIM_ASSERTING = ("independent",)
-CLAIM_SILENT = ("none", "issuer_attested")   # p9: "claims nothing about independence"; p11: "asserts nothing about independence"
+# MANIFEST v0.5.9 "independence_claim": "Absent, null, or one of the silence tokens \"\", none and issuer_attested, it
+# claims nothing"
+CLAIM_SILENT = ("", "none", "issuer_attested")
 DERIVABLE_FIELDS = ("settlement_result", "deliverable_bytes", "deliverable_digest")
 
 
@@ -739,22 +830,28 @@ def derive_commitments(inp: Dict[str, Any]) -> Optional[Set[str]]:
 
 
 def k_independence_claim(inp: Dict[str, Any]) -> str:
-    # p9: "the criterion disqualifies unsupported CLAIMS"; n8/n9: "A conformant verifier fails closed on a
-    # claim it cannot interpret"; p10: the claim may be a SET (list).
-    # K1 (2026-09-29, clause-driven): an ABSENT `claimed` field is silence, not an uninterpretable claim.
-    # p9: "A record that claims nothing about independence … Silence is a valid state: the criterion
-    # disqualifies unsupported CLAIMS"; n8/n9 fail closed on a claim that is PRESENT and cannot be read.
-    # MANIFEST `identifier_normalization` pins fail-closed for identifiers, not for a missing claim.
-    if "claimed" not in inp:
-        return "no `claimed` field: nothing is claimed about independence (silence, p9)"
-    claimed = inp["claimed"]
-    tokens = [claimed] if isinstance(claimed, str) else claimed
-    if not isinstance(tokens, list) or not all(isinstance(t, str) for t in tokens):
-        raise Reject(R_INDEPENDENCE, "claim is neither a string nor a list of strings")
-    unknown = [t for t in tokens if t not in CLAIM_ASSERTING and t not in CLAIM_SILENT]
+    # MANIFEST v0.5.9 "independence_claim": "`claimed` is read against a closed vocabulary of exact strings, letter case
+    # included. Absent, null, or one of the silence tokens \"\", none and issuer_attested, it claims nothing, and the
+    # record is valid: the criterion does not read its parties or attestations (p9; p62 ...) ... independent is the
+    # claim. An array of strings is a claim set: its silence tokens are dropped, a set with nothing left claims nothing
+    # (p11), and a set whose every remaining member is independent is the claim (p10). Every other value fails closed with
+    # independence_reject, so a token the verifier does not know is never read as no claim (n8, n9)".
+    # (K1, 2026-09-29: an ABSENT `claimed` is silence; v0.5.9 states it, and adds null and "".)
+    claimed = inp.get("claimed")
+    if claimed is None and ("claimed" not in inp or _on("claim_null_unknown")):
+        return "no independence claimed (`claimed` absent or null): nothing to disqualify (p9)"
+    silent = CLAIM_SILENT if _on("claim_null_unknown") else tuple(t for t in CLAIM_SILENT if t)
+    if is_text(claimed):
+        tokens = [claimed]
+    elif isinstance(claimed, list) and all(is_text(t) for t in claimed):
+        tokens = claimed
+    else:
+        raise Reject(R_INDEPENDENCE, f"claim {_r(claimed)} is neither a string nor an array of strings (fails closed)")
+    remaining = [t for t in tokens if t not in silent]
+    unknown = [t for t in remaining if t not in CLAIM_ASSERTING]
     if unknown and _on("no_unknown_claim_reject"):
-        raise Reject(R_INDEPENDENCE, f"claim member(s) {unknown} cannot be interpreted (fails closed)")
-    if not any(t in CLAIM_ASSERTING for t in tokens):
+        raise Reject(R_INDEPENDENCE, f"claim member(s) {_r(unknown)} outside the vocabulary (fails closed: n8, n9)")
+    if not any(t in CLAIM_ASSERTING for t in remaining):
         return "no independence claimed (silence): nothing to disqualify"
     # ── an independence claim is asserted ──
     # n22/n23/n24: "The declared field's PRESENCE is now the reject, whatever it holds" (also explicit null,
@@ -763,23 +860,30 @@ def k_independence_claim(inp: Dict[str, Any]) -> str:
         raise Reject(R_INDEPENDENCE, "declared `record_commits` present: a scope a record asserts about itself is not evidence of that scope")
     # n7: "attested only by parties … an evaluator MUST NOT treat issuer-attested composition as a neutral
     # finding"; p8: "holds when at least one attestation comes from outside the transaction's parties".
+    # "`parties` must be a non-empty array, `attestations` a non-empty array (n15 carries none), each attestation a JSON
+    # object carrying `by` (n16 ..., n172 ...), every party and every `by` must parse under identifier_normalization (n14),
+    # and at least one attestor must be outside the parties (n7 rejects; p8 accepts)."
     parties = need_list(inp.get("parties"), R_INDEPENDENCE, "parties")
+    if not parties and _on("empty_claim_lists_ok"):
+        raise Reject(R_INDEPENDENCE, "`parties` is an empty array under an independence claim")
     party_keys = set()
     for p in parties:
         k = normalize_identity(p)
         if k is None:
-            raise Reject(R_INDEPENDENCE, f"party identifier {p!r} does not parse (fails closed)")
+            raise Reject(R_INDEPENDENCE, f"party identifier {_r(p)} does not parse (fails closed)")
         party_keys.add(k)
     if "attestations" not in inp:
         raise Reject(R_INDEPENDENCE, "independence claimed with no attestations to evaluate (n15)")
     atts = need_list(inp["attestations"], R_INDEPENDENCE, "attestations")
+    if not atts and _on("empty_claim_lists_ok"):
+        raise Reject(R_INDEPENDENCE, "`attestations` is an empty array under an independence claim (n15)")
     outside = 0
     for a in atts:
         if not isinstance(a, dict) or "by" not in a:
             raise Reject(R_INDEPENDENCE, "attestation is not an object naming its attestor (n16)")
         k = normalize_identity(a["by"])
         if k is None:
-            raise Reject(R_INDEPENDENCE, f"attestor identifier {a['by']!r} does not parse (n14, fails closed)")
+            raise Reject(R_INDEPENDENCE, f"attestor identifier {_r(a['by'])} does not parse (n14, fails closed)")
         if k not in party_keys:
             outside += 1
     if outside == 0 and _on("no_independence"):
@@ -848,58 +952,61 @@ def k_decision_evidence_binding(inp: Dict[str, Any]) -> str:
     return "record binds the exact decision-evidence object"
 
 
-# The manifest has NO top-level boundary rule; the criterion is taken from the vectors' descriptions and
-# MCP #3004 (@navigatorbuilds 2026-08-08: "a boundary event binds (a) the digest of the prefix it extends
-# and (b) its own position in that prefix's continuation"; @Tetsurohhori 2026-08-09: "Unattested is now a
-# third outcome … offline snapshots cannot be distinguished from verified streams"). p20/n29: the prefix
-# digest stays under the suite IN FORCE WHEN THE PREFIX WAS WRITTEN (keccak256-jcs), never re-digested.
-BOUNDARY_EVENTS = {"witness_ref_introduced": "witness-ref-v1", "digest_suite_transition": "suite-transition-v1"}
+# MANIFEST v0.5.9 "boundary_binding" (until v0.5.7 the manifest had no top-level boundary rule and this criterion was
+# read from the vectors' descriptions and MCP #3004): "`boundary_event` must be a JSON object; its members are the
+# record's own (defined_members), and the suite reads `prefixDigest`, `position` and `attestedPrefixLength`". The
+# `event`, `ruleVersion`, `fromSuite` and `toSuite` members that 0.1.0-0.2.0 also checked are not read any more:
+# `boundary_event` is an open object (defined_members: "a member the suite does not name in one decides nothing").
 PRIOR_SUITE = "keccak256-jcs"
 
 
 def k_boundary_binding(inp: Dict[str, Any]) -> str:
-    prefix = need_list(inp.get("prefix"), R_BOUNDARY, "prefix")
     ev = need_dict(inp.get("boundary_event"), R_BOUNDARY, "boundary_event")
-    event = ev.get("event")
-    if not isinstance(event, str) or event not in BOUNDARY_EVENTS:   # REVIEW FIX F4: a list/dict event is a boundary_reject, not an internal TypeError
-        raise Reject(R_BOUNDARY, f"boundary event {event!r} is not interpretable (fails closed)")
-    if ev.get("ruleVersion") != BOUNDARY_EVENTS[event]:
-        raise Reject(R_BOUNDARY, f"ruleVersion {ev.get('ruleVersion')!r} unknown for {event}")
-    if event == "digest_suite_transition":
-        if ev.get("fromSuite") != PRIOR_SUITE:
-            raise Reject(R_BOUNDARY, f"fromSuite {ev.get('fromSuite')!r} is not the suite this prefix was written under")
-        if not isinstance(ev.get("toSuite"), str) or not ev["toSuite"]:
-            raise Reject(R_BOUNDARY, "toSuite absent")
-    # (a) prefix digest — READING: keccak256(utf8(canonical(prefix))) over the prefix as a JSON array,
-    # under the PRIOR suite whatever `toSuite` says (calibrated on p18's pinned digest, see report).
+    prefix = need_list(inp.get("prefix"), R_BOUNDARY, "prefix")
+    if not prefix:
+        raise Reject(R_BOUNDARY, "prefix is an empty array (\"`prefix` must be a non-empty array\")")
+    # "`prefixDigest` must equal keccak256(utf8(canonical(prefix))), the digest of the prefix as written, across a suite
+    # transition too: p18 accepts, and so does p20, a transition; n29, the successor suite's digest ..., rejects, and so
+    # does n96, a prefix with no canonical form."
     claimed = hex32(ev.get("prefixDigest"), R_BOUNDARY, "prefixDigest")
     got = _bound_digest(prefix, R_BOUNDARY, "prefix")
     if got != claimed:
         raise Reject(R_BOUNDARY, f"prefixDigest does not bind the prefix under {PRIOR_SUITE} (recomputed 0x{got.hex()}) — re-digested or forged history")
-    # (b) position — READING: the event sits at the continuation point, position == number of prefix events.
+    # "`position` must be an integer equal to the number of entries in `prefix`: n25 carries none and n168 carries 2 for
+    # a three-entry prefix". READING (declared): "an integer" is an integer TOKEN (canonicalization: the boundary is the
+    # token class); no vector pins a position that is not an integer.
     if _on("no_position_binding"):
         pos = ev.get("position")
         if not is_int(pos):
-            raise Reject(R_BOUNDARY, "boundary event binds no position in the prefix's continuation (n25)")
+            raise Reject(R_BOUNDARY, "boundary event binds no integer position in the prefix's continuation (n25)")
         if pos != len(prefix):
-            raise Reject(R_BOUNDARY, f"position {pos} is not the continuation point of a {len(prefix)}-event prefix")
-    # (c) coverage within attestation — n26: "unattested must be its own outcome rather than a pass".
-    apl = ev.get("attestedPrefixLength")
-    if not is_int(apl) or apl < 0 or apl > len(prefix):
-        raise Reject(R_BOUNDARY, f"attestedPrefixLength {apl!r} absent or outside 0..{len(prefix)}")
-    # K3 (2026-09-29, clause-driven): p18 "the coverage IT CLAIMS is within the prefix its attestation actually
-    # reaches" is conditional — with no `covered_through` there is no claimed coverage to compare. The reject on an
-    # EMPTY attestation stays whatever is claimed: n26 "unattested must be its own outcome rather than a pass".
-    ct = inp.get("covered_through")
-    if "covered_through" in inp and (not is_int(ct) or ct < 0):
-        raise Reject(R_BOUNDARY, "covered_through present but not a non-negative integer token")
-    if _on("no_coverage_bound"):
-        if apl == 0:
-            raise Reject(R_BOUNDARY, "unattested prefix (attestedPrefixLength = 0) is its own outcome, not a pass (n26)")
-        if ct is not None and ct > apl:
-            raise Reject(R_BOUNDARY, f"coverage claimed through {ct} while the attestation reaches only {apl} (downgrade)")
-    cov = f"coverage {ct} <= attested {apl}" if ct is not None else f"no coverage claimed; attested {apl}"
-    return f"prefixDigest binds {len(prefix)} events under {PRIOR_SUITE}; position {ev.get('position')}; {cov}"
+            raise Reject(R_BOUNDARY, f"position {_r(pos)} is not the continuation point of a {len(prefix)}-entry prefix (n168)")
+    # "`attestedPrefixLength` ... may be absent (p67 ...); when the member is present, whatever its value, it must be an
+    # integer token from 0 to the number of entries in `prefix`, inclusive, whether or not coverage is claimed. 0 with no
+    # coverage claimed accepts (p63 ...)"; -1 (n154), past the prefix (n153, n155, n159), 0.0 (n156), false (n157),
+    # null (n158), "0" (n170) reject.
+    apl = None
+    if "attestedPrefixLength" in ev:
+        apl = ev["attestedPrefixLength"]
+        if not is_int(apl) or apl < 0 or apl > len(prefix):
+            raise Reject(R_BOUNDARY, f"attestedPrefixLength {_r(apl)} is not an integer token in 0..{len(prefix)}")
+    if not _on("apl_required"):                        # ablation: the v0.5.7 reading (absent rejects, 0 rejects: n26)
+        if apl is None or apl == 0:
+            raise Reject(R_BOUNDARY, f"attestedPrefixLength {_r(apl)} absent or 0 (v0.5.7 reading)")
+    # "`covered_through` ... may be absent; when the member is present, whatever its value, it must be a non-negative
+    # integer token (n171, a null, rejects), the event must carry `attestedPrefixLength` (n167 carries none and rejects),
+    # and the coverage may not exceed it: n26 ... and n166 ... reject."
+    ct = None
+    if "covered_through" in inp:
+        ct = inp["covered_through"]
+        if not is_int(ct) or ct < 0:
+            raise Reject(R_BOUNDARY, f"covered_through {_r(ct)} is present but not a non-negative integer token (n171)")
+        if apl is None and _on("coverage_without_apl"):
+            raise Reject(R_BOUNDARY, "coverage is claimed but the event carries no attestedPrefixLength (n167)")
+        if apl is not None and ct > apl and _on("no_coverage_bound"):
+            raise Reject(R_BOUNDARY, f"coverage claimed through {_r(ct)} while the attestation reaches only {apl} (n26, n166)")
+    cov = f"coverage {_r(ct)} <= attested {_r(apl)}" if ct is not None else f"no coverage claimed; attested {_r(apl)}"
+    return f"prefixDigest binds {len(prefix)} entries under {PRIOR_SUITE}; position {_r(ev.get('position'))}; {cov}"
 
 
 KINDS = {
@@ -915,6 +1022,96 @@ KINDS = {
     "decision_evidence_binding": k_decision_evidence_binding,
     "boundary_binding": k_boundary_binding,
 }
+
+
+# ════════════════════════════════════════════════════════════════════════════════════════
+# 5b. Defined members — MANIFEST v0.5.8/v0.5.9 `defined_members` (from tersignhq/evidence-record-conformance#17).
+#     "Every kind's `input` is a closed object, and so are the objects `closed` lists for that kind inside it: `head` and
+#     each object in `records` in chain_set and chain_commitment, and each object in `attestations` in
+#     independence_claim. Each member of a closed object must have one of the names `closed` lists for that kind and that
+#     object, and a listed name may be absent; a member with any other name makes the record invalid, with
+#     unknown_member_reject". "Names compare as exact strings, with no case folding, no whitespace trimming, no Unicode
+#     normalization and no confusable mapping" (n126-n128, n149). "The member check, the objects inside `input`
+#     included, is decided before the kind's criterion" (n133-n145, n150-n152). "A closed object inside `input` that is
+#     not a JSON object has no members to read, and the kind's criterion decides it as before (n16 ...; p62 ...); the
+#     entries after it are still checked (n148)." "Each engine pins the lists in its code, and its run fails if `closed`
+#     differs from them": the lists below are pinned here, and run_suite compares them with the manifest's `closed`.
+# ════════════════════════════════════════════════════════════════════════════════════════
+_CHAIN_RECORD_MEMBERS = ("artifact_digest", "link", "prev_digest", "seq")
+DEFINED_MEMBERS_CLOSED: Dict[str, Dict[str, Tuple[str, ...]]] = {
+    "digest_recompute": {"input": ("expected_digest", "payload")},
+    "canonical_bytes": {"input": ("claimed_canonical", "payload", "payload_text")},
+    "chain_link": {"input": ("artifact_digest", "expected_link", "prev_digest", "seq")},
+    "chain_set": {"input": ("attestations", "head", "records", "witness"),
+                  "input.head": ("digest", "seq"),
+                  "input.records[]": _CHAIN_RECORD_MEMBERS},
+    "chain_commitment": {"input": ("attestations", "head", "records", "witness"),
+                         "input.head": ("acc", "digest", "seq"),
+                         "input.records[]": _CHAIN_RECORD_MEMBERS},
+    "anchor_relation": {"input": ("anchored_digest", "subject_digest")},
+    "phase_claim": {"input": ("presented_as", "record")},
+    "independence_claim": {"input": ("attestations", "claimed", "covers", "deliverable_bytes", "deliverable_digest",
+                                     "deliverable_signer", "parties", "payTo", "record_commits", "settlement_result"),
+                           "input.attestations[]": ("by", "role")},
+    "offer_binding": {"input": ("offer", "receipt")},
+    "decision_evidence_binding": {"input": ("decision_evidence", "record")},
+    "boundary_binding": {"input": ("boundary_event", "covered_through", "prefix")},
+}
+
+
+def _closed_objects(kind: str, inp: Dict[str, Any]) -> List[Tuple[List[Any], Dict[str, Any], Tuple[str, ...]]]:
+    """(path, object, allowed names) for every closed object present, in order: `input`, then each listed object inside
+    it; an entry that is not a JSON object is skipped and the entries after it are still listed (n148)."""
+    out: List[Tuple[List[Any], Dict[str, Any], Tuple[str, ...]]] = []
+    for where, names in DEFINED_MEMBERS_CLOSED[kind].items():
+        if where == "input":
+            out.append(([], inp, names))
+            continue
+        member = where[len("input."):]
+        if member.endswith("[]"):
+            member = member[:-2]
+            arr = inp.get(member)
+            if isinstance(arr, list):
+                out.extend(([member, i], e, names) for i, e in enumerate(arr) if isinstance(e, dict))
+        else:
+            obj = inp.get(member)
+            if isinstance(obj, dict):
+                out.append(([member], obj, names))
+    return out
+
+
+def check_defined_members(kind: str, inp: Dict[str, Any]) -> None:
+    """Raises Reject(unknown_member_reject) naming the first member, in document order, that a closed object does not
+    list. A name is compared as the exact string the JSON text decodes to (Python str equality: code point by code point;
+    the loader has already joined a surrogate pair written half raw, as `canonicalization` compares names)."""
+    for path, obj, names in _closed_objects(kind, inp):
+        for k in obj:
+            if k not in names:
+                shown = json.dumps(_pointer(path + [k]))            # ASCII escapes: no newline, no lone surrogate printed
+                raise Reject(R_UNKNOWN_MEMBER, f"member {shown} is not defined for {kind} (defined_members: {list(names)})")
+
+
+def closed_lists_from_manifest(manifest: Any) -> Optional[Dict[str, Dict[str, Tuple[str, ...]]]]:
+    """The manifest's `defined_members.closed`, as sorted tuples, or None when the manifest has no such member
+    (v0.5.3 and v0.5.7 do not)."""
+    if not isinstance(manifest, dict) or "defined_members" not in manifest:
+        return None
+    dm = manifest["defined_members"]
+    closed = dm.get("closed") if isinstance(dm, dict) else None
+    if not isinstance(closed, dict):
+        return {}
+    out: Dict[str, Dict[str, Tuple[str, ...]]] = {}
+    for kind, objs in closed.items():
+        if not isinstance(objs, dict):
+            out[kind] = {"?": ("<not an object>",)}
+            continue
+        out[kind] = {w: tuple(sorted(n for n in v if isinstance(n, str))) + (() if all(isinstance(n, str) for n in v) else ("<non-string>",))
+                     if isinstance(v, list) else ("<not an array>",) for w, v in objs.items()}
+    return out
+
+
+def _pinned_sorted() -> Dict[str, Dict[str, Tuple[str, ...]]]:
+    return {k: {w: tuple(sorted(n)) for w, n in v.items()} for k, v in DEFINED_MEMBERS_CLOSED.items()}
 
 
 # ════════════════════════════════════════════════════════════════════════════════════════
@@ -940,7 +1137,7 @@ KINDS = {
 # value; whatever it holds is the verdict's business. A one-element Python list [S] means "a JSON array whose object
 # elements follow S". An unknown `kind` has no list: the vector rejects as input_reject and its two input lists are empty
 # (`unknown_vector_members` does not depend on the kind and is still reported).
-INPUT_SCHEMA_VERSION = "1"
+INPUT_SCHEMA_VERSION = "2"
 LEAF = "leaf"
 CONTENT = "content"
 _CHAIN_RECORD = {"seq": LEAF, "artifact_digest": LEAF, "prev_digest": LEAF, "link": LEAF}
@@ -958,8 +1155,7 @@ _INPUT_READ: Dict[str, Dict[str, Any]] = {
     "offer_binding": {"offer": CONTENT, "receipt": {"offerDigest": LEAF}},
     "decision_evidence_binding": {"record": {"decisionEvidenceDigest": LEAF}, "decision_evidence": CONTENT},
     "boundary_binding": {"prefix": CONTENT, "covered_through": LEAF,
-                         "boundary_event": {"event": LEAF, "ruleVersion": LEAF, "fromSuite": LEAF, "toSuite": LEAF,
-                                            "prefixDigest": LEAF, "position": LEAF, "attestedPrefixLength": LEAF}},
+                         "boundary_event": {"prefixDigest": LEAF, "position": LEAF, "attestedPrefixLength": LEAF}},
 }
 _INPUT_SUITE_053_NOT_READ: Dict[str, Dict[str, Any]] = {
     # MANIFEST "witnessed_inclusion": witness material "is permitted and NOT load-bearing" (p24, n34);
@@ -971,6 +1167,9 @@ _INPUT_SUITE_053_NOT_READ: Dict[str, Dict[str, Any]] = {
     "independence_claim": {"attestations": [{"role": LEAF}], "deliverable_signer": LEAF, "payTo": LEAF},
     "decision_evidence_binding": {"record": {"outcome": LEAF}},
     "phase_claim": {"record": {"amount": LEAF, "asset": LEAF, "deliverable_digest": LEAF}},
+    # input schema 2 (2026-10-14): v0.5.9 "boundary_binding" reads only prefixDigest, position and attestedPrefixLength,
+    # so the boundary_event members the 0.5.3 vectors carry beside them are now not read (0.1.0-0.2.0 read them)
+    "boundary_binding": {"boundary_event": {"event": LEAF, "ruleVersion": LEAF, "fromSuite": LEAF, "toSuite": LEAF}},
 }
 # Top-level vector members: the verifier reads `kind` and `input`; the 0.5.3 vectors also carry these (metadata).
 _VECTOR_READ = ("kind", "input")
@@ -1046,11 +1245,15 @@ def verify_vector(vec: Dict[str, Any], kind: Optional[str] = None) -> Tuple[str,
     kind = kind or vec.get("kind")
     fn = KINDS.get(kind) if isinstance(kind, str) else None   # 2026-10-11: a list/object `kind` raised TypeError (no verdict)
     if fn is None:
-        return "reject", R_INPUT, f"unknown kind {kind!r}"
+        return "reject", R_INPUT, f"unknown kind {_r(kind)}"
     inp = vec.get("input")
     if not isinstance(inp, dict):
+        # defined_members: "An `input` that is not a JSON object is outside the suite, and no vector pins what a verifier
+        # does with one" — rejected with the extra reason input_reject, as before
         return "reject", R_INPUT, "vector has no `input` object"
     try:
+        if _on("no_defined_members"):
+            check_defined_members(kind, inp)
         return "valid", None, fn(inp)
     except Reject as r:
         return "reject", r.reason, r.detail
@@ -1077,6 +1280,9 @@ def verify_file(path: str, kind: Optional[str] = None) -> Tuple[str, Optional[st
 def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
     with open(os.path.join(spec_dir, "MANIFEST.json"), "r", encoding="utf-8") as fh:
         manifest = load_json(fh.read())
+    # defined_members: "Each engine pins the lists in its code, and its run fails if `closed` differs from them"
+    listed = closed_lists_from_manifest(manifest)
+    dm_state = "absent" if listed is None else ("match" if listed == _pinned_sorted() else "DIFFERS")
     rows = []
     for entry in manifest["vectors"]:
         path = os.path.join(spec_dir, "vectors", entry["file"])
@@ -1106,6 +1312,7 @@ def run_suite(spec_dir: str, flip_expect: bool = False) -> Dict[str, Any]:
             "run_at": datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec="seconds"),
             "spec_dir": os.path.relpath(spec_dir),
             "ablations": sorted(_ABLATE), "flip_expect": flip_expect, "input_schema": INPUT_SCHEMA_VERSION,
+            "defined_members": dm_state,
             "n": n,
             "verdict_concordant": sum(r["verdict_ok"] for r in rows),
             "reason_named": sum(r["expect_reason"] is not None for r in rows),
@@ -1132,6 +1339,8 @@ def print_report(res: Dict[str, Any]) -> None:
               + (f"  [input members not read: {_shown(r['input_members_not_read'])}]" if r.get("input_members_not_read") else "")
               + (f"  [UNKNOWN input members (not read, not in suite 0.5.3): {_shown(r['unknown_input_members'])}]" if r.get("unknown_input_members") else "")
               + (f"  [UNKNOWN vector members: {_shown(r['unknown_vector_members'])}]" if r.get("unknown_vector_members") else ""))   # REVIEW FIX F3: kind may be None
+    if res.get("defined_members") == "DIFFERS":
+        print("RUN FAILS: the manifest's defined_members.closed differs from the lists pinned in this verifier")
     print(f"verdict concordant {res['verdict_concordant']}/{res['n']}; "
           f"reason concordant {res['reason_concordant']}/{res['reason_named']} (where the manifest names one); "
           f"fully concordant {res['concordant']}/{res['n']}")
@@ -1173,7 +1382,9 @@ def mutations_for(vec: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
     if isinstance(inp.get("boundary_event"), dict):
         mut("boundary:flip-prefixDigest", lambda i: i["boundary_event"].__setitem__("prefixDigest", _flip_hex(i["boundary_event"]["prefixDigest"])))
         mut("boundary:drop-position", lambda i: i["boundary_event"].pop("position", None))
-        mut("boundary:coverage-beyond-attested", lambda i: i.__setitem__("covered_through", i["boundary_event"]["attestedPrefixLength"] + 1))
+        # 2026-10-14: p67 (v0.5.9) carries no attestedPrefixLength; then any coverage claim rejects (n167)
+        mut("boundary:coverage-beyond-attested", lambda i: i.__setitem__(
+            "covered_through", (i["boundary_event"].get("attestedPrefixLength") if is_int(i["boundary_event"].get("attestedPrefixLength")) else 0) + 1))
     if inp.get("claimed") == "independent" and isinstance(inp.get("attestations"), list):
         mut("independence:attestors-become-parties", lambda i: i.__setitem__("parties", list(i["parties"]) + [a["by"] for a in i["attestations"]]))
         mut("independence:declare-record_commits", lambda i: i.__setitem__("record_commits", ["settlement"]))
@@ -1181,12 +1392,25 @@ def mutations_for(vec: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
             mut("independence:cover-uncommitted-fact", lambda i: i.__setitem__("covers", list(i["covers"]) + ["refund"]))
         if "deliverable_bytes" in inp:
             mut("independence:tamper-deliverable", lambda i: i.__setitem__("deliverable_bytes", i["deliverable_bytes"] + " "))
+    # 2026-10-14 (v0.5.9 defined_members): a member no closed object lists, at the top of `input` and inside each closed
+    # object present, must turn a valid vector into a reject
+    mut("member:undefined-top", lambda i: i.__setitem__("x_mutant_undefined", 1))
+    for _path, obj, _names in _closed_objects(vec.get("kind", ""), inp) if vec.get("kind") in DEFINED_MEMBERS_CLOSED else []:
+        if _path:
+            mut("member:undefined-in-" + "/".join(str(x) for x in _path),
+                lambda i, pth=tuple(_path): _closed_at(i, pth).__setitem__("x_mutant_undefined", None))
     if isinstance(inp.get("record"), dict) and "economic_phase" in inp["record"]:
         # 2026-10-12: was "set the record's phase to funding", a no-op on a funding record (p47, new in v0.5.7: the
         # mutant stayed valid); now the record's phase becomes a DIFFERENT vocabulary word
         mut("phase:record-other-phase", lambda i: i["record"].__setitem__(
             "economic_phase", "delivery" if i["record"]["economic_phase"] == "funding" else "funding"))
     return out
+
+
+def _closed_at(inp: Dict[str, Any], path: Tuple[Any, ...]) -> Dict[str, Any]:
+    for x in path:
+        inp = inp[x]
+    return inp
 
 
 def run_mutations(spec_dir: str) -> Dict[str, Any]:
@@ -1232,11 +1456,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not args.quiet:
         print_report(res)
     else:
+        if res.get("defined_members") == "DIFFERS":
+            print("RUN FAILS: the manifest's defined_members.closed differs from the lists pinned in this verifier")
         print(f"fully concordant {res['concordant']}/{res['n']}")
     if args.json:   # errors=backslashreplace: a lone surrogate (only possible inside a JSON string) is written as \uXXXX
         with open(args.json, "w", encoding="utf-8", errors="backslashreplace") as fh:
             json.dump(res, fh, indent=1, ensure_ascii=False)
-    return 0 if res["concordant"] == res["n"] else 1
+    return 0 if res["concordant"] == res["n"] and res.get("defined_members") != "DIFFERS" else 1
 
 
 if __name__ == "__main__":

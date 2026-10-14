@@ -1,0 +1,11 @@
+{
+  "id": "n103-canonical-bytes-exponent-token",
+  "kind": "canonical_bytes",
+  "expect": "reject",
+  "reason": "number_domain_reject",
+  "description": "payload_text {\"amount\": 1e2}: a number token with an exponent part whose value is an integer. The digest-domain boundary is the token class, so the exponent form rejects as the fraction form does (n35, {\"amount\": 2.0}). JSON.parse reads 1e2 as 100, and claimed_canonical is {\"amount\":100}, the text JSON.stringify then emits, so an engine that looks only for a decimal point in number tokens passes n35 and accepts this vector. p25 is the accepting twin.",
+  "input": {
+    "payload_text": "{\"amount\": 1e2}",
+    "claimed_canonical": "{\"amount\":100}"
+  }
+}

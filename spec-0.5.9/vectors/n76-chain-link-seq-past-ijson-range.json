@@ -1,0 +1,13 @@
+{
+  "id": "n76-chain-link-seq-past-ijson-range",
+  "kind": "chain_link",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "seq = 2^53, one past the sequence domain [1, 2^53-1], on p6's second record over its predecessor, expected_link recomputed for that seq. Past 2^53-1 a JSON number token no longer names one integer in every engine: a parser that reads numbers as doubles reads 9007199254740993 as 2^53 and recomputes a different link than an exact-integer parser does (measured on v0.5.4's engines with seq 2^53+1 and its exact link: Python valid, TypeScript continuity_reject). The domain stops where the I-JSON integer domain does (p12/n11). Rejecting twin of p43; v0.5.4's engines both accepted this vector.",
+  "input": {
+    "artifact_digest": "0x5a811da59710bb115a7744189a9732f27883180f5821caa7a99979bc33257c29",
+    "prev_digest": "0x4672842890404de85d907f76149e3edb90687d233ad7efbaabf887f888053ef4",
+    "seq": 9007199254740992,
+    "expected_link": "0x07bc3c60b4f6ad8e175305c4c65c1c41fa7bcef416c488a92d94339881d70c4a"
+  }
+}

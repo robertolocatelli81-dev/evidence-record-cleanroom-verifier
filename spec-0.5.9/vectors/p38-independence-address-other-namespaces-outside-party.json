@@ -1,0 +1,24 @@
+{
+  "id": "p38-independence-address-other-namespaces-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Accepting side of n65/n66/n69: attestors written as did:ethr:<address>, ethereum:<address> and acct:<address>, all naming 0x4444...4444, an address that is not a party's. They are evaluable, outside the transaction, and the claim holds. An engine that defends the address rule by refusing identifiers that end in a 0x-address outside a list of schemes (CAIP-10 and did:pkh, or those plus did:ethr and ethereum:) rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "0xca1de7a500000000000000000000000000000bb0",
+      "0x3333333333333333333333333333333333333333"
+    ],
+    "attestations": [
+      {
+        "by": "did:ethr:0x4444444444444444444444444444444444444444"
+      },
+      {
+        "by": "ethereum:0x4444444444444444444444444444444444444444"
+      },
+      {
+        "by": "acct:0x4444444444444444444444444444444444444444"
+      }
+    ]
+  }
+}

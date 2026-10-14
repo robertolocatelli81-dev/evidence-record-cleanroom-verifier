@@ -17,6 +17,11 @@ Third-party material redistributed unmodified, under Apache-2.0:
    Integrity: SHA-256 of every file in SPEC_SHA256SUMS (verify with `cd spec && sha256sum -c ../SPEC_SHA256SUMS`).
    Modifications: none. See spec/NOTICE.tersign.md.
 
+   The same applies to spec-0.5.7/ (version 0.5.7, tag v0.5.7 = commit 112b3ed6, MANIFEST.json and 162 vector files,
+   SPEC_0.5.7_SHA256SUMS, spec-0.5.7/NOTICE.tersign.md) and to spec-0.5.9/ (version 0.5.9, tag v0.5.9 = commit
+   851eb766, MANIFEST.json and 239 vector files, SPEC_0.5.9_SHA256SUMS, spec-0.5.9/NOTICE.tersign.md), each with its
+   upstream LICENSE as LICENSE.tersign-apache2 and no modification.
+
 2. vendor/roberto_x402_eip712.py and vendor/roberto_omega_evidence_aat.py
    Copyright Roberto Locatelli, Apache-2.0; provenance and hashes in vendor/PROVENANCE.md.
    The Keccak-256 core in verify_tersign.py (round constants, rotation offsets, the permutation and

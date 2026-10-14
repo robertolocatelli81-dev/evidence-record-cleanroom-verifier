@@ -1,0 +1,18 @@
+{
+  "id": "p32-independence-urn-percent-encoded-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Accepting twin of n48/n49: percent-encoded unreserved characters on an attestor outside the parties, one triplet in each hex case. They decode (RFC 3986 \u00a76.2.2.2) to org:trustline-custody/eu-west, which is not a party, so the claim holds. An engine that fails closed on any `%`, or decodes only one hex case, rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "org:trustline%2dcustody/eu%2Dwest"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "p31-independence-urn-case-and-trailing-punctuation-outside-party",
+  "kind": "independence_claim",
+  "expect": "valid",
+  "description": "Accepting twin of n31, n45-n47 and n58: letter case (the scheme's included) and a trailing `#`, `/` and `.`, on one attestor OUTSIDE the parties written three ways. Normalization folds each to org:trustline-custody/eu-west, which is not a party, so the claim holds. An engine that defends the alias classes by refusing the forms, failing closed on an upper-case letter or on any one of a trailing `/` `.` `#`, rejects here.",
+  "input": {
+    "claimed": "independent",
+    "parties": [
+      "org:caldera-robotics",
+      "agent:caldera/ap-pilot"
+    ],
+    "attestations": [
+      {
+        "by": "Org:Trustline-Custody/EU-West#"
+      },
+      {
+        "by": "org:trustline-custody/eu-west/"
+      },
+      {
+        "by": "org:trustline-custody/eu-west."
+      }
+    ]
+  }
+}

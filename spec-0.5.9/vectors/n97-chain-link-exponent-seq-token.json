@@ -1,0 +1,13 @@
+{
+  "id": "n97-chain-link-exponent-seq-token",
+  "kind": "chain_link",
+  "expect": "reject",
+  "reason": "continuity_reject",
+  "description": "p4 with seq written as the JSON token 1e0, the exponent form, and p4's link. JSON.parse reads the token as the number 1, and the link recomputes; Python's json reads a float. A sequence number is an integer TOKEN, and a token with an exponent part is not one whatever its value, so this rejects in both engines. n77 pins the fraction form, 1.0; an engine, or a vector loader, that looks only for a decimal point passes n77 and accepts this vector. p4 is the accepting twin.",
+  "input": {
+    "artifact_digest": "0xe5874f1ffe87f0a6dd9eb157730f67b86ee4538b125fe30fcc4e165213dd3fc4",
+    "prev_digest": null,
+    "seq": 1e0,
+    "expected_link": "0x837c2d85db422b59f89527ef33bfe862af7230895635b63141b09cde169187a5"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "p39-digest-non-ascii-latin1-value",
+  "kind": "digest_recompute",
+  "expect": "valid",
+  "description": "A non-ASCII string VALUE in the digest domain: {\"a\":\"\u00e9\"}, with \u00e9 the single code point U+00E9. RFC 8785 serializes every code point outside the ASCII control range as is (section 3.2.2.2) and encodes the result in UTF-8 (section 3.2.4), so the digest is keccak256 over the bytes 7b 22 61 22 3a 22 c3 a9 22 7d. Until v0.5.5 the corpus carried non-ASCII in the digest domain only in keys (p14, n12), so an engine that escaped string values to ASCII before hashing passed every vector. Accepting twin of n71. Input from @Rul1an's report (issue #1).",
+  "input": {
+    "payload": {
+      "a": "\u00e9"
+    },
+    "expected_digest": "0x796ac49a14443d3a4803f234f3aef0378e6aa19e5c2489613a169dd8b5a3ae2f"
+  }
+}
