@@ -73,6 +73,7 @@ Verifier 0.3.0 (2026-10-14), Python 3.9.25, 3.11.2 and 3.13.15 with identical ro
 | measure | value | reproduce |
 |---|---|---|
 | suite v0.5.9: verdicts / named reasons | **239/239**, **172/172**; manifest `defined_members.closed` = pinned lists | `python3 verify_tersign.py spec-0.5.9/` |
+| suite v0.5.9 in the format of upstream `tools/compare_run.py` | `agrees on 239/239 verdicts and reasons at v0.5.9 (MANIFEST.json sha256 0fc15a89…6505)`, exit 0; one verdict altered: 238/239, exit 1 | `python3 tools/to_compare_run.py results/v0.3.0/suite239_py311.json results/v0.3.0/suite239_compare_run.json`, then upstream `tools/compare_run.py` at tag v0.5.9 on that file (measured 17/10/2026). Clean room: the converter and this run were done in a session that does not write the verifier; it read only the README section on that format (tag v0.5.9) and ran compare_run.py as a black box |
 | suite v0.5.7: verdicts / named reasons | **162/162**, **106/106** | `python3 verify_tersign.py spec-0.5.7/` |
 | suite v0.5.3: verdicts / named reasons | **69/69**, **40/40** | `python3 verify_tersign.py spec/` |
 | held-out vectors (ours, 5; h5 now follows the suite's p63) | 5/5 | `python3 verify_tersign.py heldout/` |
